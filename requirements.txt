@@ -1,0 +1,3 @@
+cassandra-driver==3.10
+cql==1.4.0
+thrift==0.10.0
