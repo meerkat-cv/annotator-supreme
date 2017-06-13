@@ -17,12 +17,14 @@ app = Flask(__name__, instance_relative_config=True, instance_path=instance_path
 
 def setup_views():
     from annotator_supreme.views.version_view import VersionView
+    from annotator_supreme.views.dataset_view import DatasetView
 
-    app.logger.info('Registering views')
+    
     VersionView.register(app)
-    app.logger.info('done.')
+    DatasetView.register(app)
+    
 
-    app.wsgi_app = ProxyFix(app.wsgi_app)
+    # app.wsgi_app = ProxyFix(app.wsgi_app)
     app.debug = app.config["APP_DEBUG"]
 
 
@@ -52,17 +54,20 @@ def build_app():
     app.logger.setLevel(app.config["LOG_LEVEL"])
     app.logger.info('annotator-supreme - The most awesome annotator and provider of CV datasets.')
 
-    from annotator_supreme.controllers.base_controller import ReverseProxied
-    app.wsgi_app = ReverseProxied(app.wsgi_app)
+    app.logger.info("Setting up database (Cassandra)...")
+    from annotator_supreme.controllers import database_controller
+    db_controller = database_controller.DatabaseController()
+    db_controller.setup_database()
+    app.logger.info('done.')
 
+    # from annotator_supreme.controllers.base_controller import ReverseProxied
+    # app.wsgi_app = ReverseProxied(app.wsgi_app)
+    
+    app.logger.info('Registering views')
     setup_views()
+    app.logger.info('done.')
 
-    tr = WSGIContainer(app)
-    tornado_application = tornado.web.Application(
-    [
-        (r".*", FallbackHandler, dict(fallback=tr))
-    ])
     app.logger.info('done.')
     app.logger.info('App built successfully!')
 
-    return tornado_application
+    return app
