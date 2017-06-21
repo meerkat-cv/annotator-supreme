@@ -1,0 +1,39 @@
+{% extends "main_template.html" %}
+{% block content_header %}
+      <h1>
+        API Keys
+        <!-- <small>Optional description</small> -->
+      </h1>
+      <ol class="breadcrumb">
+        <li><a href="/annotator-supreme/">Home</a></li>
+        <li class="active">Just a test, go home!</li>
+      </ol>
+{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="/annotator-supreme/static/meerkat/css/annotate-image.css">
+  <div class="row">
+        <div class="col-xs-12">
+          <div class="box box-success">
+            <div class="box-header">
+              <h3 class="box-title">Users</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+              <div id="annotation-container">
+                <img src="/annotator-supreme/static/meerkat/images/heineken.jpg">  
+              </div>
+            </div>
+            <!-- /.box-body -->
+            <div class="box-footer">
+              <button id="add-user-btn" type="button" class="btn btn-success"><i class="fa fa-user-plus"></i> Add another API Key</button>
+            </div>
+          </div>
+          <!-- /.box -->
+        </div>
+  </div>
+{% endblock %}
+{% block load_script %}
+<!-- <script src="/annotator-supreme/static/meerkat/js/via.js"></script> -->
+<script src="/annotator-supreme/static/plugins/konva/konva.min.js"></script>
+<script src="/annotator-supreme/static/meerkat/js/annotator-supreme.js"></script>
+{% endblock %}

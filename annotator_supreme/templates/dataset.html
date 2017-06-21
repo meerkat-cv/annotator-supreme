@@ -1,0 +1,51 @@
+{% extends "main_template.html" %} {% block content %}
+<div class="row">
+    <div class="col-xs-10">
+        <div class="box box-success">
+            <div class="box-header">
+                <h3 class="box-title">datasets</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+                <p>API keys are your id to access the database that you trained and want to run recognition/verification on it. <b>Each API Key has it own database.</b> Creating more than one key has a couple of advantages. It can be useful to reduce false positives in larger datasets, to better organize your data or just to test different scenarios without compromising your default dataset.</p>
+                <hr>
+                <table id="dataset-table" class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Tags</th>
+                            <th>Edit</th>
+                            <th>Clear all</th>
+                            <th>Remove</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in datasets %}
+                        <tr>
+                            <td>{{ d.name }}</td>
+                            <td>{{ d.tags }}</td>
+                            <td>TODO</td>
+                            <td>TODO</td>
+                            <td>
+                                <a href="#" class="bomb-btn" id="ak{{d.name}}">
+                                    <spam class="fa fa-bomb"></spam>
+                                </a>                                
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                    </tfoot>
+                </table>
+                <hr>
+                <p> The table above list all the API keys that you have in your system. Using this you can set the interface to work with an specific one and add new datasets. There is also an option to clear all the data that you have for an API key, but take caution on using it.</p>
+            </div>
+            <!-- /.box-body -->
+            <div class="box-footer">
+                <button id="add-dataset-btn" type="button" class="btn btn-success"><i class="fa fa-dataset-plus"></i> Add another API Key</button>
+            </div>
+        </div>
+        <!-- /.box -->
+    </div>
+</div>
+{% endblock %}

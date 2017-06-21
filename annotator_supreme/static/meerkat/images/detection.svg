@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" id="Layer_1" enable-background="new 0 0 160.452 158.192" xml:space="preserve" height="122.99345" viewBox="0 0 122.99598 122.995" width="122.99445" version="1.1" y="0px" x="0px" inkscape:version="0.91 r13725" sodipodi:docname="detection.svg">
+    <defs id="defs3348" />
+    <sodipodi:namedview pagecolor="#ffffff" bordercolor="#666666" borderopacity="1" objecttolerance="10" gridtolerance="10" guidetolerance="10" inkscape:pageopacity="0" inkscape:pageshadow="2" inkscape:window-width="1617" inkscape:window-height="793" id="namedview3346" showgrid="false" inkscape:zoom="4.741134" inkscape:cx="85.860516" inkscape:cy="33.968618" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="0" inkscape:current-layer="Layer_1" fit-margin-top="0" fit-margin-left="0" fit-margin-right="0" fit-margin-bottom="0" />
+    <metadata id="metadata23">
+        <rdf:RDF>
+            <cc:Work rdf:about="">
+                <dc:format>image/svg+xml</dc:format>
+                <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+                <dc:title></dc:title>
+            </cc:Work>
+        </rdf:RDF>
+    </metadata>
+    <g id="g3" style="fill:none" transform="translate(-20.514015,-19.525)">
+        <rect id="rect5" height="118" width="118" y="21.525" x="23.514" style="fill:none" />
+        <g id="g7" style="fill:none;stroke:#498eff;stroke-width:5;stroke-linejoin:round">
+            <polyline id="polyline9" points="141.01 109.52 141.01 140.02 111.51 140.02" style="fill:none" />
+            <polyline id="polyline11" points="53.514 140.02 23.014 140.02 23.014 109.52" style="fill:none" />
+            <polyline id="polyline13" points="23.014 51.525 23.014 22.025 53.514 22.025" style="fill:none" />
+            <polyline id="polyline15" points="111.51 22.025 141.01 22.025 141.01 51.525" style="fill:none" />
+        </g>
+    </g>
+    <rect id="rect17" height="118.00583" width="118.26354" stroke-miterlimit="10" y="2.7736907" x="2.0990906" style="fill:none;stroke:#498eff;stroke-width:2.00002527;stroke-linejoin:round;stroke-miterlimit:10;stroke-dasharray:none" />
+</svg>

@@ -1,0 +1,20 @@
+
+
+.user-api-key {
+    color: #fff;
+    line-height: 50px;
+    margin-right: 10px;
+}
+
+.meerkat-menu-button {
+    height: 50px;
+    width: 50px;
+}
+
+.meerkat-menu-image {
+    margin-left: -2px;
+}
+
+#api-error-alert {
+    margin-top: 20px;
+}

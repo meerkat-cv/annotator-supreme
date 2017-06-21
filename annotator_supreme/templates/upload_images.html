@@ -1,0 +1,43 @@
+{% extends "main_template.html" %}
+{% block content %}
+<link rel="stylesheet" href="/annotator-supreme/static/plugins/dropzonejs/css/dropzone.css">
+<div class="row">
+    <div class="col-xs-10">
+        <div class="box box-success">
+            <div class="box-header">
+                <h3 class="box-title">datasets</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+                
+                <div class="form-group">
+                    <label>Select the dataset:</label>
+                    <select mutiple class="form-control">
+                        {% for d in datasets %}
+                            <option> {{ d.name }} </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <form action="/file-upload"
+                    class="dropzone needsclick dz-clickable"
+                    id="my-awesome-dropzone">
+                    <div class="dz-message needsclick">
+                        Drop (multiple) images files to begin - or click in this area.
+                    </div>
+
+                </form>
+            
+            </div>
+            <!-- /.box-body -->
+            <div class="box-footer">
+                <button id="add-dataset-btn" type="button" class="btn btn-success"><i class="fa fa-dataset-plus"></i>Go</button>
+            </div>
+        </div>
+        <!-- /.box -->
+    </div>
+</div>
+{% endblock %}
+{% block load_script %}
+<script src="/annotator-supreme/static/plugins/dropzonejs/js/dropzone.js"></script>
+<script src="/annotator-supreme/static/meerkat/js/upload_images.js"></script>
+{% endblock %}
