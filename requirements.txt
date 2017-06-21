@@ -6,3 +6,7 @@ Flask-Classy==0.6.10
 Flask-Cors==2.1.0
 Werkzeug==0.10.4
 tornado==4.1
+Pillow==3.0.0
+ImageHash==3.4
+PyWavelets==0.5.2
+thrift==0.10.0
