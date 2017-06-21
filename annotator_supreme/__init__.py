@@ -18,11 +18,17 @@ app = Flask(__name__, instance_relative_config=True, instance_path=instance_path
 def setup_views():
     from annotator_supreme.views.version_view import VersionView
     from annotator_supreme.views.dataset_view import DatasetView
-
+    from annotator_supreme.views.image_view import ImageView
+    from annotator_supreme.views.webapp.image_test import ImageTestViewWebApp
+    from annotator_supreme.views.webapp.dataset_view import DatasetViewWebApp
+    from annotator_supreme.views.webapp.upload_view import UploadViewWebApp
     
     VersionView.register(app)
     DatasetView.register(app)
-    
+    ImageView.register(app)
+    ImageTestViewWebApp.register(app)
+    DatasetViewWebApp.register(app)
+    UploadViewWebApp.register(app)
 
     # app.wsgi_app = ProxyFix(app.wsgi_app)
     app.debug = app.config["APP_DEBUG"]

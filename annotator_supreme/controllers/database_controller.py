@@ -2,6 +2,7 @@ from annotator_supreme import app
 from flask import g
 import cassandra
 from cassandra.cluster import Cluster
+from annotator_supreme.models import bbox_model
 
 KEYSPACE = "annotator_supreme"
 
@@ -42,7 +43,9 @@ class DatabaseController:
             session.execute("""
                 CREATE TABLE datasets (
                     name text PRIMARY KEY,
-                    tags list<text>
+                    tags list<text>,
+                    date_created timestamp,
+                    last_modified timestamp
                 )
                 """)
         except cassandra.AlreadyExists: 
@@ -56,20 +59,26 @@ class DatabaseController:
                 top float,
                 left float,
                 bottom float,
-                right float
+                right float,
+                ignore boolean
             )
             """)
+        cluster.register_user_type(KEYSPACE, 'bbox', bbox_model.BBox)
 
         try:
             app.logger.info("\t- creating table images")
             session.execute("""
                 CREATE TABLE images (
-                    id timeuuid,
+                    phash text,
                     dataset text,
                     name text,
                     img blob,
+                    category text,
+                    partition int,
+                    fold int,
+                    last_modified timestamp,
                     annotation map<text, frozen<list<bbox>>>,
-                    PRIMARY KEY (id, dataset)
+                    PRIMARY KEY (phash, dataset)
                 )
                 """)
         except cassandra.AlreadyExists: 

@@ -14,12 +14,8 @@ class DatasetController():
     def get_datasets(self, dataset_name = ""):
         if dataset_name == "":
             rows = DatasetModel.list_datasets()
-            print("rows", rows)
             datasets = []
             for ds_row in rows:
-                print('ds_row', ds_row.name)
-                print('ds_row', ds_row.tags)
                 datasets.append({'name': ds_row.name, 'tags': ds_row.tags})
 
-            print("datasets:", datasets)
             return datasets
