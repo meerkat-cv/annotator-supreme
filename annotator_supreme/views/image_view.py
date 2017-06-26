@@ -23,3 +23,4 @@ class ImageView(FlaskView):
 
         self.controller.create_image(dataset, image)
         return flask.jsonify({"ok": "to-do"})
+        

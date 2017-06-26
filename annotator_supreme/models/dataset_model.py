@@ -12,6 +12,7 @@ class DatasetModel():
             self.db_session = database_controller.get_db(app.config)
 
     def upsert(self):
+
         self.db_session.execute(
             """
             INSERT INTO datasets (name, tags)
@@ -19,6 +20,7 @@ class DatasetModel():
             """,
             (self.dataset_name, self.tags)
         )
+
 
     @staticmethod
     def list_datasets():

@@ -7,6 +7,11 @@ import time
 
 TABLE = "images"
 
+class Dummy:
+
+    def __init__(self, labels):
+        self.labels = "hehe"
+
 class ImageModel():
 
     def __init__(self, dataset_name, image, name = "", bboxes=[], category="", partition = 0, fold = 0):
@@ -38,7 +43,7 @@ class ImageModel():
 
     def upsert(self):
         # TODO: transform to update to really do upsert
-        cql = " INSERT INTO "+TABLE+" (phash, "+ \
+        cql = self.db_session.prepare(" INSERT INTO "+TABLE+" (phash, "+ \
                                     "dataset, " + \
                                     "name, " + \
                                     "img, " + \
@@ -47,21 +52,23 @@ class ImageModel():
                                     "fold, " + \
                                     "last_modified, " + \
                                     "annotation) " + \
-              " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) "
+                                    " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ")
+              
         print("query to include image there ",cql)
-        self.db_session.execute(cql, (self.phash, \
+        d = [BBox(0,0,0,0, ["aaa", "bbb"]), BBox(30,30,30,30, ["ccc", "ddd"])]
+        self.db_session.execute(cql, [self.phash, \
                                         self.dataset_name, \
                                         self.name, \
-                                        self.image, \
+                                        self.image.tobytes(), \
                                         self.category, \
                                         self.partition, \
                                         self.fold, \
-                                        time.time(), \
-                                        self.bboxes))
+                                        int(time.time()), \
+                                        d])
 
     def compute_phash(self, image):
         pil_image = Image.fromarray(image)
-        return imagehash.phash(pil_image)
+        return str(imagehash.phash(pil_image))
 
 
     @staticmethod

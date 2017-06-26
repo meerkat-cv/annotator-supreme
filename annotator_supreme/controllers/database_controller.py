@@ -3,6 +3,7 @@ from flask import g
 import cassandra
 from cassandra.cluster import Cluster
 from annotator_supreme.models import bbox_model
+from annotator_supreme.models import image_model
 
 KEYSPACE = "annotator_supreme"
 
@@ -23,7 +24,7 @@ def get_db(config):
 class DatabaseController:
     
     def setup_database(self):
-        cluster = Cluster()
+        cluster = Cluster(protocol_version=3)
         session = cluster.connect()
 
         # first create the database (aka keyspace)
@@ -63,7 +64,8 @@ class DatabaseController:
                 ignore boolean
             )
             """)
-        cluster.register_user_type(KEYSPACE, 'bbox', bbox_model.BBox)
+
+        # cluster.register_user_type(KEYSPACE, 'bbox', bbox_model.BBox)
 
         try:
             app.logger.info("\t- creating table images")
@@ -77,7 +79,7 @@ class DatabaseController:
                     partition int,
                     fold int,
                     last_modified timestamp,
-                    annotation map<text, frozen<list<bbox>>>,
+                    annotation frozen<list<bbox>>,
                     PRIMARY KEY (phash, dataset)
                 )
                 """)
