@@ -21,6 +21,10 @@ class ImageView(FlaskView):
         if not ok:
             raise error_views.InvalidParametersError(error)
 
-        self.controller.create_image(dataset, image)
-        return flask.jsonify({"ok": "to-do"})
-        
+        (ok, error, image_id) = self.controller.create_image(dataset, image)
+        if not ok:
+            raise error_views.InvalidParametersError(error)
+
+        image_url = "{}/{}".format(dataset, image_id)
+        return flask.jsonify({"imageId": image_id,
+                                "imageUrl": image_url})
