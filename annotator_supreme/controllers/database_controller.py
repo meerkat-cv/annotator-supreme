@@ -75,6 +75,8 @@ class DatabaseController:
                     dataset text,
                     name text,
                     img blob,
+                    width int,
+                    height int,
                     category text,
                     partition int,
                     fold int,
