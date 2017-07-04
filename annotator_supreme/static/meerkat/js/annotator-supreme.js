@@ -1,10 +1,13 @@
 (function (global, $) {
-
     var Annotator = {},
         anno_div = $('#annotation-container'),
-        anchorRadius = 6;
+        anchorRadius = 6,
+        curr_page = 0,
+        self = this;
 
     Annotator.init = function () {
+        $('#anno-img').attr('src','/annotator-supreme/static/meerkat/images/heineken.jpg');
+        anno_div = $('#annotation-container');
         var image = new Image(),
             self = this;
         image.onload = function() {
@@ -12,19 +15,74 @@
         };
         image.src = "/annotator-supreme/static/meerkat/images/heineken.jpg";
         this.bboxes = [];
+
+        console.log('this', this)
+
+        $.ajax({
+            type: 'get',
+            url: '/annotator-supreme//image/nascar/all',
+            success: function(data) {
+                self.all_imgs = data.images;
+                console.log('all_imgs DONE', self.all_imgs)
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.log("error on geting dataset size");
+            },
+        });
+
+        $(document).keydown(function (e) {
+            if (e.keyCode == 37 || e.keyCode == 40) { // Left or Down
+                if (curr_page <= 0) {
+                    console.log('all_imgs', self.all_imgs)
+                    curr_page = self.all_imgs.length-1
+                } else {curr_page = curr_page-1;
+                }
+            } else if (e.keyCode == 39 || e.keyCode == 38) { // Right or Up
+                if (curr_page >= self.all_imgs.length-1) {
+                    curr_page = 0;
+                } else {
+                    curr_page = curr_page+1;
+                }
+            } else {
+                // console.log('key code ', e.keyCode);
+                return;
+            }
+
+            console.log('image', self.all_imgs[curr_page].url)
+            self.bboxes = []
+
+            $.ajax({
+                type: 'get',
+                url: '/annotator-supreme/image/'+self.all_imgs[curr_page].url,
+                success: function(data) {
+                    $('#anno-img').attr('src',data);
+                    anno_div = $('#annotation-container');
+                    var image = new Image();
+                    image.onload = function() {
+                        self.setStage(image);
+                    };
+                    image.src = self.all_imgs[curr_page].url;
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.log("error on geting image");
+                },
+            });
+        });
     }
 
     Annotator.setStage = function(backgroundImage) {
         // create the konva stage
         var self = this;
-
-        var width = anno_div.innerWidth();
-        var height = anno_div.innerHeight();
+        var width = backgroundImage.width;
+        var height = backgroundImage.height;
+        if (typeof this.stage != 'undefined')
+            this.stage.destroy();
         this.stage = new Konva.Stage({
             container: 'annotation-container',
             width: width,
             height: height
         });
+
         this.imgLayer = new Konva.Layer();
         this.stage.add(this.imgLayer);
 
@@ -48,10 +106,10 @@
             if (!creatingBBox && !self.overButton && !self.overBBox) {
                 creatingBBox = true;
                 startPoint = self.stage.getPointerPosition();
-                self.createBBox(startPoint);    
-            } 
-            
-            
+                self.createBBox(startPoint);
+            }
+
+
             // lastPointerPosition = stage.getPointerPosition();
         });
 
@@ -69,7 +127,7 @@
                 self.finishBBoxCreation(self.currentBBox);
                 creatingBBox = false;
             }
-            
+
         });
     }
 
@@ -88,17 +146,19 @@
             ignore: false
         });
 
+
         // add a rect to a group and group to layer
         rectGroup.add(rect);
         this.annoLayer.add(rectGroup);
         this.currentBBox = rectGroup;
+        console.log(rectGroup);
 
     }
 
     Annotator.updateBBoxWhileCreating = function(group, newBottomRight) {
         var topLeftX = group.getX(),
             topLeftY = group.getY();
-        
+
         var width = newBottomRight.x - topLeftX;
         var height = newBottomRight.y - topLeftY;
 
@@ -112,7 +172,7 @@
     }
 
 
-   
+
     Annotator.getBBoxTopLeft = function(group) {
         var topLeft = {
             x: group.getX(),
@@ -126,7 +186,7 @@
         var rect = group.get('Rect')[0];
         var topRight = {
             x: group.getX() + rect.width(),
-            y: group.getY() 
+            y: group.getY()
         }
 
         return topRight;
@@ -160,7 +220,7 @@
         if (rect.width() < 10 && rect.height() < 10) {
             // it the bbox is too small I am assuming an accidental clicl
             group.destroy();
-            this.annoLayer.draw();    
+            this.annoLayer.draw();
         }
         else {
             this.addBBoxAnchors(group);
@@ -168,6 +228,7 @@
             this.addLabelGroup(group);
 
             group.on('mouseover', function() {
+                console.log('MouseOver');
                 var rect = group.get('Rect')[0],
                     is_ignore = group.attrs.ignore;
                 if (!is_ignore) {
@@ -179,6 +240,7 @@
             });
 
             group.on('mouseout', function() {
+                console.log('MouseOut');
                 var rect = group.get('Rect')[0],
                     is_ignore = group.attrs.ignore;
                 if (!is_ignore) {
@@ -189,7 +251,7 @@
                 self.overBBox = false;
             });
 
-            this.annoLayer.draw();    
+            this.annoLayer.draw();
         }
     }
 
@@ -200,8 +262,8 @@
     }
 
     Annotator.hideAnchorAndIcons = function(group) {
-        group.get('Circle').visible(false);
-        group.get('#iconBar').visible(false);
+        // group.get('Circle').visible(false);
+        // group.get('#iconBar').visible(false);
     }
 
 
@@ -213,7 +275,7 @@
         this.addAnchor(group, {x: rect.width(), y: 0}, 'topRight');
         this.addAnchor(group, {x: 0, y: rect.height()}, 'bottomLeft');
         this.addAnchor(group, {x: rect.width(), y: rect.height()}, 'bottomRight');
-        
+
         this.annoLayer.draw();
     }
 
@@ -235,6 +297,7 @@
             dragOnTop: false,
             visible: true
         });
+
         anchor.on('dragmove', function() {
             self.updateUsingAnchor(this);
         });
@@ -249,14 +312,14 @@
         anchor.on('mouseover', function() {
             var layer = this.getLayer();
             document.body.style.cursor = 'pointer';
-            self.overButton = true;
+            this.overButton = true;
             console.log("over anchor");
             this.setStrokeWidth(4);
         });
         anchor.on('mouseout', function() {
             var layer = this.getLayer();
             document.body.style.cursor = 'default';
-            self.overButton = false;
+            this.overButton = false;
             console.log("NOT over anchor");
             this.setStrokeWidth(2);
         });
@@ -264,14 +327,14 @@
     }
 
     Annotator.updateUsingAnchor = function(activeAnchor) {
-        var group = activeAnchor.getParent();
-        var topLeft = group.get('.topLeft')[0];
-        var topRight = group.get('.topRight')[0];
+        var group       = activeAnchor.getParent();
+        var topLeft     = group.get('.topLeft')[0];
+        var topRight    = group.get('.topRight')[0];
         var bottomRight = group.get('.bottomRight')[0];
-        var bottomLeft = group.get('.bottomLeft')[0];
-        var rect = group.get('Rect')[0];
-        var anchorX = activeAnchor.getX();
-        var anchorY = activeAnchor.getY();
+        var bottomLeft  = group.get('.bottomLeft')[0];
+        var rect        = group.get('Rect')[0];
+        var anchorX     = activeAnchor.getX();
+        var anchorY     = activeAnchor.getY();
         // update anchor positions
         switch (activeAnchor.getName()) {
             case 'topLeft':
@@ -293,11 +356,13 @@
                 topLeft.setX(anchorX);
                 break;
         }
+
         rect.position(topLeft.position());
 
         // should also move all icons
         var icons = group.get('Text'),
             labels = group.get('Label');
+
         this.repositionIcons(group, topLeft.position())
         this.repositionLabels(group, topLeft.position())
 
@@ -310,16 +375,17 @@
     }
 
     Annotator.repositionIcons = function(group, topLeft) {
-        var icon_bar = group.findOne("#iconBar");
+        var icon_bar = group.find("#iconBar");
         var new_pos = {
             x: topLeft.x + 10,
             y: topLeft.y + 10
         };
+
         icon_bar.position(new_pos);
     }
 
     Annotator.repositionLabels = function(group, topLeft) {
-        var label_bar = group.findOne("#labelBar");
+        var label_bar = group.find("#labelBar");
         var new_pos = {
             x: topLeft.x,
             y: topLeft.y - 20
@@ -328,7 +394,7 @@
     }
 
     Annotator.isPointInsideAnyBbox = function(point) {
-        var isInside = false; 
+        var isInside = false;
         for (var i = 0; i < this.bboxes.length; ++i) {
             if (this.isPointInsideBbox(this.bboxes[i], point)) {
                 isInside = true;
@@ -344,7 +410,7 @@
             bottomRight = this.getBBoxBottomRight(bbox);
 
         if (point.x >= topLeft.x && point.y >= topLeft.y &&
-                point.x <= bottomRight.x && point.y <= bottomRight.y) 
+                point.x <= bottomRight.x && point.y <= bottomRight.y)
             return true;
 
         return false;
@@ -357,7 +423,7 @@
             id: 'iconBar',
             visible: true
         });
-        
+
         this.addRemoveButton(iconsGroup);
         this.addIgnoreButton(iconsGroup);
         this.addAddLabelButton(iconsGroup);
@@ -473,8 +539,8 @@
         });
 
         addButtonText.on('mousedown', function() {
-            console.log("click");
-            iconGroup.destroy();
+            console.log("click add label");
+            // iconGroup.destroy();
             self.annoLayer.draw();
         });
 
@@ -488,21 +554,41 @@
             y: -20,
             id: 'labelBar'
         });
-        
-        this.addLabel(labelGroup, "heineken", "green");
-        this.addLabel(labelGroup, "beer", "orange");
-        this.addLabel(labelGroup, "something", "red");
-        
-        group.add(labelGroup);
 
+        // this.addLabel(labelGroup, "heineken", "green");
+        // this.addLabel(labelGroup, "beer", "orange");
+        // this.addLabel(labelGroup, "something", "red");
+
+        group.add(labelGroup);
     }
+
+
+
+        // self.enableLoading();
+        // var host = "http://"+window.location.host;
+        // $.ajax({
+        //     type: 'get',
+        //     url: '/frapi/recognition/verify/images',
+        //     data: {'image1Url': host+self.canvas1.image_url,
+        //             'image2Url': host+self.canvas2.image_url},
+        //     success: function (response) {
+        //         self.showResult(response);
+        //     },
+        //     error: function (jqXHR, textStatus, errorThrown) {
+        //         self.showError(jqXHR.responseText);
+        //     },
+        //     complete: function() {
+        //         self.disableLoading();
+        //     }
+        // });
+
 
     Annotator.addLabel = function(group, label, color) {
         var labelsAdded = group.get('Label'),
             offsetX = 10
         for (var i = 0; i < labelsAdded.length; ++i)
             offsetX = offsetX + labelsAdded[i].width() + 10;
-        
+
         var simpleLabel = new Konva.Label({
             x: offsetX,
             y: 0,
@@ -532,7 +618,7 @@
         this.clearLabels(group);
         this.addLabel(group.findOne("#labelBar"), "ignore", "gray");
     }
-    
+
 
     global.Annotator = Annotator;
     global.Annotator.init();
