@@ -1,12 +1,13 @@
 
 from datetime import datetime
+import time
 import threading
 
 
 class ReverseProxied(object):
-    '''Wrap the application in this middleware and configure the 
-    front-end server to add these headers, to let you quietly bind 
-    this to a URL other than / and to an HTTP scheme that is 
+    '''Wrap the application in this middleware and configure the
+    front-end server to add these headers, to let you quietly bind
+    this to a URL other than / and to an HTTP scheme that is
     different than what is used locally.
 
     In nginx:
@@ -39,7 +40,7 @@ class ReverseProxied(object):
 
 def timestamp2isoformat(timestamp):
     """
-    This function converts a timestamp (float) to a string in the 
+    This function converts a timestamp (float) to a string in the
     ISO 8061 date format
     """
     date = datetime.fromtimestamp(timestamp)
@@ -47,10 +48,10 @@ def timestamp2isoformat(timestamp):
 
 
 class BaseController():
-    
+
     def __init__(self):
         pass
-        
+
 
 class Singleton(object):
     __singleton_lock = threading.Lock()
@@ -63,3 +64,30 @@ class Singleton(object):
                 if not cls.__singleton_instance:
                     cls.__singleton_instance = cls()
         return cls.__singleton_instance
+
+
+class memoized_ttl(object):
+    """Decorator that caches a function's return value each time it is called within a TTL
+    If called within the TTL and the same arguments, the cached value is returned,
+    If called outside the TTL or a different value, a fresh value is returned.
+    """
+    def __init__(self, ttl):
+        self.cache = {}
+        self.ttl = ttl
+    def __call__(self, f):
+        def wrapped_f(*args):
+            now = time.time()
+            try:
+                value, last_update = self.cache[args]
+                if self.ttl > 0 and now - last_update > self.ttl:
+                    raise AttributeError
+                return value
+            except (KeyError, AttributeError):
+                value = f(*args)
+                self.cache[args] = (value, now)
+                return value
+            except TypeError:
+                # uncachable -- for instance, passing a list as an argument.
+                # Better to not cache than to blow up entirely.
+                return f(*args)
+        return wrapped_f

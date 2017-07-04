@@ -7,11 +7,14 @@ from flask import render_template
 
 class DatasetViewWebApp(FlaskView):
     route_base = '/'
+    print('DatasetViewWebApp static')
 
     def __init__(self):
         self.dataset_controller = DatasetController()
+        print('DatasetViewWebApp constructor')
 
     @route('/', methods=['GET'])
-    def datasets(self):
+    def datasets_get(self):
+        print('datasets_get')
         datasets = self.dataset_controller.get_datasets()
         return render_template('dataset.html', datasets=datasets)

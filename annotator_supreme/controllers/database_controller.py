@@ -3,7 +3,7 @@ from flask import g
 import cassandra
 from cassandra.cluster import Cluster
 from annotator_supreme.models import bbox_model
-from annotator_supreme.models import image_model
+# from annotator_supreme.models import image_model
 
 KEYSPACE = "annotator_supreme"
 
@@ -15,14 +15,14 @@ def get_db(config):
         db = getattr(g, '_database', None)
         if db is None:
             app.logger.info("database connection done again")
-            
+
             cluster = Cluster()
             session = cluster.connect(KEYSPACE)
             db = g._database = session
         return db
 
 class DatabaseController:
-    
+
     def setup_database(self):
         cluster = Cluster(protocol_version=3)
         session = cluster.connect()
@@ -33,7 +33,7 @@ class DatabaseController:
                 CREATE KEYSPACE %s
                 WITH replication = { 'class': 'SimpleStrategy', 'replication_factor': '2' }
                 """ % KEYSPACE)
-        except cassandra.AlreadyExists: 
+        except cassandra.AlreadyExists:
             app.logger.info("Keyspace already exists.")
 
         # redefine session to use the keyspace
@@ -49,13 +49,13 @@ class DatabaseController:
                     last_modified timestamp
                 )
                 """)
-        except cassandra.AlreadyExists: 
+        except cassandra.AlreadyExists:
             app.logger.info("Table 'datasets' already exists.")
 
 
         app.logger.info("\t- creating type bbox")
         session.execute("""
-            CREATE TYPE IF NOT EXISTS bbox ( 
+            CREATE TYPE IF NOT EXISTS bbox (
                 labels list<text>,
                 top float,
                 left float,
@@ -82,8 +82,8 @@ class DatabaseController:
                     fold int,
                     last_modified timestamp,
                     annotation frozen<list<bbox>>,
-                    PRIMARY KEY (phash, dataset)
+                    PRIMARY KEY (dataset, phash)
                 )
                 """)
-        except cassandra.AlreadyExists: 
+        except cassandra.AlreadyExists:
             app.logger.info("Table 'images' already exists.")

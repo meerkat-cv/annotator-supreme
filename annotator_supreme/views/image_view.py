@@ -25,7 +25,7 @@ class ImageView(FlaskView):
 
     @route('/image/<dataset>/all', methods=['GET'])
     def get_all_images(self, dataset):
-        obj = self.controller.all_images(dataset)
+        obj = ImageController.all_images(dataset)
         return flask.jsonify({"images": obj})
 
     @route('/image/<dataset>/add', methods=['POST'])
