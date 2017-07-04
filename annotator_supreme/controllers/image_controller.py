@@ -21,6 +21,22 @@ class ImageController():
 
     def all_images(self, dataset_name):
         all_images = ImageModel.list_images_from_dataset(dataset_name)
-        return all_images
+
+        obj_images = []
+        for i in all_images:
+            o = {
+                "phash": i.phash,
+                "url": dataset_name+"/"+i.phash,
+                "width": i.width,
+                "height": i.height,
+                "name": i.name,
+                "annotation": i.annotation,
+                "category": i.category,
+                "partition": i.partition,
+                "fold": i.fold,
+                "last_modified": i.last_modified
+            }
+            obj_images.append(o)
+        return obj_images
 
     

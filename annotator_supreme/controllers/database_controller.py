@@ -82,7 +82,7 @@ class DatabaseController:
                     fold int,
                     last_modified timestamp,
                     annotation frozen<list<bbox>>,
-                    PRIMARY KEY (phash, dataset)
+                    PRIMARY KEY (dataset, phash)
                 )
                 """)
         except cassandra.AlreadyExists: 

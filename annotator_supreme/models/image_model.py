@@ -35,7 +35,7 @@ class ImageModel():
         else:
             self.phash = phash
         self.bboxes = bboxes
-        self.category = "defaul"
+        self.category = "default"
         self.partition = partition
         self.fold = fold
         self.last_modified = last_modified
@@ -105,9 +105,6 @@ class ImageModel():
                                     "last_modified) " + \
                                     " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ")
               
-        print("query to include image there ",cql)
-        d = [BBox(0,0,0,0, ["aaa", "bbb"]), BBox(30,30,30,30, ["ccc", "ddd"])]
-        self.bboxes = d
         self.db_session.execute(cql, [self.phash, \
                                         self.dataset_name, \
                                         self.image.tostring(), \
@@ -129,5 +126,19 @@ class ImageModel():
     def list_images_from_dataset(dataset_name):
         with app.app_context():
             db_session = database_controller.get_db(app.config)
-            rows = db_session.execute('SELECT phash FROM '+TABLE)
-            return list(rows)
+            cql = "SELECT phash, "+ \
+                        "width, " + \
+                        "height, " + \
+                        "name, " + \
+                        "annotation, "+ \
+                        "category, " + \
+                        "partition, " + \
+                        "fold, " + \
+                        "last_modified FROM "+TABLE+" WHERE dataset=\'"+dataset_name+"\'"
+            print("cql", cql)
+            rows = db_session.execute(cql)
+            imgs = list(rows)
+
+            print('imgs', imgs)
+
+            return imgs

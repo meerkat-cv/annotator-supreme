@@ -38,7 +38,7 @@
                 });
                 this.on(
                     "addedfile", function(file) {
-                      file._inputElement = Dropzone.createElement("<input name='label_"+file.name+"' type='text' class='image_label' placeholder='Label'>");
+                      // file._inputElement = Dropzone.createElement("<input name='label_"+file.name+"' type='text' class='image_label' placeholder='Label'>");
 
                       // hack to remove progress of the files
                       $(".dz-progress").remove();
