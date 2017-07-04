@@ -17,7 +17,7 @@ class Dummy:
 class ImageModel():
 
     def __init__(self, phash, dataset_name, image, name = "", bboxes=[], category="", partition = 0, fold = 0, last_modified = None):
-        
+
         if dataset_name is None or dataset_name == "":
             raise Exception("An image needs needs a dataset name.")
 
@@ -28,14 +28,14 @@ class ImageModel():
         self.image = image
         # cv2.imshow("asd", image)
         # cv2.waitKey()
-        
+
         if phash == "":
             # given the image, we compute the percepetual hash to use as key
             self.phash = self.compute_phash(image)
         else:
             self.phash = phash
         self.bboxes = bboxes
-        self.category = "defaul"
+        self.category = "default"
         self.partition = partition
         self.fold = fold
         self.last_modified = last_modified
@@ -61,7 +61,7 @@ class ImageModel():
             print('cql', cql)
             rows = db_session.execute(cql)
             rows = list(rows)
-            print('rows', rows)
+            # print('rows', rows)
 
 
             if len(rows) == 0:
@@ -80,7 +80,7 @@ class ImageModel():
                 app.logger.warning('Query error: the same image cannot appear twice.')
                 return None
 
-            
+
 
     def add_bbox(self, top, left, bottom, right, labels, ignore = False, update_db = False):
         b = BBox(top, left, bottom, right, labels, ignore)
@@ -91,6 +91,7 @@ class ImageModel():
 
     def upsert(self):
         # TODO: transform to update to really do upsert
+        print('my cql')
         cql = self.db_session.prepare(" INSERT INTO "+TABLE+ \
                                     " (phash, "+ \
                                     "dataset, " + \
@@ -104,10 +105,8 @@ class ImageModel():
                                     "fold, " + \
                                     "last_modified) " + \
                                     " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ")
-              
-        print("query to include image there ",cql)
-        d = [BBox(0,0,0,0, ["aaa", "bbb"]), BBox(30,30,30,30, ["ccc", "ddd"])]
-        self.bboxes = d
+
+
         self.db_session.execute(cql, [self.phash, \
                                         self.dataset_name, \
                                         self.image.tostring(), \
@@ -129,5 +128,17 @@ class ImageModel():
     def list_images_from_dataset(dataset_name):
         with app.app_context():
             db_session = database_controller.get_db(app.config)
-            rows = db_session.execute('SELECT phash FROM '+TABLE)
-            return list(rows)
+            cql = "SELECT phash, "+ \
+                        "width, " + \
+                        "height, " + \
+                        "name, " + \
+                        "annotation, "+ \
+                        "category, " + \
+                        "partition, " + \
+                        "fold, " + \
+                        "last_modified FROM "+TABLE+" WHERE dataset=\'"+dataset_name+"\'"
+            print("cql", cql)
+            rows = db_session.execute(cql)
+            imgs = list(rows)
+
+            return imgs
