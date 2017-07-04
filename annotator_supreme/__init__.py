@@ -20,6 +20,7 @@ def setup_views():
     from annotator_supreme.views.dataset_view import DatasetView
     from annotator_supreme.views.image_view import ImageView
     from annotator_supreme.views.webapp.image_test import ImageTestViewWebApp
+    from annotator_supreme.views.webapp.annotation_view import AnnotationViewWebApp
     from annotator_supreme.views.webapp.dataset_view import DatasetViewWebApp
     from annotator_supreme.views.webapp.upload_view import UploadViewWebApp
     
@@ -27,6 +28,7 @@ def setup_views():
     DatasetView.register(app)
     ImageView.register(app)
     ImageTestViewWebApp.register(app)
+    AnnotationViewWebApp.register(app)
     DatasetViewWebApp.register(app)
     UploadViewWebApp.register(app)
 
