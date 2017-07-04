@@ -2,6 +2,8 @@
 
     var Annotator = {},
         anno_div = $('#annotation-container'),
+        dataset_sel = $("#dataset-sel"),
+        image_sel = $("#image-sel"),
         anchorRadius = 6;
 
     Annotator.init = function () {
@@ -12,6 +14,34 @@
         };
         image.src = "/annotator-supreme/static/meerkat/images/heineken.jpg";
         this.bboxes = [];
+        this.bindSelectors();
+    }
+
+    Annotator.bindSelectors = function() {
+        var self = this;
+        dataset_sel.on("change", function() {
+            // populate the list of images
+            self.dataset = this.value;
+            $.get( "/annotator-supreme/image/"+self.dataset+"/all", function( data ) {
+                self.image_list = self.imagesToDict(data.images);
+                for (var i = 0; i < self.image_list.length; ++i) {
+                    console.log("apending ", self.image_list[i].phash);
+                    var option = new Option(self.image_list[i].phash, self.image_list[i].phash); 
+                    image_sel.append($(option));
+                }
+
+            });
+            console.log("Change to", this.value);
+        })
+    }
+
+    Annotator.imageToDict = function(image_list) {
+        // this function transform a list of images to a dict where
+        // the key is the perceptual hash, should be easy to work with
+        d = {}
+        for (var i = 0; i < image_list.length; ++i) {
+            
+        }
     }
 
     Annotator.setStage = function(backgroundImage) {
