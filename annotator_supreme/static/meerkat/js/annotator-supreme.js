@@ -1,9 +1,9 @@
 (function (global, $) {
     var Annotator = {},
         anno_div = $('#annotation-container'),
-        anchorRadius = 6,
-        curr_page = 0,
-        self = this;
+        dataset_sel = $("#dataset-sel"),
+        image_sel = $("#image-sel"),
+        anchorRadius = 6;
 
     Annotator.init = function () {
         $('#anno-img').attr('src','/annotator-supreme/static/meerkat/images/heineken.jpg');
@@ -16,20 +16,48 @@
         image.src = "/annotator-supreme/static/meerkat/images/heineken.jpg";
         this.bboxes = [];
 
-        console.log('this', this)
+        this.bindSelectors();
+    }
 
-        $.ajax({
-            type: 'get',
-            url: '/annotator-supreme//image/nascar/all',
-            success: function(data) {
-                self.all_imgs = data.images;
-                console.log('all_imgs DONE', self.all_imgs)
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                console.log("error on geting dataset size");
-            },
+    Annotator.bindSelectors = function() {
+        var self = this;
+        dataset_sel.on("change", function() {
+            // populate the list of images
+            self.dataset = this.value;
+            $.get( "/annotator-supreme/image/"+self.dataset+"/all", function( data ) {
+                self.image_list = self.imagesToDict(data.images);
+                for (var i = 0; i < data.images.length; ++i) {
+                    console.log("apending ", data.images[i].phash);
+                    var option = new Option(data.images[i].phash, data.images[i].phash); 
+                    image_sel.append($(option));
+                }
+
+            });
+            console.log("Change to", this.value);
+        })
+
+        image_sel.on("change", function() {
+            anno_div = $('#annotation-container');
+            var image = new Image();
+            image.onload = function() {
+                self.setStage(image);
+            };
+            image.src = '/annotator-supreme/image/'+self.image_list[this.value].url;
         });
+    }
 
+    Annotator.imagesToDict = function(image_list) {
+        // this function transform a list of images to a dict where
+        // the key is the perceptual hash, should be easy to work with
+        d = {}
+        for (var i = 0; i < image_list.length; ++i) {
+            d[image_list[i].phash] = image_list[i];
+        }
+
+        return d;
+    }
+
+    Annotator.bindKeyEvents = function() {
         $(document).keydown(function (e) {
             if (e.keyCode == 37 || e.keyCode == 40) { // Left or Down
                 if (curr_page <= 0) {
@@ -68,6 +96,7 @@
                 },
             });
         });
+
     }
 
     Annotator.setStage = function(backgroundImage) {
