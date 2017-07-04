@@ -17,7 +17,7 @@ class Dummy:
 class ImageModel():
 
     def __init__(self, phash, dataset_name, image, name = "", bboxes=[], category="", partition = 0, fold = 0, last_modified = None):
-        
+
         if dataset_name is None or dataset_name == "":
             raise Exception("An image needs needs a dataset name.")
 
@@ -28,7 +28,7 @@ class ImageModel():
         self.image = image
         # cv2.imshow("asd", image)
         # cv2.waitKey()
-        
+
         if phash == "":
             # given the image, we compute the percepetual hash to use as key
             self.phash = self.compute_phash(image)
@@ -61,7 +61,7 @@ class ImageModel():
             print('cql', cql)
             rows = db_session.execute(cql)
             rows = list(rows)
-            print('rows', rows)
+            # print('rows', rows)
 
 
             if len(rows) == 0:
@@ -80,7 +80,7 @@ class ImageModel():
                 app.logger.warning('Query error: the same image cannot appear twice.')
                 return None
 
-            
+
 
     def add_bbox(self, top, left, bottom, right, labels, ignore = False, update_db = False):
         b = BBox(top, left, bottom, right, labels, ignore)
@@ -91,6 +91,7 @@ class ImageModel():
 
     def upsert(self):
         # TODO: transform to update to really do upsert
+        print('my cql')
         cql = self.db_session.prepare(" INSERT INTO "+TABLE+ \
                                     " (phash, "+ \
                                     "dataset, " + \
@@ -104,7 +105,7 @@ class ImageModel():
                                     "fold, " + \
                                     "last_modified) " + \
                                     " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ")
-              
+
         self.db_session.execute(cql, [self.phash, \
                                         self.dataset_name, \
                                         self.image.tostring(), \
@@ -138,7 +139,5 @@ class ImageModel():
             print("cql", cql)
             rows = db_session.execute(cql)
             imgs = list(rows)
-
-            print('imgs', imgs)
 
             return imgs
