@@ -37,6 +37,7 @@
             anno_div = $('#annotation-container');
             var image = new Image();
             var option_value = this.value;
+
             image.onload = function() {
                 // Update Konva stage after the annotations are saved, otherwise
                 // they will be destroyed
@@ -49,18 +50,12 @@
                         self.showError(jqXHR.responseText);
                     },
                     complete: function () {
+                        // Keeping the "previous" image so that we can save them when the image is changed
+                        curr_image_id = option_value;
                         // Update Konva Stage
                         self.setStage(image);
                         // Get current annotations
-                        $.get( "/annotator-supreme/image/anno/"+self.image_list[option_value].url, function( data ) {
-                            console.log('boxes', data);
-                            self.bboxes = [];
-                            for (var i=0; i<data.anno.length; ++i) {
-                                self.createCompleteBBox(data.anno[i].left, data.anno[i].top, data.anno[i].right, data.anno[i].bottom, data.anno[i].labels, data.anno[i].ignore);
-                            }
-                        });
-                        // Keeping the "previous" image so that we can save them when the image is changed
-                        curr_image_id = option_value;
+                        self.getAnnotations(self);
                     }
                 });
             };
@@ -78,7 +73,9 @@
             curr_anno['right'] = curr_anno['left'] + self.bboxes[i].get('Rect')[0].attrs.width;
             curr_anno['bottom'] = curr_anno['top'] + self.bboxes[i].get('Rect')[0].attrs.height;
             curr_anno['ignore'] = self.bboxes[i].attrs.ignore;
-            curr_anno['labels'] = [self.bboxes[i].findOne('#labelBar').get('Text')[0].attrs.text];
+            // This is really bad... but findOne was failing :(
+            curr_anno['labels'] = [self.bboxes[i].children[6].children["0"].children[1].partialText]
+            // curr_anno['labels'] = [self.bboxes[i].findOne('#labelBar').get('Text')[0].attrs.text];
             d['anno'].push(curr_anno);
         }
 
@@ -95,6 +92,18 @@
             }
             // Set the curr image id
             curr_image_id = data.images[0].phash;
+            self.getAnnotations(self);
+            image_sel.val(curr_image_id).change();
+        });
+    }
+
+    Annotator.getAnnotations = function(self) {
+        $.get( "/annotator-supreme/image/anno/"+self.image_list[curr_image_id].url, function( data ) {
+            console.log('boxes', data);
+            self.bboxes = [];
+            for (var i=0; i<data.anno.length; ++i) {
+                self.createCompleteBBox(data.anno[i].left, data.anno[i].top, data.anno[i].right, data.anno[i].bottom, data.anno[i].labels, data.anno[i].ignore);
+            }
         });
     }
 
@@ -114,11 +123,11 @@
         $(document).keydown(function (e) {
             if (e.keyCode == 37 || e.keyCode == 40) { // Left or Down
                 if (curr_page <= 0) {
-                    curr_page = self.image_list.length-1
+                    curr_page = image_sel[0].length-1
                 } else {curr_page = curr_page-1;
                 }
             } else if (e.keyCode == 39 || e.keyCode == 38) { // Right or Up
-                if (curr_page >= self.image_list.length-1) {
+                if (curr_page >= image_sel[0].length-1) {
                     curr_page = 0;
                 } else {
                     curr_page = curr_page+1;
