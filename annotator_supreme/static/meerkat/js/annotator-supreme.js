@@ -3,6 +3,7 @@
         anno_div = $('#annotation-container'),
         dataset_sel = $("#dataset-sel"),
         image_sel = $("#image-sel"),
+        curr_page = 0,
         anchorRadius = 6;
 
     Annotator.init = function () {
@@ -17,23 +18,18 @@
         this.bboxes = [];
 
         this.bindSelectors();
+        this.bindKeyEvents();
+
+        // Populate the default selected dataset
+        self.dataset = $('#dataset-sel').find(":selected").text().trim();
+        self.getDatasetImages(self);
     }
 
     Annotator.bindSelectors = function() {
         var self = this;
         dataset_sel.on("change", function() {
-            // populate the list of images
             self.dataset = this.value;
-            $.get( "/annotator-supreme/image/"+self.dataset+"/all", function( data ) {
-                self.image_list = self.imagesToDict(data.images);
-                for (var i = 0; i < data.images.length; ++i) {
-                    console.log("apending ", data.images[i].phash);
-                    var option = new Option(data.images[i].phash, data.images[i].phash); 
-                    image_sel.append($(option));
-                }
-
-            });
-            console.log("Change to", this.value);
+            self.getDatasetImages(self);
         })
 
         image_sel.on("change", function() {
@@ -43,6 +39,18 @@
                 self.setStage(image);
             };
             image.src = '/annotator-supreme/image/'+self.image_list[this.value].url;
+        });
+    }
+
+    Annotator.getDatasetImages = function(self) {
+        // populate the list of images
+        $.get( "/annotator-supreme/image/"+self.dataset+"/all", function( data ) {
+            self.image_list = self.imagesToDict(data.images);
+            for (var i = 0; i < data.images.length; ++i) {
+                var option = new Option(data.images[i].phash, data.images[i].phash);
+                image_sel.append($(option));
+            }
+
         });
     }
 
