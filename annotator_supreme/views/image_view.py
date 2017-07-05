@@ -53,7 +53,7 @@ class ImageView(FlaskView):
         try:
             bbs_vec = []
             for bb in anno:
-                bbox_o = BBox(bb['top'], bb['left'], bb['right'], bb['bottom'], bb['labels'], bb['ignore'])
+                bbox_o = BBox(bb['top'], bb['left'], bb['bottom'], bb['right'], bb['labels'], bb['ignore'])
                 bbs_vec.append(bbox_o)
         except BaseException as e:
             print('Problem with provided annotation', anno, str(e))

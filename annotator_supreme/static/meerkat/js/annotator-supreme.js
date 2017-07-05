@@ -4,6 +4,7 @@
         dataset_sel = $("#dataset-sel"),
         image_sel = $("#image-sel"),
         curr_page = 0,
+        curr_image_id = '', // Keeping the "previous" image so that we can save their annotations when the image is changed
         anchorRadius = 6;
 
     Annotator.init = function () {
@@ -37,16 +38,51 @@
             var image = new Image();
             var option_value = this.value;
             image.onload = function() {
-                self.setStage(image);
-                $.get( "/annotator-supreme/image/anno/"+self.image_list[option_value].url, function( data ) {
-                    console.log('boxes', data);
-                    for (var i=0; i<data.anno.length; ++i) {
-                        self.createCompleteBBox(data.anno[i].left, data.anno[i].top, data.anno[i].right, data.anno[i].bottom, data.anno[i].labels, data.anno[i].ignore);
+                // Update Konva stage after the annotations are saved, otherwise
+                // they will be destroyed
+                $.ajax({
+                    type: 'post',
+                    url: "/annotator-supreme/image/anno/"+self.image_list[curr_image_id].url,
+                    data: JSON.stringify(self.getAnnotationData(self)),
+                    contentType: 'application/json',
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        self.showError(jqXHR.responseText);
+                    },
+                    complete: function () {
+                        // Update Konva Stage
+                        self.setStage(image);
+                        // Get current annotations
+                        $.get( "/annotator-supreme/image/anno/"+self.image_list[option_value].url, function( data ) {
+                            console.log('boxes', data);
+                            self.bboxes = [];
+                            for (var i=0; i<data.anno.length; ++i) {
+                                self.createCompleteBBox(data.anno[i].left, data.anno[i].top, data.anno[i].right, data.anno[i].bottom, data.anno[i].labels, data.anno[i].ignore);
+                            }
+                        });
+                        // Keeping the "previous" image so that we can save them when the image is changed
+                        curr_image_id = option_value;
                     }
                 });
             };
             image.src = '/annotator-supreme/image/'+self.image_list[this.value].url;
         });
+    }
+
+
+    Annotator.getAnnotationData = function(self) {
+        var d = { 'anno': []};
+        for (var i=0; i<self.bboxes.length; i++) {
+            var curr_anno = {};
+            curr_anno['left'] = self.bboxes[i].attrs.x;
+            curr_anno['top'] = self.bboxes[i].attrs.y;
+            curr_anno['right'] = curr_anno['left'] + self.bboxes[i].get('Rect')[0].attrs.width;
+            curr_anno['bottom'] = curr_anno['top'] + self.bboxes[i].get('Rect')[0].attrs.height;
+            curr_anno['ignore'] = self.bboxes[i].attrs.ignore;
+            curr_anno['labels'] = [self.bboxes[i].findOne('#labelBar').get('Text')[0].attrs.text];
+            d['anno'].push(curr_anno);
+        }
+
+        return d;
     }
 
     Annotator.getDatasetImages = function(self) {
@@ -57,6 +93,8 @@
                 var option = new Option(data.images[i].phash, data.images[i].phash);
                 image_sel.append($(option));
             }
+            // Set the curr image id
+            curr_image_id = data.images[0].phash;
         });
     }
 
@@ -151,6 +189,7 @@
                 self.bboxes.push(self.currentBBox);
                 self.finishBBoxCreation(self.currentBBox);
                 creatingBBox = false;
+                console.log("Creating", self.bboxes);
             }
 
         });
@@ -176,8 +215,6 @@
         rectGroup.add(rect);
         this.annoLayer.add(rectGroup);
         this.currentBBox = rectGroup;
-        console.log(rectGroup);
-
     }
 
     Annotator.createCompleteBBox = function(l, t, r, b, labels, ignore) {
@@ -201,7 +238,6 @@
         this.annoLayer.add(rectGroup);
         this.finishBBoxCreation(rectGroup, labels);
         this.bboxes.push(rectGroup);
-
     }
 
     Annotator.updateBBoxWhileCreating = function(group, newBottomRight) {
