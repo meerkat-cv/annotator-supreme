@@ -20,6 +20,14 @@ class ImageController():
         img_o = ImageModel.from_database_and_key(dataset_name, id)
         return img_o.image
 
+    def get_image_anno(self, dataset_name, id):
+        img_o = ImageModel.from_database_and_key(dataset_name, id)
+        return img_o.bboxes
+
+    def change_annotations(self, dataset, id, anno):
+        img_o = ImageModel.from_database_and_key(dataset, id)
+        img_o.change_bboxes(anno)
+
     @staticmethod
     @memoized_ttl(60)
     def all_images(dataset_name):

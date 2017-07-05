@@ -89,6 +89,10 @@ class ImageModel():
         if update_db:
             self.upsert()
 
+    def change_bboxes(self, bboxes):
+        self.bboxes = bboxes
+        self.upsert()
+
     def upsert(self):
         # TODO: transform to update to really do upsert
         print('my cql')
