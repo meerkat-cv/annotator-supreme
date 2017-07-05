@@ -35,8 +35,15 @@
         image_sel.on("change", function() {
             anno_div = $('#annotation-container');
             var image = new Image();
+            var option_value = this.value;
             image.onload = function() {
                 self.setStage(image);
+                $.get( "/annotator-supreme/image/anno/"+self.image_list[option_value].url, function( data ) {
+                    console.log('boxes', data);
+                    for (var i=0; i<data.anno.length; ++i) {
+                        self.createCompleteBBox(data.anno[i].left, data.anno[i].top, data.anno[i].right, data.anno[i].bottom, data.anno[i].labels, data.anno[i].ignore);
+                    }
+                });
             };
             image.src = '/annotator-supreme/image/'+self.image_list[this.value].url;
         });
@@ -173,6 +180,30 @@
 
     }
 
+    Annotator.createCompleteBBox = function(l, t, r, b, labels, ignore) {
+        var self = this;
+        var rect = new Konva.Rect({
+            width: (r-l),
+            height: (b-t),
+            stroke: 'red',
+            strokeWidth: 3
+        });
+        var rectGroup = new Konva.Group({
+            x: l,
+            y: t,
+            draggable: true,
+            ignore: ignore
+        });
+
+
+        // add a rect to a group and group to layer
+        rectGroup.add(rect);
+        this.annoLayer.add(rectGroup);
+        this.finishBBoxCreation(rectGroup, labels);
+        this.bboxes.push(rectGroup);
+
+    }
+
     Annotator.updateBBoxWhileCreating = function(group, newBottomRight) {
         var topLeftX = group.getX(),
             topLeftY = group.getY();
@@ -231,7 +262,7 @@
         return BottomRight;
     }
 
-    Annotator.finishBBoxCreation = function(group) {
+    Annotator.finishBBoxCreation = function(group, labels=[]) {
         var rect = group.get('Rect')[0],
             self = this;
 
@@ -243,7 +274,7 @@
         else {
             this.addBBoxAnchors(group);
             this.addIconBar(group);
-            this.addLabelGroup(group);
+            this.addLabelGroup(group, labels);
 
             group.on('mouseover', function() {
                 console.log('MouseOver');
@@ -566,16 +597,16 @@
     }
 
 
-    Annotator.addLabelGroup = function(group) {
+    Annotator.addLabelGroup = function(group, labels=[]) {
         var labelGroup = new Konva.Group({
             x: 0,
             y: -20,
             id: 'labelBar'
         });
 
-        // this.addLabel(labelGroup, "heineken", "green");
-        // this.addLabel(labelGroup, "beer", "orange");
-        // this.addLabel(labelGroup, "something", "red");
+        for (var i=0; i<labels.length; ++i) {
+            this.addLabel(labelGroup, labels[i], "green");
+        }
 
         group.add(labelGroup);
     }
