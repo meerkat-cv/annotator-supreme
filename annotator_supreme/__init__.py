@@ -14,6 +14,7 @@ import tornado
 
 instance_path = os.path.dirname(os.path.realpath(__file__)) + '/config/'
 app = Flask(__name__, instance_relative_config=True, instance_path=instance_path)
+db_global = None
 
 def setup_views():
     from annotator_supreme.views.version_view import VersionView
@@ -23,7 +24,7 @@ def setup_views():
     from annotator_supreme.views.webapp.annotation_view import AnnotationViewWebApp
     from annotator_supreme.views.webapp.dataset_view import DatasetViewWebApp
     from annotator_supreme.views.webapp.upload_view import UploadViewWebApp
-    
+
     VersionView.register(app)
     DatasetView.register(app)
     ImageView.register(app)
@@ -70,7 +71,7 @@ def build_app():
 
     # from annotator_supreme.controllers.base_controller import ReverseProxied
     # app.wsgi_app = ReverseProxied(app.wsgi_app)
-    
+
     app.logger.info('Registering views')
     setup_views()
     app.logger.info('done.')

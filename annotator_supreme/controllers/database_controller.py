@@ -1,5 +1,4 @@
 from annotator_supreme import app
-from flask import g
 import cassandra
 from cassandra.cluster import Cluster
 from annotator_supreme.models import bbox_model
@@ -7,19 +6,21 @@ from annotator_supreme.models import bbox_model
 
 KEYSPACE = "annotator_supreme"
 
+db_global = None
+
 def get_db(config):
     """
     This functions connect to the Cassandra database and kept in the flask app
     """
+    global db_global
     with app.app_context():
-        db = getattr(g, '_database', None)
-        if db is None:
+        if db_global is None:
             app.logger.info("database connection done again")
-
             cluster = Cluster()
             session = cluster.connect(KEYSPACE)
-            db = g._database = session
-        return db
+            db_global = session
+
+        return db_global
 
 class DatabaseController:
 
