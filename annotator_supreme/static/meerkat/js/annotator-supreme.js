@@ -50,7 +50,6 @@
                 var option = new Option(data.images[i].phash, data.images[i].phash);
                 image_sel.append($(option));
             }
-
         });
     }
 
@@ -66,15 +65,15 @@
     }
 
     Annotator.bindKeyEvents = function() {
+        var self = this;
         $(document).keydown(function (e) {
             if (e.keyCode == 37 || e.keyCode == 40) { // Left or Down
                 if (curr_page <= 0) {
-                    console.log('all_imgs', self.all_imgs)
-                    curr_page = self.all_imgs.length-1
+                    curr_page = self.image_list.length-1
                 } else {curr_page = curr_page-1;
                 }
             } else if (e.keyCode == 39 || e.keyCode == 38) { // Right or Up
-                if (curr_page >= self.all_imgs.length-1) {
+                if (curr_page >= self.image_list.length-1) {
                     curr_page = 0;
                 } else {
                     curr_page = curr_page+1;
@@ -84,27 +83,9 @@
                 return;
             }
 
-            console.log('image', self.all_imgs[curr_page].url)
-            self.bboxes = []
-
-            $.ajax({
-                type: 'get',
-                url: '/annotator-supreme/image/'+self.all_imgs[curr_page].url,
-                success: function(data) {
-                    $('#anno-img').attr('src',data);
-                    anno_div = $('#annotation-container');
-                    var image = new Image();
-                    image.onload = function() {
-                        self.setStage(image);
-                    };
-                    image.src = self.all_imgs[curr_page].url;
-                },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    console.log("error on geting image");
-                },
-            });
+            var selection = image_sel[0][curr_page].value;
+            image_sel.val(selection).change();
         });
-
     }
 
     Annotator.setStage = function(backgroundImage) {
