@@ -1,6 +1,9 @@
 (function (global, $) {
 
-    var UploadImages = {};
+    var UploadImages = {},
+        dataset_sel = $('#dataset-sel'),
+        category_entry = $('#category-entry'),
+        clear_btn = $("#clear-files-btn");
 
     UploadImages.init = function () {
         this.initDropZone();
@@ -22,7 +25,7 @@
 
         Dropzone.autoDiscover = false;
         var myDropzone = new Dropzone("#my-awesome-dropzone", { 
-            url: '/annotator-supreme/upload_images',
+            url: '/annotator-supreme/image/front-upload',
             autoProcessQueue: false,
             parallelUploads: 100,
 
@@ -36,6 +39,10 @@
                         self.complete_send = false;
                     }
                 });
+
+                this.on("processing", function(file) {
+                    // this.options.url = "/annotator-supreme/image/"+self.dataset+"/add";
+                });
                 this.on(
                     "addedfile", function(file) {
                       // file._inputElement = Dropzone.createElement("<input name='label_"+file.name+"' type='text' class='image_label' placeholder='Label'>");
@@ -47,6 +54,8 @@
                 });
                 this.on(
                     "sending", function(file, xhr, formData){
+                        formData.append('category', self.getCategory());
+                        formData.append('dataset', self.dataset);
                         // pass
                 });
                 this.on('error', function(file, response) {
@@ -68,13 +77,27 @@
         this.myDropzone = myDropzone;
     };
 
+    UploadImages.getCategory = function() {
+        var v = category_entry.val();
+        if (v && v != "") {
+            return v;
+        }
+        return "default";
+    }
+
     UploadImages.bind = function (){
         var self = this;
-        $('#input_label4all').on('input', function(e) {
-            $('.image_label').val($('#input_label4all').val());
+
+        $(document).ready(function () {
+            self.dataset = dataset_sel.val();
+            console.log('dataset on load', self.dataset);
+        })
+
+        dataset_sel.on("change", function () {
+            self.dataset = this.value;
         });
 
-        $('#clear-files-btn').click( function () {
+        clear_btn.click( function () {
             self.myDropzone.removeAllFiles(true);    
             $('#clear-files-btn').prop('disabled', 'disabled');
             $('#input_label4all').val('');

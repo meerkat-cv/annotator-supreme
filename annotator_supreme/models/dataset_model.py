@@ -27,6 +27,4 @@ class DatasetModel():
         with app.app_context():
             db_session = database_controller.get_db(app.config)
             rows = db_session.execute('SELECT name, tags FROM '+TABLE)
-            # print("rows from db: ", rows)
-            # print("rows from db: ", list(rows))
             return list(rows)

@@ -59,10 +59,8 @@ class ImageModel():
                         "partition, " + \
                         "fold, " + \
                         "last_modified FROM "+TABLE+" WHERE dataset=\'"+dataset+"\' AND phash=\'"+image_key+"\'"
-            print('cql', cql)
             rows = db_session.execute(cql)
             rows = list(rows)
-            # print('rows', rows)
 
 
             if len(rows) == 0:
@@ -96,7 +94,6 @@ class ImageModel():
 
     def upsert(self):
         # TODO: transform to update to really do upsert
-        print('my cql')
         cql = self.db_session.prepare(" INSERT INTO "+TABLE+ \
                                     " (phash, "+ \
                                     "dataset, " + \
@@ -144,7 +141,6 @@ class ImageModel():
                         "partition, " + \
                         "fold, " + \
                         "last_modified FROM "+TABLE+" WHERE dataset=\'"+dataset_name+"\'"
-            print("cql", cql)
             rows = db_session.execute(cql)
             imgs = list(rows)
 

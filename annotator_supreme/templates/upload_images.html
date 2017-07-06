@@ -12,11 +12,16 @@
                 
                 <div class="form-group">
                     <label>Select the dataset:</label>
-                    <select mutiple class="form-control">
+                    <select mutiple class="form-control" id="dataset-sel">
                         {% for d in datasets %}
                             <option> {{ d.name }} </option>
                         {% endfor %}
                     </select>
+                </div>
+                <div class="form-group">
+                  <label for="category-entry">Category</label>
+                  <input type="text" class="form-control" id="category-entry" placeholder="Enter a given category (e.g. Tacos, Burritos, Negative, Positive)">
+                  <p class="help-block">If not set will make 'default' category.</p>
                 </div>
                 <form action="/file-upload"
                     class="dropzone needsclick dz-clickable"
@@ -26,11 +31,12 @@
                     </div>
 
                 </form>
+                <button type="button" class="btn btn-block btn-danger" disabled="disabled" id="clear-files-btn"><i class="fa fa-trash"></i>&nbsp;Clear all images</button>
             
             </div>
             <!-- /.box-body -->
             <div class="box-footer">
-                <button id="add-dataset-btn" type="button" class="btn btn-success"><i class="fa fa-dataset-plus"></i>Go</button>
+                <button id="upload-submit-btn" type="button" class="btn btn-success"><i class="fa fa-dataset-plus"></i>Go</button>
             </div>
         </div>
         <!-- /.box -->
