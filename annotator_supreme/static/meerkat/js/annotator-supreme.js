@@ -67,6 +67,10 @@
     Annotator.getAnnotationData = function(self) {
         var d = { 'anno': []};
         for (var i=0; i<self.bboxes.length; i++) {
+            if (self.bboxes[i].children.length <= 0) {
+                continue;
+            }
+
             var curr_anno = {};
             curr_anno['left'] = self.bboxes[i].attrs.x;
             curr_anno['top'] = self.bboxes[i].attrs.y;
@@ -74,7 +78,7 @@
             curr_anno['bottom'] = curr_anno['top'] + self.bboxes[i].get('Rect')[0].attrs.height;
             curr_anno['ignore'] = self.bboxes[i].attrs.ignore;
             // This is really bad... but findOne was failing :(
-            curr_anno['labels'] = [self.bboxes[i].children[6].children["0"].children[1].partialText]
+            curr_anno['labels'] = [self.bboxes[i].children[6].children["0"].children[1].partialText];
             // curr_anno['labels'] = [self.bboxes[i].findOne('#labelBar').get('Text')[0].attrs.text];
             d['anno'].push(curr_anno);
         }
@@ -99,7 +103,6 @@
 
     Annotator.getAnnotations = function(self) {
         $.get( "/annotator-supreme/image/anno/"+self.image_list[curr_image_id].url, function( data ) {
-            console.log('boxes', data);
             self.bboxes = [];
             for (var i=0; i<data.anno.length; ++i) {
                 self.createCompleteBBox(data.anno[i].left, data.anno[i].top, data.anno[i].right, data.anno[i].bottom, data.anno[i].labels, data.anno[i].ignore);
@@ -180,9 +183,6 @@
                 startPoint = self.stage.getPointerPosition();
                 self.createBBox(startPoint);
             }
-
-
-            // lastPointerPosition = stage.getPointerPosition();
         });
 
         this.stage.on('contentMousemove.proto', function() {
@@ -198,7 +198,6 @@
                 self.bboxes.push(self.currentBBox);
                 self.finishBBoxCreation(self.currentBBox);
                 creatingBBox = false;
-                console.log("Creating", self.bboxes);
             }
 
         });
@@ -238,7 +237,7 @@
             x: l,
             y: t,
             draggable: true,
-            ignore: ignore
+            ignore: false
         });
 
 
@@ -246,6 +245,11 @@
         rectGroup.add(rect);
         this.annoLayer.add(rectGroup);
         this.finishBBoxCreation(rectGroup, labels);
+        // console.log(rectGroup.find('#ignoreButtonText'));
+        if (ignore) {
+            console.log('Activating ignore');
+            rectGroup.find('#ignoreButtonText').fire('mousedown');
+        }
         this.bboxes.push(rectGroup);
     }
 
@@ -322,7 +326,6 @@
             this.addLabelGroup(group, labels);
 
             group.on('mouseover', function() {
-                console.log('MouseOver');
                 var rect = group.get('Rect')[0],
                     is_ignore = group.attrs.ignore;
                 if (!is_ignore) {
@@ -552,6 +555,7 @@
         removeButtonText.on('mousedown', function() {
             // should destroy the whole bbox
             iconGroup.getParent().destroy();
+            console.log('iconGroup.getParent', iconGroup.getParent());
             self.annoLayer.draw();
         });
 
@@ -566,7 +570,8 @@
           text: "\uf05e",
           fontSize: 18,
           fontFamily: 'FontAwesome',
-          fill: 'white'
+          fill: 'white',
+          id: 'ignoreButtonText'
         });
 
         ignoreButtonText.on('mouseover', function() {
@@ -583,11 +588,8 @@
         });
 
         ignoreButtonText.on('mousedown', function() {
-            console.log("click");
-
             var bbox = iconGroup.getParent();
             var is_ignore = bbox.attrs.ignore;
-            console.log('is_ignore', is_ignore);
             if (is_ignore) {
                 bbox.attrs.ignore = false;
                 var rect = bbox.get('Rect')[0];
@@ -655,26 +657,6 @@
 
         group.add(labelGroup);
     }
-
-
-
-        // self.enableLoading();
-        // var host = "http://"+window.location.host;
-        // $.ajax({
-        //     type: 'get',
-        //     url: '/frapi/recognition/verify/images',
-        //     data: {'image1Url': host+self.canvas1.image_url,
-        //             'image2Url': host+self.canvas2.image_url},
-        //     success: function (response) {
-        //         self.showResult(response);
-        //     },
-        //     error: function (jqXHR, textStatus, errorThrown) {
-        //         self.showError(jqXHR.responseText);
-        //     },
-        //     complete: function() {
-        //         self.disableLoading();
-        //     }
-        // });
 
 
     Annotator.addLabel = function(group, label, color) {
