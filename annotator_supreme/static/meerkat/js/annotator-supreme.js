@@ -3,6 +3,7 @@
         anno_div = $('#annotation-container'),
         dataset_sel = $("#dataset-sel"),
         image_sel = $("#image-sel"),
+        tag_sel = $("#tag-sel"),
         curr_page = 0,
         curr_image_id = '', // Keeping the "previous" image so that we can save their annotations when the image is changed
         anchorRadius = 6;
@@ -24,6 +25,23 @@
         // Populate the default selected dataset
         self.dataset = $('#dataset-sel').find(":selected").text().trim();
         self.getDatasetImages(self);
+
+        $.get( "/annotator-supreme/dataset/all", function( data ) {
+            for (var i = 0; i < data.datasets.length; ++i) {
+                if (data.datasets[i].name != self.dataset) {
+                    continue;
+                }
+                for (var j=0; j < data.datasets[i].tags.length; ++j) {
+                    console.log('tags', data.datasets[i]);
+                    var option = new Option(data.datasets[i].tags[j], data.datasets[i].tags[j]);
+                    tag_sel.append($(option));
+                }
+                self.tag = data.datasets[i].tags[0];
+            }
+            // Set the curr image id
+            tag_sel.val(self.tag).change();
+        });
+
     }
 
     Annotator.bindSelectors = function() {
@@ -31,6 +49,7 @@
         dataset_sel.on("change", function() {
             self.dataset = this.value;
             self.getDatasetImages(self);
+            $(this).blur();
         })
 
         image_sel.on("change", function() {
@@ -60,7 +79,14 @@
                 });
             };
             image.src = '/annotator-supreme/image/'+self.image_list[this.value].url;
+            $(this).blur();
         });
+
+        tag_sel.on("change", function() {
+            console.log('changing', this.value);
+            self.tag = this.value;
+            $(this).blur();
+        })
     }
 
 
@@ -196,7 +222,7 @@
             if (creatingBBox) {
                 // now, the bbox was officially created
                 self.bboxes.push(self.currentBBox);
-                self.finishBBoxCreation(self.currentBBox);
+                self.finishBBoxCreation(self.currentBBox, [self.tag]);
                 creatingBBox = false;
             }
 
