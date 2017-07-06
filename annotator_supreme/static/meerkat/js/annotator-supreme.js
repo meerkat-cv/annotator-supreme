@@ -100,6 +100,8 @@
             var tag = self.bboxes[i].findOne('#tag');
             if (tag == null) {
                 continue;
+            } else if (tag == 'ignore') {
+                continue;
             }
             default_label = tag.attrs.text;
         }
