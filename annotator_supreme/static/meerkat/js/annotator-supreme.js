@@ -92,20 +92,36 @@
 
     Annotator.getAnnotationData = function(self) {
         var d = { 'anno': []};
+        var default_label = '';
         for (var i=0; i<self.bboxes.length; i++) {
             if (self.bboxes[i].children.length <= 0) {
                 continue;
             }
+            var tag = self.bboxes[i].findOne('#tag');
+            if (tag == null) {
+                continue;
+            }
+            default_label = tag.attrs.text;
+        }
+
+        for (var i=0; i<self.bboxes.length; i++) {
+            if (self.bboxes[i].children.length <= 0) {
+                console.log('SKIPING');
+                continue;
+            }
 
             var curr_anno = {};
+            var tag = self.bboxes[i].findOne('#tag');
             curr_anno['left'] = self.bboxes[i].attrs.x;
             curr_anno['top'] = self.bboxes[i].attrs.y;
             curr_anno['right'] = curr_anno['left'] + self.bboxes[i].get('Rect')[0].attrs.width;
             curr_anno['bottom'] = curr_anno['top'] + self.bboxes[i].get('Rect')[0].attrs.height;
             curr_anno['ignore'] = self.bboxes[i].attrs.ignore;
-            // This is really bad... but findOne was failing :(
-            curr_anno['labels'] = [self.bboxes[i].children[6].children["0"].children[1].partialText];
-            // curr_anno['labels'] = [self.bboxes[i].findOne('#labelBar').get('Text')[0].attrs.text];
+            if (tag == null) {
+                curr_anno['labels'] = [default_label];
+            } else {
+                curr_anno['labels'] = [tag.attrs.text];
+            }
             d['anno'].push(curr_anno);
         }
 
@@ -705,7 +721,8 @@
             fontFamily: 'Calibri',
             fontSize: 14,
             padding: 3,
-            fill: 'white'
+            fill: 'white',
+            id: 'tag'
         }));
 
         group.add(simpleLabel);
