@@ -21,6 +21,8 @@ class PluginsController():
         plugins = os.listdir('./annotator_supreme/plugins/')
         list_plugins = []
         for p in plugins:
+            if os.path.splitext(p)[1].lower() != '.py':
+                continue
             plugin_name = os.path.splitext(p)[0].replace('_',' ').title()
             list_plugins.append(plugin_name)
 
