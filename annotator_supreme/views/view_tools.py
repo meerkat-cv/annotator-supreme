@@ -26,7 +26,7 @@ def read_image_from_stream(stream):
 
 
 def read_image_from_url(url):
-    req = urllib2.Request(url, headers={'User-Agent' : "VirtualMakeup-API"}) 
+    req = urllib2.Request(url, headers={'User-Agent' : "VirtualMakeup-API"})
     res = urllib2.urlopen(req)
     if res.getcode() != 200:
         raise Exception('Invalid status code '+str(res.getcode())+' from image url')
@@ -40,6 +40,23 @@ def read_image_b64(base64_string):
     cvimg  = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
 
     return cvimg
+
+
+def anno_to_dict(anno):
+    anno_vec = []
+    for bb in anno:
+        curr_anno = {}
+        curr_anno['labels'] = bb.labels
+        curr_anno['left']   = bb.left
+        curr_anno['top']    = bb.top
+        curr_anno['right']  = bb.right
+        curr_anno['bottom'] = bb.bottom
+        curr_anno['ignore'] = bb.ignore
+        anno_vec.append(curr_anno)
+
+    anno_dict = {'anno': anno_vec}
+
+    return anno_dict
 
 
 def parse_content_type(request):
@@ -65,7 +82,7 @@ def parse_content_type(request):
 def get_param_from_request(request, label):
     """
     This function is used to extract a field from a POST or GET request.
-    
+
     Returns a tuple with (ok:boolean, error:string, value)
     """
     if request.method == 'POST':
@@ -97,7 +114,7 @@ def get_param_from_request(request, label):
 def get_image_from_request(request):
     """
     This function is used to extract the image from a POST or GET request.
-    Usually it is a url of the image and, in case of the POST is possible 
+    Usually it is a url of the image and, in case of the POST is possible
     to send it as a multi-part data.
 
     Returns a tuple with (ok:boolean, error:string, image:ndarray)
