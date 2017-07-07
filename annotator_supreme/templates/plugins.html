@@ -1,0 +1,68 @@
+{% extends "main_template.html" %}
+{% block content_header %}
+      <h1>
+        Plugins
+          <small>You can choose among the availables plugins to do some kind of image processing on the desired dataset. this
+                 can be used either to augmentate the dataset, to convert it to some specific format, or whatever your heart desires.</small>
+      </h1>
+      <!-- <ol class="breadcrumb">
+        <li><a href="/annotator-supreme/">Home</a></li>
+        <li class="active">Just a test, go home!</li>
+      </ol> -->
+{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="/annotator-supreme/static/meerkat/css/annotate-image.css">
+  <div class="row">
+        <div class="col-xs-12">
+          <div class="box box-success">
+            <div class="box-header">
+              <h3 class="box-title">Process Image</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+
+              <div class="form-group">
+                  <label>Select the dataset:</label>
+                  <select mutiple class="form-control" id="dataset-sel">
+                      {% for d in datasets %}
+                          <option> {{ d.name }} </option>
+                      {% endfor %}
+                  </select>
+              </div>
+
+              <div class="form-group">
+                  <label>Now the image:</label>
+                  <select mutiple class="form-control" id="image-sel">
+                  </select>
+              </div>
+
+              <div class="form-group">
+                  <label>Plugin:</label>
+                  <select mutiple class="form-control" id="plugin-sel">
+                  </select>
+              </div>
+
+              <div id="image-proc-container1">
+                <img src="/annotator-supreme/static/meerkat/images/heineken.jpg">
+              </div>
+              <div id="image-proc-container2">
+                <img src="/annotator-supreme/static/meerkat/images/heineken.jpg" id='img2'>
+              </div>
+            </div>
+            <!-- /.box-body -->
+            <div class="box-footer">
+              <button id="apply-image-plugin-btn" type="button" class="btn btn-success"><i class="fa fa-gavel"></i> Apply plugin on image</button>
+            </div>
+            <div class="box-footer">
+              <button id="apply-dataset-plugin-btn" type="button" class="btn btn-success"><i class="fa fa-gavel"></i> Apply plugin on dataset</button>
+            </div>
+          </div>
+          <!-- /.box -->
+        </div>
+  </div>
+{% endblock %}
+{% block load_script %}
+<!-- <script src="/annotator-supreme/static/meerkat/js/via.js"></script> -->
+<script src="/annotator-supreme/static/plugins/konva/konva.min.js"></script>
+<script src="/annotator-supreme/static/meerkat/js/image-processing.js"></script>
+{% endblock %}

@@ -61,7 +61,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
       <div class="navbar-custom-menu">
         <ul class="nav navbar-nav">
           <!-- Messages: style can be found in dropdown.less-->
-          
+
           <!-- /.messages-menu -->
           <li class="user-api-key">
           <b>API Key:</b> {{ session['user_api_key'] }}
@@ -73,7 +73,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <a href="#" class="dropdown-toggle meerkat-menu-button" data-toggle="dropdown">
               <!-- The user image in the navbar-->
               <img src="/annotator-supreme/static/dist/img/meerkat_logo_160.png" class="user-image meerkat-menu-image" alt="User Image">
-              
+
             </a>
             <ul class="dropdown-menu">
               <!-- The user image in the menu -->
@@ -134,7 +134,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
         </li>
 
         <li><a href="/annotator-supreme/annotation"><i class="fa fa-pencil"></i> <span>Annotation</span></a></li>
-        
+
+        <li><a href="/annotator-supreme/plugins"><i class="fa fa-pencil"></i> <span>Plugins</span></a></li>
+
       </ul>
       <!-- /.sidebar-menu -->
     </section>
@@ -243,7 +245,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
       checkboxClass: 'icheckbox_minimal-blue',
       radioClass: 'iradio_minimal-blue'
     });
-    
+
     {% block script %}{% endblock %}
 
 </script>
