@@ -27,7 +27,7 @@
         var myDropzone = new Dropzone("#my-awesome-dropzone", { 
             url: '/annotator-supreme/image/front-upload',
             autoProcessQueue: false,
-            parallelUploads: 100,
+            parallelUploads: 10000,
 
             init: function () {
                 var myDropzone = this; // closure
