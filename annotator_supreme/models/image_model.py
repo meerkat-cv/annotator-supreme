@@ -2,6 +2,7 @@ from annotator_supreme import app
 from annotator_supreme.controllers import database_controller
 from annotator_supreme.models.bbox_model import BBox
 from PIL import Image
+import hashlib
 import imagehash
 import time
 import cv2
@@ -120,8 +121,11 @@ class ImageModel():
                                         int(time.time()) ] )
 
     def compute_phash(self, image):
-        pil_image = Image.fromarray(image)
-        return str(imagehash.phash(pil_image))
+        # pil_image = Image.fromarray(image)
+        # return str(imagehash.phash(pil_image))
+        m = hashlib.md5()
+        m.update(image)
+        return m.hexdigest()
 
 
     @staticmethod

@@ -26,25 +26,9 @@ class ImageView(FlaskView):
     @route('/image/anno/<dataset>/<imageid>', methods=['GET'])
     def get_image_anno(self, dataset, imageid):
         anno = self.controller.get_image_anno(dataset, imageid)
-        anno_dict = self.anno_to_dict(anno)
+        anno_dict = view_tools.anno_to_dict(anno)
 
         return flask.jsonify(anno_dict)
-
-    def anno_to_dict(self, anno):
-        anno_vec = []
-        for bb in anno:
-            curr_anno = {}
-            curr_anno['labels'] = bb.labels
-            curr_anno['left']   = bb.left
-            curr_anno['top']    = bb.top
-            curr_anno['right']  = bb.right
-            curr_anno['bottom'] = bb.bottom
-            curr_anno['ignore'] = bb.ignore
-            anno_vec.append(curr_anno)
-
-        anno_dict = {'anno': anno_vec}
-
-        return anno_dict
 
     @route('/image/anno/<dataset>/<imageid>', methods=['POST'])
     def post_image_anno(self, dataset, imageid):

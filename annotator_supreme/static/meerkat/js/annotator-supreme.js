@@ -3,6 +3,7 @@
         anno_div = $('#annotation-container'),
         dataset_sel = $("#dataset-sel"),
         image_sel = $("#image-sel"),
+        tag_sel = $("#tag-sel"),
         curr_page = 0,
         curr_image_id = '', // Keeping the "previous" image so that we can save their annotations when the image is changed
         anchorRadius = 6;
@@ -24,6 +25,23 @@
         // Populate the default selected dataset
         self.dataset = $('#dataset-sel').find(":selected").text().trim();
         self.getDatasetImages(self);
+
+        $.get( "/annotator-supreme/dataset/all", function( data ) {
+            for (var i = 0; i < data.datasets.length; ++i) {
+                if (data.datasets[i].name != self.dataset) {
+                    continue;
+                }
+                for (var j=0; j < data.datasets[i].tags.length; ++j) {
+                    console.log('tags', data.datasets[i]);
+                    var option = new Option(data.datasets[i].tags[j], data.datasets[i].tags[j]);
+                    tag_sel.append($(option));
+                }
+                self.tag = data.datasets[i].tags[0];
+            }
+            // Set the curr image id
+            tag_sel.val(self.tag).change();
+        });
+
     }
 
     Annotator.bindSelectors = function() {
@@ -31,6 +49,7 @@
         dataset_sel.on("change", function() {
             self.dataset = this.value;
             self.getDatasetImages(self);
+            $(this).blur();
         })
 
         image_sel.on("change", function() {
@@ -60,22 +79,51 @@
                 });
             };
             image.src = '/annotator-supreme/image/'+self.image_list[this.value].url;
+            $(this).blur();
         });
+
+        tag_sel.on("change", function() {
+            console.log('changing', this.value);
+            self.tag = this.value;
+            $(this).blur();
+        })
     }
 
 
     Annotator.getAnnotationData = function(self) {
         var d = { 'anno': []};
+        var default_label = '';
         for (var i=0; i<self.bboxes.length; i++) {
+            if (self.bboxes[i].children.length <= 0) {
+                continue;
+            }
+            var tag = self.bboxes[i].findOne('#tag');
+            if (tag == null) {
+                continue;
+            } else if (tag == 'ignore') {
+                continue;
+            }
+            default_label = tag.attrs.text;
+        }
+
+        for (var i=0; i<self.bboxes.length; i++) {
+            if (self.bboxes[i].children.length <= 0) {
+                console.log('SKIPING');
+                continue;
+            }
+
             var curr_anno = {};
+            var tag = self.bboxes[i].findOne('#tag');
             curr_anno['left'] = self.bboxes[i].attrs.x;
             curr_anno['top'] = self.bboxes[i].attrs.y;
             curr_anno['right'] = curr_anno['left'] + self.bboxes[i].get('Rect')[0].attrs.width;
             curr_anno['bottom'] = curr_anno['top'] + self.bboxes[i].get('Rect')[0].attrs.height;
             curr_anno['ignore'] = self.bboxes[i].attrs.ignore;
-            // This is really bad... but findOne was failing :(
-            curr_anno['labels'] = [self.bboxes[i].children[6].children["0"].children[1].partialText]
-            // curr_anno['labels'] = [self.bboxes[i].findOne('#labelBar').get('Text')[0].attrs.text];
+            if (tag == null) {
+                curr_anno['labels'] = [default_label];
+            } else {
+                curr_anno['labels'] = [tag.attrs.text];
+            }
             d['anno'].push(curr_anno);
         }
 
@@ -99,7 +147,6 @@
 
     Annotator.getAnnotations = function(self) {
         $.get( "/annotator-supreme/image/anno/"+self.image_list[curr_image_id].url, function( data ) {
-            console.log('boxes', data);
             self.bboxes = [];
             for (var i=0; i<data.anno.length; ++i) {
                 self.createCompleteBBox(data.anno[i].left, data.anno[i].top, data.anno[i].right, data.anno[i].bottom, data.anno[i].labels, data.anno[i].ignore);
@@ -180,9 +227,6 @@
                 startPoint = self.stage.getPointerPosition();
                 self.createBBox(startPoint);
             }
-
-
-            // lastPointerPosition = stage.getPointerPosition();
         });
 
         this.stage.on('contentMousemove.proto', function() {
@@ -196,9 +240,8 @@
             if (creatingBBox) {
                 // now, the bbox was officially created
                 self.bboxes.push(self.currentBBox);
-                self.finishBBoxCreation(self.currentBBox);
+                self.finishBBoxCreation(self.currentBBox, [self.tag]);
                 creatingBBox = false;
-                console.log("Creating", self.bboxes);
             }
 
         });
@@ -238,7 +281,7 @@
             x: l,
             y: t,
             draggable: true,
-            ignore: ignore
+            ignore: false
         });
 
 
@@ -246,6 +289,11 @@
         rectGroup.add(rect);
         this.annoLayer.add(rectGroup);
         this.finishBBoxCreation(rectGroup, labels);
+        // console.log(rectGroup.find('#ignoreButtonText'));
+        if (ignore) {
+            console.log('Activating ignore');
+            rectGroup.find('#ignoreButtonText').fire('mousedown');
+        }
         this.bboxes.push(rectGroup);
     }
 
@@ -322,7 +370,6 @@
             this.addLabelGroup(group, labels);
 
             group.on('mouseover', function() {
-                console.log('MouseOver');
                 var rect = group.get('Rect')[0],
                     is_ignore = group.attrs.ignore;
                 if (!is_ignore) {
@@ -552,6 +599,7 @@
         removeButtonText.on('mousedown', function() {
             // should destroy the whole bbox
             iconGroup.getParent().destroy();
+            console.log('iconGroup.getParent', iconGroup.getParent());
             self.annoLayer.draw();
         });
 
@@ -566,7 +614,8 @@
           text: "\uf05e",
           fontSize: 18,
           fontFamily: 'FontAwesome',
-          fill: 'white'
+          fill: 'white',
+          id: 'ignoreButtonText'
         });
 
         ignoreButtonText.on('mouseover', function() {
@@ -583,11 +632,8 @@
         });
 
         ignoreButtonText.on('mousedown', function() {
-            console.log("click");
-
             var bbox = iconGroup.getParent();
             var is_ignore = bbox.attrs.ignore;
-            console.log('is_ignore', is_ignore);
             if (is_ignore) {
                 bbox.attrs.ignore = false;
                 var rect = bbox.get('Rect')[0];
@@ -657,26 +703,6 @@
     }
 
 
-
-        // self.enableLoading();
-        // var host = "http://"+window.location.host;
-        // $.ajax({
-        //     type: 'get',
-        //     url: '/frapi/recognition/verify/images',
-        //     data: {'image1Url': host+self.canvas1.image_url,
-        //             'image2Url': host+self.canvas2.image_url},
-        //     success: function (response) {
-        //         self.showResult(response);
-        //     },
-        //     error: function (jqXHR, textStatus, errorThrown) {
-        //         self.showError(jqXHR.responseText);
-        //     },
-        //     complete: function() {
-        //         self.disableLoading();
-        //     }
-        // });
-
-
     Annotator.addLabel = function(group, label, color) {
         var labelsAdded = group.get('Label'),
             offsetX = 10
@@ -697,7 +723,8 @@
             fontFamily: 'Calibri',
             fontSize: 14,
             padding: 3,
-            fill: 'white'
+            fill: 'white',
+            id: 'tag'
         }));
 
         group.add(simpleLabel);

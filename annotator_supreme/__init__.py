@@ -20,17 +20,21 @@ def setup_views():
     from annotator_supreme.views.version_view import VersionView
     from annotator_supreme.views.dataset_view import DatasetView
     from annotator_supreme.views.image_view import ImageView
+    from annotator_supreme.views.plugins_view import PluginsView
     from annotator_supreme.views.webapp.image_test import ImageTestViewWebApp
     from annotator_supreme.views.webapp.annotation_view import AnnotationViewWebApp
     from annotator_supreme.views.webapp.dataset_view import DatasetViewWebApp
+    from annotator_supreme.views.webapp.plugins_view import PluginsViewWebApp
     from annotator_supreme.views.webapp.upload_view import UploadViewWebApp
 
     VersionView.register(app)
     DatasetView.register(app)
     ImageView.register(app)
+    PluginsView.register(app)
     ImageTestViewWebApp.register(app)
     AnnotationViewWebApp.register(app)
     DatasetViewWebApp.register(app)
+    PluginsViewWebApp.register(app)
     UploadViewWebApp.register(app)
 
     # app.wsgi_app = ProxyFix(app.wsgi_app)
