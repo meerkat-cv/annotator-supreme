@@ -66,6 +66,7 @@ html {
 .image__cell {
   float: left;
   position: relative;
+  background-color: lightgray;
 }
 
 .image--basic {

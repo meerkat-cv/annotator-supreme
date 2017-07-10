@@ -17,12 +17,12 @@
       <a class="remove-img" data-id="{{ i.phash }}" href="#"><i class="fa fa-times-circle" aria-hidden="true"></i></a>
       <div class="image--basic">
           <div class="category-img"> {{ i.category }}</div>
-          <a href="#expand-jump-0"><img id="expand-jump-0" class="basic__img" src="/annotator-supreme/image/thumb/{{ i.url }}" alt="Fashion 6"></a>
+          <a href="#expand-jump-0"><img id="expand-jump-0" class="basic__img lazy" data-original="/annotator-supreme/image/thumb/{{ i.url }}" alt="{{i.phash}}"></a>
           <div class="arrow--up"></div>
       </div>
       <div class="image--expand">
           <a href="#close-jump-0" class="expand__close"></a>
-          <img class="image--large" src="/annotator-supreme/image/{{ i.url }}" alt="Fashion 6">
+          <img class="image--large lazy" data-original="/annotator-supreme/image/{{ i.url }}" alt="{{i.phash}}">
           <div class="image-details">
             <div class="row">
               <div class="det-field">Phash: </div><div class="det-value">{{i.phash}}</div>
@@ -56,12 +56,16 @@
 {% endblock %}
 {% block load_script %}
 <script src="/annotator-supreme/static/meerkat/js/visualize-images.js"></script>
+<script src="/annotator-supreme/static/plugins/jquery.lazyload/jquery.lazyload.min.js"></script>
+
 {% endblock %}
 
 {% block script %}
   $('body').addClass('sidebar-collapse');
   $(document).ready(function () {
-      window.VisualizeImages.setDataset("{{dataset}}");
-
+    $("img.lazy").lazyload({
+      effect : "fadeIn"
+    });
+    window.VisualizeImages.setDataset("{{dataset}}");
   });
 {% endblock %}
