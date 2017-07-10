@@ -20,6 +20,32 @@ html {
   padding: 10px 5px 0;
 }
 
+.remove-img {
+  float: left;
+  position: absolute;
+  left: 90%;
+  z-index: 2;
+  font-size: 30px;
+  color: darkred;
+  visibility: hidden;
+  top: -17px;
+}
+
+.remove-img:hover {
+  color: red;
+}
+
+.category-img {
+  background-color: rgba(211, 211, 211, 0.62);
+  padding: 4px;
+  float: left;
+  position: absolute;
+  top: 4px;
+  left: 12px;
+  z-index: 2;
+  font-weight: bold;
+}
+
 .image__cell {
   float: left;
   position: relative;
@@ -27,6 +53,10 @@ html {
 
 .image--basic {
   padding: 0 5px;
+}
+
+.image--basic:hover .remove-img {
+    visibility: visible;
 }
 
 .basic__img {

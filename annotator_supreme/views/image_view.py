@@ -24,19 +24,19 @@ class ImageView(FlaskView):
 
     def resize4thumb(self, img):
         if img.shape[0] < img.shape[1]:
-            factor = 250./img.shape[0]
-            # make height 250, and width accordantly
-            img = cv2.resize(img, (int(img.shape[1]*factor), 250))
+            factor = 200./img.shape[0]
+            # make height 200, and width accordantly
+            img = cv2.resize(img, (int(img.shape[1]*factor), 200))
             # get only the center portion of image
             w = img.shape[1]
-            return img[:, (w-250)//2:(w+250)//2, :]
+            return img[:, (w-200)//2:(w+200)//2, :]
         else:
-            factor = 250./img.shape[1]
-            # make height 250, and width accordantly
-            img = cv2.resize(img, (250, int(img.shape[0]*factor)))
+            factor = 200./img.shape[1]
+            # make height 200, and width accordantly
+            img = cv2.resize(img, (200, int(img.shape[0]*factor)))
             # get only the center portion of image
             h = img.shape[0]
-            return img[(h-250)//2:(h+250)//2, :, :]
+            return img[(h-200)//2:(h+200)//2, :, :]
 
 
     @route('/image/thumb/<dataset>/<imageid>', methods=['GET'])
