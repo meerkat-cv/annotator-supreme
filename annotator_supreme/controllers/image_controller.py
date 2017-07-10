@@ -22,7 +22,7 @@ class ImageController():
 
     def get_image_anno(self, dataset_name, id):
         img_o = ImageModel.from_database_and_key(dataset_name, id)
-        return img_o.bboxes
+        return img_o
 
     def change_annotations(self, dataset, id, anno):
         img_o = ImageModel.from_database_and_key(dataset, id)

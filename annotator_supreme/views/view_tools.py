@@ -41,10 +41,9 @@ def read_image_b64(base64_string):
 
     return cvimg
 
-
 def anno_to_dict(anno):
     anno_vec = []
-    for bb in anno:
+    for bb in anno.bboxes:
         curr_anno = {}
         curr_anno['labels'] = bb.labels
         curr_anno['left']   = bb.left
@@ -55,6 +54,13 @@ def anno_to_dict(anno):
         anno_vec.append(curr_anno)
 
     anno_dict = {'anno': anno_vec}
+    anno_dict['dataset_name'] = anno.dataset_name
+    anno_dict['name'] = anno.name
+    anno_dict['phash'] = anno.phash
+    anno_dict['category'] = anno.category
+    anno_dict['partition'] = anno.partition
+    anno_dict['fold'] = anno.fold
+    anno_dict['last_modified'] = anno.last_modified
 
     return anno_dict
 

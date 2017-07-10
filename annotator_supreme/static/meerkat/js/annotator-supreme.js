@@ -25,22 +25,7 @@
         // Populate the default selected dataset
         self.dataset = $('#dataset-sel').find(":selected").text().trim();
         self.getDatasetImages(self);
-
-        $.get( "/annotator-supreme/dataset/all", function( data ) {
-            for (var i = 0; i < data.datasets.length; ++i) {
-                if (data.datasets[i].name != self.dataset) {
-                    continue;
-                }
-                for (var j=0; j < data.datasets[i].tags.length; ++j) {
-                    console.log('tags', data.datasets[i]);
-                    var option = new Option(data.datasets[i].tags[j], data.datasets[i].tags[j]);
-                    tag_sel.append($(option));
-                }
-                self.tag = data.datasets[i].tags[0];
-            }
-            // Set the curr image id
-            tag_sel.val(self.tag).change();
-        });
+        self.updateTags();
 
     }
 
@@ -78,6 +63,7 @@
                     }
                 });
             };
+            console.log('image_list', self.image_list);
             image.src = '/annotator-supreme/image/'+self.image_list[this.value].url;
             $(this).blur();
         });
@@ -130,8 +116,32 @@
         return d;
     }
 
+
+    Annotator.updateTags = function() {
+        var self = this;
+
+        $.get( "/annotator-supreme/dataset/all", function( data ) {
+            for (var i = 0; i < data.datasets.length; ++i) {
+                if (data.datasets[i].name != self.dataset) {
+                    continue;
+                }
+                for (var j=0; j < data.datasets[i].tags.length; ++j) {
+                    console.log('tags', data.datasets[i]);
+                    var option = new Option(data.datasets[i].tags[j], data.datasets[i].tags[j]);
+                    tag_sel.append($(option));
+                }
+                self.tag = data.datasets[i].tags[0];
+            }
+            // Set the curr image id
+            tag_sel.val(self.tag).change();
+        });
+    }
+
     Annotator.getDatasetImages = function(self) {
         // populate the list of images
+        self.image_list = [];
+        image_sel.empty();
+        tag_sel.empty();
         $.get( "/annotator-supreme/image/"+self.dataset+"/all", function( data ) {
             self.image_list = self.imagesToDict(data.images);
             for (var i = 0; i < data.images.length; ++i) {
@@ -143,6 +153,8 @@
             self.getAnnotations(self);
             image_sel.val(curr_image_id).change();
         });
+
+        self.updateTags();
     }
 
     Annotator.getAnnotations = function(self) {
