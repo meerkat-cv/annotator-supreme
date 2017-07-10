@@ -46,6 +46,23 @@ html {
   font-weight: bold;
 }
 
+.image-details {
+  float: left;
+  color: white;
+  padding-top: 100px;
+  padding-right: 100px;
+}
+
+.image-details .det-field {
+  font-weight: bold;
+  float: left;
+  padding-right: 10px;
+}
+
+.image-details .det-value {
+  float: right;
+}
+
 .image__cell {
   float: left;
   position: relative;
