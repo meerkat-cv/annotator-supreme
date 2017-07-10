@@ -18,7 +18,7 @@ class VisualizeImagesViewWebApp(FlaskView):
     def image_visualize(self, dataset):
         all_imgs = self.image_controller.all_images(dataset)
         print("all_imgs:", all_imgs)
-        return render_template('visualize_images.html', images=all_imgs)
+        return render_template('visualize_images.html', images=all_imgs, dataset=dataset)
 
 
     

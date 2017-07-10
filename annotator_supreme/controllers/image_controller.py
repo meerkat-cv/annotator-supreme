@@ -28,8 +28,11 @@ class ImageController():
         img_o = ImageModel.from_database_and_key(dataset, id)
         img_o.change_bboxes(anno)
 
+    def delete_image(self, dataset, image_id):
+        (ok, error) = ImageModel.delete_image(dataset, image_id)
+        return (ok, error)
+
     @staticmethod
-    @memoized_ttl(60)
     def all_images(dataset_name):
         all_images = ImageModel.list_images_from_dataset(dataset_name)
 

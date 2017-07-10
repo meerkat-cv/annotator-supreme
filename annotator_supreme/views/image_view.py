@@ -12,6 +12,15 @@ class ImageView(FlaskView):
     def __init__(self):
         self.controller = ImageController()
 
+    @route('/image/<dataset>/<imageid>', methods=['DELETE'])
+    def delete_image(self, dataset, imageid):
+        (ok, error) = self.controller.delete_image(dataset, imageid)
+        if not ok:
+            raise error_views.InvalidParametersError(error)
+        else:
+            return '', 200
+
+
     @route('/image/<dataset>/<imageid>', methods=['GET'])
     def get_image(self, dataset, imageid):
         img = self.controller.get_image(dataset, imageid)

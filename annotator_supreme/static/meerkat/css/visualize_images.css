@@ -55,7 +55,7 @@ html {
   padding: 0 5px;
 }
 
-.image--basic:hover .remove-img {
+.image__cell:hover .remove-img {
     visibility: visible;
 }
 

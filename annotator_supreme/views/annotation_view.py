@@ -34,4 +34,4 @@ class AnnoView(FlaskView):
 
         self.controller.change_annotations(dataset, imageid, bbs_vec)
 
-        return '',200
+        return '', 200

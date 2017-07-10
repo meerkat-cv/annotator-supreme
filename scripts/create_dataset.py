@@ -7,7 +7,7 @@ from requests_toolbelt import MultipartEncoder
 
 
 HOST       = 'http://localhost/annotator-supreme'
-train_file = '/media/meerkat/Data/datasets/logo_kairos/nascar_remote/blurred/nascar_brands_train_full_pure.txt'
+train_file = '/Users/gfuhr/meerkat/datasets/cole_tv/nascar/blurred/nascar_brands_train_full_pure.txt'
 
 tags = [ 'Alpinestars', 'Bank_of_America', 'Bugles', 'CarQuest', 'Cheezit', 'Chevrolet', 'DuPont', 'Ford', 'GM', 'Goodwrench', 'KBB', 'Kellogs', 'Nascar', 'PopTarts', 'QuakerState', 'Sprint', 'Strohs_Light', 'Toyota', 'Valvoline', 'Wrangler']
 
@@ -19,6 +19,7 @@ content = [x.strip() for x in content]
 
 num_imgs = 0
 for im in content:
+    print('img', im)
     num_imgs += 1
     labels_file = os.path.splitext(im)[0]+'.txt'
     with open(labels_file) as f:
