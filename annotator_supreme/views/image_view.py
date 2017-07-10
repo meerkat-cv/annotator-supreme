@@ -2,6 +2,7 @@ import flask
 from flask.ext.classy import FlaskView, route, request
 from annotator_supreme.models.bbox_model import BBox
 from annotator_supreme.controllers.image_controller import ImageController
+from annotator_supreme.controllers.image_utils import ImageUtils
 from annotator_supreme.views import view_tools
 from annotator_supreme.views import error_views
 import cv2
@@ -51,10 +52,11 @@ class ImageView(FlaskView):
     @route('/image/thumb/<dataset>/<imageid>', methods=['GET'])
     def get_image_thumb(self, dataset, imageid):
         img = self.controller.get_image(dataset, imageid)
-        img = self.resize4thumb(img)
+        anno = self.controller.get_image_anno(dataset, imageid)
+        thumb = ImageUtils.create_thumbnail(img, anno)
         fileid = "imgthumb" # uuid.uuid4().hex
         full_filename = 'annotator_supreme/static/'+fileid+'.jpg'
-        cv2.imwrite(full_filename, img)
+        cv2.imwrite(full_filename, thumb)
         filename = 'static/'+fileid+'.jpg'
 
         return flask.send_file(filename, mimetype='image/jpeg')

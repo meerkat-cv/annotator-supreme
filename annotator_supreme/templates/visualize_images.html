@@ -1,7 +1,7 @@
 {% extends "main_template.html" %}
 {% block content_header %}
       <h1>
-        API Keys
+        All images from <b>{{ dataset }}</b>
         <!-- <small>Optional description</small> -->
       </h1>
       <ol class="breadcrumb">
@@ -33,7 +33,9 @@
 {% endblock %}
 
 {% block script %}
+  $('body').addClass('sidebar-collapse');
   $(document).ready(function () {
       window.VisualizeImages.setDataset("{{dataset}}");
+
   });
 {% endblock %}
