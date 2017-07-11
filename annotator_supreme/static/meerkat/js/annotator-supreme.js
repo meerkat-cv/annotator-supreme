@@ -26,7 +26,20 @@
         self.dataset = $('#dataset-sel').find(":selected").text().trim();
         self.getDatasetImages(self);
         self.updateTags();
+    }
 
+    Annotator.selectDatasetImage = function(dataset, image) {
+        if (dataset !== "" && image !== "") {
+            dataset_sel.val(dataset);
+            this.getDatasetImages(this, function() {
+                console.log("clb");
+                image_sel.val(image);  
+                image_sel.emit("change");
+            });
+            
+
+        }
+        console.log('Trying to change to ',dataset, image);
     }
 
     Annotator.bindSelectors = function() {
@@ -137,7 +150,7 @@
         });
     }
 
-    Annotator.getDatasetImages = function(self) {
+    Annotator.getDatasetImages = function(self, callback) {
         // populate the list of images
         self.image_list = [];
         image_sel.empty();
@@ -152,6 +165,10 @@
             curr_image_id = data.images[0].phash;
             self.getAnnotations(self);
             image_sel.val(curr_image_id).change();
+
+            if (callback) {
+                callback();
+            }
         });
 
         self.updateTags();

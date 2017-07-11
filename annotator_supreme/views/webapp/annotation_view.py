@@ -15,4 +15,14 @@ class AnnotationViewWebApp(FlaskView):
     def index(self):
         # get the datasets to see which one the user wants to annotate
         datasets = self.dataset_controller.get_datasets()
-        return render_template('annotation.html', datasets=datasets)
+
+        # the user can choose to annotate a specif image/dataset
+        sel_dataset = ""
+        sel_image = ""
+        if request.args.get("dataset") is not None:
+            sel_dataset = request.args.get("dataset")
+        if request.args.get("image") is not None:
+            sel_image = request.args.get("image")
+
+
+        return render_template('annotation.html', datasets=datasets, sel_dataset=sel_dataset, sel_image=sel_image)
