@@ -25,6 +25,14 @@ class DatasetView(FlaskView):
         print('returning', flask.jsonify({"dataset_size": len(obj)}))
         return flask.jsonify({"dataset_size": len(obj)})
 
+    @route('/dataset/<dataset>', methods=['DELETE'])
+    def delete_dataset(self, dataset):
+        ok, error = self.controller.purge_dataset(dataset)
+        if not ok:
+            raise error_views.InvalidParametersError(error)
+        else:
+            return '', 200
+
     @route('/dataset/create', methods=['POST'])
     def create_datasets(self):
         (ok, error, name) = view_tools.get_param_from_request(request, "name")

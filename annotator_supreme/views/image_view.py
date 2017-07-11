@@ -32,23 +32,6 @@ class ImageView(FlaskView):
 
         return flask.send_file(filename, mimetype='image/jpeg')
 
-    def resize4thumb(self, img):
-        if img.shape[0] < img.shape[1]:
-            factor = 200./img.shape[0]
-            # make height 200, and width accordantly
-            img = cv2.resize(img, (int(img.shape[1]*factor), 200))
-            # get only the center portion of image
-            w = img.shape[1]
-            return img[:, (w-200)//2:(w+200)//2, :]
-        else:
-            factor = 200./img.shape[1]
-            # make height 200, and width accordantly
-            img = cv2.resize(img, (200, int(img.shape[0]*factor)))
-            # get only the center portion of image
-            h = img.shape[0]
-            return img[(h-200)//2:(h+200)//2, :, :]
-
-
     @route('/image/thumb/<dataset>/<imageid>', methods=['GET'])
     def get_image_thumb(self, dataset, imageid):
         img = self.controller.get_image(dataset, imageid)

@@ -156,3 +156,14 @@ class ImageModel():
             
             return (True, "")
 
+    @staticmethod
+    def delete_all_images(dataset_name):
+        with app.app_context():
+            db_session = database_controller.get_db(app.config)
+            
+            cql = "DELETE FROM "+TABLE+" WHERE dataset=\'"+dataset_name+"\'" 
+            res = db_session.execute(cql)
+            
+            return (True, "")
+
+

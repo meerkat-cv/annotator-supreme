@@ -6,16 +6,13 @@
                 <h3 class="box-title">datasets</h3>
             </div>
             <div class="box-body">
-                <p>API keys are your id to access the database that you trained and want to run recognition/verification on it. <b>Each API Key has it own database.</b> Creating more than one key has a couple of advantages. It can be useful to reduce false positives in larger datasets, to better organize your data or just to test different scenarios without compromising your default dataset.</p>
-                <hr>
                 <table id="dataset-table" class="table table-bordered table-hover">
                     <thead>
                         <tr>
                             <th>Name</th>
                             <th>Tags</th>
-                            <th>Edit</th>
-                            <th>Clear all</th>
-                            <th>Remove</th>
+                            <th>Images</th>
+                            <th>Purge</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -23,10 +20,13 @@
                         <tr>
                             <td>{{ d.name }}</td>
                             <td>{{ d.tags }}</td>
-                            <td>TODO</td>
-                            <td>TODO</td>
                             <td>
-                                <a href="#" class="bomb-btn" id="ak{{d.name}}">
+                                <a href="/annotator-supreme/visualize/{{d.name}}">
+                                    <spam class="fa fa-list"></spam>
+                                </a>
+                            </td>
+                            <td>
+                                <a href="#" class="bomb-btn" data-dataset="{{d.name}}">
                                     <spam class="fa fa-bomb"></spam>
                                 </a>
                             </td>
@@ -36,13 +36,38 @@
                     <tfoot>
                     </tfoot>
                 </table>
-                <hr>
-                <p> The table above list all the API keys that you have in your system. Using this you can set the interface to work with an specific one and add new datasets. There is also an option to clear all the data that you have for an API key, but take caution on using it.</p>
+                
             </div>
             <div class="box-footer">
-                <button id="add-dataset-btn" type="button" class="btn btn-success"><i class="fa fa-dataset-plus"></i> Add another API Key</button>
+                <button id="add-dataset-btn" type="button" class="btn btn-success"><i class="fa fa-dataset-plus"></i> Add another dataset</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-danger" id="modal-confirm-delete">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Are you sure?</h4>
+            </div>
+            <div class="modal-body">
+                <p>Danger! Purging will remove all images and annotations. Are you sure you want to proceed for dataset: <b id="confirm-delete-dataset-label">EMPTY</b>?</p>
+                <p>All your stored data will be erased beyond recover. Proceed at your own risk!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirm-delete-button">Delete</button>
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
+
+{% block load_script %}
+<script src="/annotator-supreme/static/meerkat/js/dataset.js"></script>
+{% endblock %}
+

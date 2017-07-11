@@ -1,5 +1,6 @@
 
 from annotator_supreme.models.dataset_model import DatasetModel
+from annotator_supreme.models.image_model import ImageModel
 
 
 class DatasetController():
@@ -19,3 +20,15 @@ class DatasetController():
                 datasets.append({'name': ds_row.name, 'tags': ds_row.tags})
 
             return datasets
+
+    def purge_dataset(self, dataset_name):
+        # first delete all iamges/annotations from the dataset
+        ok, error = ImageModel.delete_all_images(dataset_name)
+        if ok:
+            d = DatasetModel(dataset_name)
+            ok, error = d.delete()
+            return ok, error
+        else:
+            return ok, error
+
+
