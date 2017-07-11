@@ -2,6 +2,7 @@ import flask
 from flask.ext.classy import FlaskView, route, request
 from annotator_supreme.models.bbox_model import BBox
 from annotator_supreme.controllers.image_controller import ImageController
+from annotator_supreme.controllers.image_utils import ImageUtils
 from annotator_supreme.views import view_tools
 from annotator_supreme.views import error_views
 import cv2
@@ -11,6 +12,15 @@ class ImageView(FlaskView):
 
     def __init__(self):
         self.controller = ImageController()
+
+    @route('/image/<dataset>/<imageid>', methods=['DELETE'])
+    def delete_image(self, dataset, imageid):
+        (ok, error) = self.controller.delete_image(dataset, imageid)
+        if not ok:
+            raise error_views.InvalidParametersError(error)
+        else:
+            return '', 200
+
 
     @route('/image/<dataset>/<imageid>', methods=['GET'])
     def get_image(self, dataset, imageid):
@@ -24,57 +34,33 @@ class ImageView(FlaskView):
 
     def resize4thumb(self, img):
         if img.shape[0] < img.shape[1]:
-            factor = 250./img.shape[0]
-            # make height 250, and width accordantly
-            img = cv2.resize(img, (int(img.shape[1]*factor), 250))
+            factor = 200./img.shape[0]
+            # make height 200, and width accordantly
+            img = cv2.resize(img, (int(img.shape[1]*factor), 200))
             # get only the center portion of image
             w = img.shape[1]
-            return img[:, (w-250)//2:(w+250)//2, :]
+            return img[:, (w-200)//2:(w+200)//2, :]
         else:
-            factor = 250./img.shape[1]
-            # make height 250, and width accordantly
-            img = cv2.resize(img, (250, int(img.shape[0]*factor)))
+            factor = 200./img.shape[1]
+            # make height 200, and width accordantly
+            img = cv2.resize(img, (200, int(img.shape[0]*factor)))
             # get only the center portion of image
             h = img.shape[0]
-            return img[(h-250)//2:(h+250)//2, :, :]
+            return img[(h-200)//2:(h+200)//2, :, :]
 
 
     @route('/image/thumb/<dataset>/<imageid>', methods=['GET'])
     def get_image_thumb(self, dataset, imageid):
         img = self.controller.get_image(dataset, imageid)
-        img = self.resize4thumb(img)
+        anno = self.controller.get_image_anno(dataset, imageid)
+        thumb = ImageUtils.create_thumbnail(img, anno)
         fileid = "imgthumb" # uuid.uuid4().hex
         full_filename = 'annotator_supreme/static/'+fileid+'.jpg'
-        cv2.imwrite(full_filename, img)
+        cv2.imwrite(full_filename, thumb)
         filename = 'static/'+fileid+'.jpg'
 
         return flask.send_file(filename, mimetype='image/jpeg')
 
-
-
-    @route('/image/anno/<dataset>/<imageid>', methods=['GET'])
-    def get_image_anno(self, dataset, imageid):
-        anno = self.controller.get_image_anno(dataset, imageid)
-        anno_dict = view_tools.anno_to_dict(anno)
-
-        return flask.jsonify(anno_dict)
-
-    @route('/image/anno/<dataset>/<imageid>', methods=['POST'])
-    def post_image_anno(self, dataset, imageid):
-        (ok, error, anno) = view_tools.get_param_from_request(request, 'anno')
-
-        try:
-            bbs_vec = []
-            for bb in anno:
-                bbox_o = BBox(bb['top'], bb['left'], bb['bottom'], bb['right'], bb['labels'], bb['ignore'])
-                bbs_vec.append(bbox_o)
-        except BaseException as e:
-            print('Problem with provided annotation', anno, str(e))
-            return 'Problem with provided annotation',500
-
-        self.controller.change_annotations(dataset, imageid, bbs_vec)
-
-        return '',200
 
     @route('/image/<dataset>/all', methods=['GET'])
     def get_all_images(self, dataset):

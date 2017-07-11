@@ -1,7 +1,7 @@
 {% extends "main_template.html" %}
 {% block content_header %}
       <h1>
-        API Keys
+        All images from <b>{{ dataset }}</b>
         <!-- <small>Optional description</small> -->
       </h1>
       <ol class="breadcrumb">
@@ -12,28 +12,60 @@
 {% block content %}
 <link rel="stylesheet" href="/annotator-supreme/static/meerkat/css/visualize_images.css">
 <section class="image-grid">
-  <!-- <article class="image__cell is-collapsed"><div class="image--basic"><a href="#expand-jump-0"><img id="expand-jump-0" class="basic__img" src="http://lorempixel.com/250/250/fashion/6" alt="Fashion 6"></a><div class="arrow--up"></div></div><div class="image--expand"><a href="#close-jump-0" class="expand__close"></a><img class="image--large" src="http://lorempixel.com/400/400/fashion/6" alt="Fashion 6"></div></article>
-  <article class="image__cell is-collapsed"><div class="image--basic"><a href="#expand-jump-0"><img id="expand-jump-0" class="basic__img" src="http://www.jennybeaumont.com/wp-content/uploads/2015/03/placeholder.gif" alt="Fashion 6"></a><div class="arrow--up"></div></div><div class="image--expand"><a href="#close-jump-0" class="expand__close"></a><img class="image--large" src="http://www.jennybeaumont.com/wp-content/uploads/2015/03/placeholder.gif" alt="Fashion 6"></div></article>  
- -->
   {% for i in images %}
     <article class="image__cell is-collapsed">
-    <div class="image--basic">
-        <a href="#expand-jump-0"><img id="expand-jump-0" class="basic__img" src="/annotator-supreme/image/thumb/{{ i.url }}" alt="Fashion 6"></a>
-        <div class="arrow--up"></div>
-    </div>
-    <div class="image--expand">
-        <a href="#close-jump-0" class="expand__close"></a><img class="image--large" src="/annotator-supreme/image/{{ i.url }}" alt="Fashion 6"></div>
-</article>
+      <a class="remove-img" data-id="{{ i.phash }}" href="#"><i class="fa fa-times-circle" aria-hidden="true"></i></a>
+      <div class="image--basic">
+          <div class="category-img"> {{ i.category }}</div>
+          <a href="#expand-jump-0"><img id="expand-jump-0" class="basic__img lazy" data-original="/annotator-supreme/image/thumb/{{ i.url }}" alt="{{i.phash}}"></a>
+          <div class="arrow--up"></div>
+      </div>
+      <div class="image--expand">
+          <a href="#close-jump-0" class="expand__close"></a>
+          <img class="image--large lazy" data-original="/annotator-supreme/image/{{ i.url }}" alt="{{i.phash}}">
+          <div class="image-details">
+            <div class="row">
+              <div class="det-field">Phash: </div><div class="det-value">{{i.phash}}</div>
+            </div>
+            <div class="row">
+              <div class="det-field">Name: </div><div class="det-value">{{i.name}}</div>
+            </div>
+            <div class="row">
+              <div class="det-field">Url: </div><div class="det-value"><a href="/annotator-supreme/image/{{i.url}}" target="_blank">{{i.url}}</a></div>
+            </div>
+            <div class="row">
+              <div class="det-field">Resolution: </div><div class="det-value">{{i.width}} x {{i.height}}</div>
+            </div>
+            <div class="row">
+              <div class="det-field">Last Modified: </div><div class="det-value">{{i.last_modified.strftime('%Y-%m-%d')}}</div>
+            </div>
+            <div class="row">
+              <div class="det-field">Partition: </div><div class="det-value">{{i.partition}}</div>
+            </div>
+            <div class="row">
+              <div class="det-field">Fold: </div><div class="det-value">{{i.fold}}</div>
+            </div>
+          </div>
+      </div>
+  </article>
+{% endfor %}
 
-  {% endfor %}
-
-
-
-<!--   all_imgs: [{'phash': '3d314f4bd3933134', 'url': 'burritos/3d314f4bd3933134', 'width': 768, 'height': 960, 'name': '', 'annotation': [], 'category': 'default', 'partition': 0, 'fold': 0, 'last_modified': datetime.datetime(1970, 1, 18, 8, 28, 18, 346000)}, {'phash': '738385cc06965f5e', 'url': 'burritos/738385cc06965f5e', 'width': 1600, 'height': 1200, 'name': '', 'annotation': [], 'category': 'default', 'partition': 0, 'fold': 0, 'last_modified': datetime.datetime(1970, 1, 18, 8, 28, 18, 280000)}]
- -->
+<!-- {'phash': 'fe4cfbd0259045a06b9315be49a60c1e', 'url': 'nascar2/fe4cfbd0259045a06b9315be49a60c1e', 'width': 922, 'height': 520, 'name': '', 'annotation': [bbox(labels=['Nascar'], top=131.0, left=6.0, bottom=354.0, right=912.0, ignore=False)], 'category': 'default', 'partition': 0, 'fold': 0, 'last_modified': datetime.datetime(1970, 1, 18, 8, 35, 18, 246000)} -->
 
 </section>  
 {% endblock %}
 {% block load_script %}
 <script src="/annotator-supreme/static/meerkat/js/visualize-images.js"></script>
+<script src="/annotator-supreme/static/plugins/jquery.lazyload/jquery.lazyload.min.js"></script>
+
+{% endblock %}
+
+{% block script %}
+  $('body').addClass('sidebar-collapse');
+  $(document).ready(function () {
+    $("img.lazy").lazyload({
+      effect : "fadeIn"
+    });
+    window.VisualizeImages.setDataset("{{dataset}}");
+  });
 {% endblock %}
