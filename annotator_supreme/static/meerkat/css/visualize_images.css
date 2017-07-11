@@ -59,6 +59,13 @@ html {
   padding-right: 10px;
 }
 
+.image-details .det-button {
+  width: 120px;
+  text-align: center;
+  padding-top: 20px;
+  margin-left: -15px;
+}
+
 .image-details .det-value {
   float: right;
 }
