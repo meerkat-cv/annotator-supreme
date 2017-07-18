@@ -3,7 +3,9 @@
     var Dataset = {},
         dataset_add_btn = $('#add-dataset-btn'),
         purge_btns = $(".bomb-btn"),
-        confirm_delete_btn = $("#confirm-delete-button");
+        confirm_delete_btn = $("#confirm-delete-button"),
+        add_dataset_btn = $("#add-dataset-btn"),
+        save_dataset_btn = $("#save-changes-btn");
 
     Dataset.init = function () {
         this.bindButtons();
@@ -26,16 +28,35 @@
             self.purgeDataset(self.dataset_to_remove);
         })
 
+        add_dataset_btn.click(function () {
+            $('#modal-dataset').modal('show');    
+        });
+
+        save_dataset_btn.click(function() {
+            var data = {
+                "name": $("#datasetName").val(),
+                "tags": $("#tagsInput").tagsinput('items')
+            }
+            $.ajax({
+                    url: '/annotator-supreme/dataset/create',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                success: function(result) {
+                    console.log("Done!");
+                    window.location.reload();
+                }
+            });
+
+        });
     }
 
     Dataset.purgeDataset = function(dataset) {
         // make the request to remove dataset and associated images
-        console.log("will remove dataset", dataset)
         $.ajax({
             url: '/annotator-supreme/dataset/'+dataset,
             type: 'DELETE',
             success: function(result) {
-                console.log("Done!");
                 window.location.reload();
             }
         });
