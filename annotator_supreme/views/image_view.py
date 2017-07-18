@@ -57,7 +57,15 @@ class ImageView(FlaskView):
         if not ok:
             raise error_views.InvalidParametersError(error)
 
-        (ok, error, image_id) = self.controller.create_image(dataset, image)
+        (ok, error, category) = view_tools.get_param_from_request(request, "category")
+        if not ok or category == "":
+            category = "default"
+
+        (ok, error, name) = view_tools.get_param_from_request(request, "name")
+        if not ok:
+            category = ""
+
+        (ok, error, image_id) = self.controller.create_image(dataset, image, category=category, name=name)
         if not ok:
             raise error_views.InvalidParametersError(error)
 
