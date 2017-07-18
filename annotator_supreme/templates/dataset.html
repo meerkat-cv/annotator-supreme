@@ -13,6 +13,8 @@
                         <tr>
                             <th>Name</th>
                             <th>Tags</th>
+                            <th>All categories</th>
+                            <th>Last modified</th>
                             <th>Images</th>
                             <th>Purge</th>
                         </tr>
@@ -22,6 +24,8 @@
                         <tr>
                             <td>{{ d.name }}</td>
                             <td>{{ d.tags }}</td>
+                            <td>{{ d.image_categories }}</td>
+                            <td>{{ d.last_modified }}</td>
                             <td>
                                 <a href="/annotator-supreme/visualize/{{d.name}}">
                                     <spam class="fa fa-list"></spam>

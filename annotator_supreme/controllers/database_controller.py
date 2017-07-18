@@ -46,7 +46,8 @@ class DatabaseController:
                 CREATE TABLE datasets (
                     name text PRIMARY KEY,
                     tags list<text>,
-                    date_created timestamp,
+                    annotation_labels list<text>,
+                    image_categories list<text>,
                     last_modified timestamp
                 )
                 """)

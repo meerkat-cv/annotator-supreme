@@ -1,6 +1,7 @@
 
 from annotator_supreme.models.image_model import ImageModel
 from annotator_supreme.controllers.base_controller import memoized_ttl
+from annotator_supreme.models.dataset_model import DatasetModel
 
 
 class ImageController():
@@ -12,7 +13,14 @@ class ImageController():
         try:
             img = ImageModel("", dataset_name, image, name, bboxes, category, partition, fold)
             img.upsert()
+            
+            # att the category and labels of the dataset
+            dataset = DatasetModel.from_name(dataset_name)
+            if category not in dataset.image_categories:
+                dataset.add_image_category(category)
+
             return (True, "", img.phash)
+
         except:
             return (False, "Unexpected error while adding in database.", None)
 

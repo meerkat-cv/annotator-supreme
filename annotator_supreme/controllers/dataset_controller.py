@@ -17,7 +17,11 @@ class DatasetController():
             rows = DatasetModel.list_datasets()
             datasets = []
             for ds_row in rows:
-                datasets.append({'name': ds_row.name, 'tags': ds_row.tags})
+                datasets.append({'name': ds_row.name, 
+                        'tags': ds_row.tags, 
+                        'annotation_labels': ds_row.annotation_labels, 
+                        'image_categories': ds_row.image_categories, 
+                        'last_modified': ds_row.last_modified})
 
             return datasets
 

@@ -63,7 +63,7 @@ class ImageView(FlaskView):
 
         (ok, error, name) = view_tools.get_param_from_request(request, "name")
         if not ok:
-            category = ""
+            name = ""
 
         (ok, error, image_id) = self.controller.create_image(dataset, image, category=category, name=name)
         if not ok:

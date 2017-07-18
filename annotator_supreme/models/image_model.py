@@ -39,7 +39,9 @@ class ImageModel():
 
         if category == "":
             self.category = "default"
-            
+        else:
+            self.category = category
+
         self.partition = partition
         self.fold = fold
         self.last_modified = last_modified
