@@ -36,7 +36,10 @@ class ImageModel():
         else:
             self.phash = phash
         self.bboxes = bboxes
-        self.category = "default"
+
+        if category == "":
+            self.category = "default"
+            
         self.partition = partition
         self.fold = fold
         self.last_modified = last_modified
