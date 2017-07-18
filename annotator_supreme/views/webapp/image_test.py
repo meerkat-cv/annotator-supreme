@@ -22,8 +22,6 @@ class ImageTestViewWebApp(FlaskView):
     @route('/image/<dataset>', methods=['GET'])
     def image_get(self, dataset):
         all_imgs = self.controller.all_images(dataset)
-        print('images for dataset', dataset)
-        print(all_imgs)
 
         im_src = "/annotator-supreme/static/meerkat/images/im_01.jpg"
         try:
@@ -33,5 +31,4 @@ class ImageTestViewWebApp(FlaskView):
         except BaseException as e:
             print(str(e))
             traceback.print_exc()
-        print('image', im_src)
         return json.dumps({'im': im_src})

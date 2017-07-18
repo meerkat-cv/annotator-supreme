@@ -15,6 +15,5 @@ class DatasetViewWebApp(FlaskView):
 
     @route('/', methods=['GET'])
     def datasets_get(self):
-        print('datasets_get')
         datasets = self.dataset_controller.get_datasets()
         return render_template('dataset.html', datasets=datasets)
