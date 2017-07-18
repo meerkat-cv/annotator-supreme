@@ -1,0 +1,55 @@
+#stepSlider .slider-handle {
+    background: #337ab7;
+}
+
+.step-slider {
+    margin-top: 5px;
+    padding-right: 40px;
+}
+
+.frame-samples-list {
+    min-height: 400px;
+    list-style: none;
+    background: #555;
+    padding: 20px;
+    padding-top: 0px;
+    margin-bottom: 20px;
+}
+
+.frame-samples-list img {
+    width: 120px;
+    height: auto;
+    border-radius: 20px;
+    margin-right: 10px;
+}
+
+
+.frame-thumb img {
+    width: 120px;
+    height: auto;
+    border-radius: 20px;
+    margin-right: 10px;
+}
+
+
+.frame-thumb {
+    float: left;
+    position: relative;
+    list-style: none;
+    padding-top: 20px;
+}
+
+.frame-thumb .del-frame {
+    font-size: 20px;
+    position: absolute;
+    top: 10%;
+    left: -10%;
+    /*padding-left: 30px;*/
+    color: #dd4b39;
+}
+
+.loading-full {
+    font-size: 20px;
+    margin-top: 30%;
+    color: white;
+}

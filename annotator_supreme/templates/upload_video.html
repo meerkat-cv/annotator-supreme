@@ -1,0 +1,105 @@
+{% extends "main_template.html" %} {% block content %}
+<link rel="stylesheet" href="/annotator-supreme/static/plugins/dropzonejs/css/dropzone.css">
+<link rel="stylesheet" href="/annotator-supreme/static/plugins/bootstrap-slider/slider.css" />
+<link rel="stylesheet" href="/annotator-supreme/static/meerkat/css/upload_video.css" />
+<div class="row">
+    <div class="col-md-12">
+        <!-- The time line -->
+        <ul class="timeline">
+            <!-- timeline time label -->
+            <li class="time-label">
+                <span class="bg-green">
+                    Stream
+                  </span>
+            </li>
+            <li>
+                <i class="fa fa-film bg-blue"></i>
+                <div class="timeline-item">
+                    <h3 class="timeline-header">Upload video(s)</h3>
+                    <div class="timeline-body">
+                        <form action="/file-upload" class="dropzone needsclick dz-clickable" id="my-awesome-dropzone">
+                            <div class="dz-message needsclick">
+                                Drop (multiple) videos files to begin - or click in this area.
+                            </div>
+                        </form>
+                    </div>
+                    <div class="timeline-footer th-footer">
+                        <div class="row clearfix">
+                            <div class="col-md-3">
+                                <button type="button" class="btn btn-block btn-danger" disabled="disabled" id="clear-files-btn"><i class="fa fa-trash"></i>&nbsp;Clear all videos</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+
+            <li>
+                <i class="fa fa-clone bg-green"></i>
+                <div class="timeline-item">
+                    <h3 class="timeline-header">Extract frames</h3>
+                    <div class="timeline-body">
+                        <div class="row clearfix">
+                            <div class="col-md-4">
+                                <div class="help-block">Frames in-between extractions:</div>
+                            </div>
+                            <div class="col-md-8 step-slider">
+                                <input id="stepSlider" data-slider-id='stepSlider' type="text" data-slider-min="10" data-slider-max="100" data-slider-step="1" data-slider-value="50" />
+                            </div>
+                        </div>
+                        <button id="upload-submit-btn" type="button" class="btn btn-success"><i class="fa fa-dataset-plus"></i>Extract</button>
+                    </div>
+                </div>
+            </li>
+
+
+            <li>
+                <i class="fa fa-level-up bg-red"></i>
+                <div class="timeline-item">
+                    <h3 class="timeline-header">Add images to dataset</h3>
+                    <div class="timeline-body">
+                        <ul class="frame-samples-list clearfix" id="frames-ul">
+
+                        </ul>
+                        <div class="form-group">
+                            <label>Select the dataset:</label>
+                            <select mutiple class="form-control" id="dataset-sel">
+                                {% for d in datasets %}
+                                <option> {{ d.name }} </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="category-entry">Category for all of them</label>
+                            <input type="text" class="form-control" id="category-entry" placeholder="Enter a given category (e.g. Tacos, Burritos, Negative, Positive)">
+                            <p class="help-block">If not set will make 'default' category.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-footer th-footer">
+                        <div class="timeline-body">
+                            <button type="button" class="btn btn-block btn-primary" id="add-submit-btn"><i class="fa fa-check"></i>&nbsp;Submit all frames</button>
+                        </div>
+                    </div>
+                </div>
+            </li>
+
+            <li>
+              <i class="fa fa-hand-peace-o bg-gray"></i>
+            </li>
+
+        </ul>
+    </div>
+</div>
+
+<div class="modal" id="modal-loading">
+    <div class="modal-dialog modal-sm loading-full">
+        <i class="fa fa-fw fa-cog fa-spin"></i>
+        <span id="loading-msg">Extracting frames, should take some time...</span>
+      <!-- /.modal-content -->
+    </div>
+</div>
+
+{% endblock %} {% block load_script %}
+<script src="/annotator-supreme/static/plugins/dropzonejs/js/dropzone.js"></script>
+<script src="/annotator-supreme/static/plugins/bootstrap-slider/bootstrap-slider.js"></script>
+<script src="/annotator-supreme/static/meerkat/js/upload_videos.js"></script>
+{% endblock %}
