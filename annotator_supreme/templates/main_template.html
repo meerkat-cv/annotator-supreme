@@ -63,9 +63,6 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <!-- Messages: style can be found in dropdown.less-->
 
           <!-- /.messages-menu -->
-          <li class="user-api-key">
-          <b>API Key:</b> {{ session['user_api_key'] }}
-          </li>
           <!-- User Account Menu -->
           <li class="dropdown user user-menu meerkat-menu-button">
             <!-- Menu Toggle Button -->
@@ -187,35 +184,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
       <!-- /.tab-pane -->
       <!-- Settings tab content -->
       <div class="tab-pane active" id="control-sidebar-settings-tab">
-        <form method="post">
-          <h3 class="control-sidebar-heading">Change API Key</h3>
-
-          <div class="form-group">
-            <label class="control-sidebar-subheading">
-              API key:
-            </label>
-            <input type="text" class="form-control" value="{{ session['user_api_key'] }}" id="change-apikey-text">
-            <button type="button" id='change-apikey-btn' class="btn btn-block btn-primary btn-xs">Go</button>
-          </div>
-          <!-- /.form-group -->
-        </form>
-
-        <h3 class="control-sidebar-heading">Apply new license</h3>
-        <a href="/annotator-supreme/activate/app">
-        <button type="button" class="btn btn-block btn-primary">Activation page</button>
-        </a>
-
-
-        <h3 class="control-sidebar-heading">Backup people DB</h3>
-        <a href="#">
-        <button type="button" id="backup-images-btn" class="btn btn-block btn-primary">Download ZIP</button>
-        </a>
-
-        <div class="alert alert-error hidden" id="api-error-alert">
-            <h4><i class="icon fa fa-ban"></i> Error!</h4>
-          <spam id="api-error-msg"></spam>
-        </div>
-
+        <h2>Nothing yet...</h2>
       </div>
       <!-- /.tab-pane -->
     </div>
