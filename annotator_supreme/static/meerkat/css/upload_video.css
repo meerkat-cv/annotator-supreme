@@ -53,3 +53,11 @@
     margin-top: 30%;
     color: white;
 }
+
+.success-frame {
+    font-size: 20px;
+    position: absolute;
+    top: 10%;
+    left: -10%;
+    color: green;
+}

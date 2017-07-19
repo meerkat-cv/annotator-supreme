@@ -192,16 +192,17 @@
                             url: "/annotator-supreme/image/"+self.dataset+"/add",
                             dataType: "json",
                             contentType: 'application/json',
-                            data: JSON.stringify(data)
+                            data: JSON.stringify(data),
+                            indexI: i
                         }
                     )
                     .done(function() {
+                        $(frames[this.indexI]).find('.del-frame').addClass('hidden');
+                        $(frames[this.indexI]).find('.success-frame').removeClass('hidden');
                         console.log("success!");
-                        $(frames[i]).find('.del-face').addClass('hidden');
-                        $(frames[i]).find('.success-face').removeClass('hidden');
                     })
                     .fail(function() {
-                        $(frames[i]).find('.del-face').addClass('hidden');
+                        $(frames[this.indexI]).find('.del-frame').addClass('hidden');
                         console.log("fail!");
                     })
                     .always(function() {
