@@ -1,6 +1,6 @@
 from annotator_supreme import app
 from annotator_supreme.controllers import database_controller
-import time
+import time, datetime
 
 TABLE = "datasets"
 
@@ -48,7 +48,7 @@ class DatasetModel():
             INSERT INTO datasets (name, tags, annotation_labels, image_categories, last_modified)
             VALUES (?, ?, ?, ?, ?)
             """)
-        self.db_session.execute(cql, [self.dataset_name, self.tags, self.annotation_labels, self.image_categories, int(time.time())])
+        self.db_session.execute(cql, [self.dataset_name, self.tags, self.annotation_labels, self.image_categories, datetime.datetime.now()])
 
 
     def delete(self):

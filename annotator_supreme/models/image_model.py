@@ -123,7 +123,7 @@ class ImageModel():
                                         self.category, \
                                         self.partition, \
                                         self.fold, \
-                                        int(time.time()) ] )
+                                        datetime.datetime.now() ] )
 
     def compute_phash(self, image):
         # pil_image = Image.fromarray(image)
