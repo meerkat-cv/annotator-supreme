@@ -1,7 +1,7 @@
 {% extends "main_template.html" %}
 {% block content_header %}
       <h1>
-        All images from <b>{{ dataset.name }}</b>
+        All images from <b>{{ dataset_name }}</b>
         <!-- <small>Optional description</small> -->
       </h1>
       <ol class="breadcrumb">
@@ -46,7 +46,9 @@
               <div class="det-field">Fold: </div><div class="det-value">{{i.fold}}</div>
             </div>
             <div class="det-button">
-              <button type="button" class="btn btn-block btn-default"><i class="fa fa-fw fa-mail-forward"></i>Annotate</button>
+              <a href="/annotator-supreme/annotation?dataset={{dataset_name}}&image={{i.phash}}">
+                <button type="button" class="btn btn-block btn-default"><i class="fa fa-fw fa-mail-forward"></i>Annotate</button>
+              </a>
             </div>
 
 

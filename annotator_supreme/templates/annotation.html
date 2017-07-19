@@ -1,7 +1,7 @@
 {% extends "main_template.html" %}
 {% block content_header %}
-      <h1>
-        Annotator
+      <h1 id="annotation-title">
+        Annotating 
           <!-- <small>Optional description</small> -->
       </h1>
       <ol class="breadcrumb">
@@ -11,43 +11,49 @@
 {% endblock %}
 {% block content %}
 <link rel="stylesheet" href="/annotator-supreme/static/meerkat/css/annotate-image.css">
+<link rel="stylesheet" href="/annotator-supreme/static/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.css" />
   <div class="row">
         <div class="col-xs-12">
           <div class="box box-success">
-            <div class="box-header">
-              <h3 class="box-title">Annotate {{sel_dataset}} {{sel_image}}</h3>
-            </div>
             <!-- /.box-header -->
             <div class="box-body">
-
-              <div class="form-group">
-                  <label>Select the dataset:</label>
-                  <select mutiple class="form-control" id="dataset-sel">
-                      {% for d in datasets %}
-                          <option> {{ d.name }} </option>
-                      {% endfor %}
-                  </select>
-              </div>
-
-              <div class="form-group">
-                  <label>Now the image:</label>
-                  <select mutiple class="form-control" id="image-sel">
-                  </select>
-              </div>
-
-              <div class="form-group">
-                  <label>Current tag:</label>
-                  <select mutiple class="form-control" id="tag-sel">
-                  </select>
-              </div>
-
               <div id="annotation-container">
-                <img src="/annotator-supreme/static/meerkat/images/heineken.jpg">
+                <img class="img-anno" src="/annotator-supreme/static/meerkat/images/image-placeholder16-9.png">
               </div>
+              <hr>
+              <div class="row">
+                <div class="form-group col-lg-6">
+                    <label>Current label(s):</label>
+                      <input type="text" id="labelInput" data-role="tagsinput" class="form-control" placeholder="Ex.: face, cars, beers.">
+                    <div class="checkbox">
+                    <label>
+                      <input type="checkbox" id="use-categories-chk"> Use the image categories
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="form-group col-lg-6">
+                    <label>Select the dataset:</label>
+                    <select mutiple class="form-control" id="dataset-sel">
+                        {% for d in datasets %}
+                            <option> {{ d.name }} </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group col-lg-6">
+                    <label>Now the image:</label>
+                    <select mutiple class="form-control" id="image-sel">
+                    </select>
+                </div>
+              </div>
+              
             </div>
             <!-- /.box-body -->
             <div class="box-footer">
-              <button id="add-user-btn" type="button" class="btn btn-success"><i class="fa fa-user-plus"></i> Add another API Key</button>
+              <button id="add-user-btn" type="button" class="btn btn-primary"><i class="fa fa-save"></i> 
+              Save</button>
             </div>
           </div>
           <!-- /.box -->
@@ -58,6 +64,7 @@
 <!-- <script src="/annotator-supreme/static/meerkat/js/via.js"></script> -->
 <script src="/annotator-supreme/static/plugins/konva/konva.min.js"></script>
 <script src="/annotator-supreme/static/meerkat/js/annotator-supreme.js"></script>
+<script src="/annotator-supreme/static/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js"></script>
 {% endblock %}
 
 {% block script %}

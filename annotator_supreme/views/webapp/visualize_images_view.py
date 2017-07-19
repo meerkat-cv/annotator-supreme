@@ -30,7 +30,7 @@ class VisualizeImagesViewWebApp(FlaskView):
             "image_categories": dataset_obj.image_categories,
             "category_colors": ColorUtils.distiguishable_colors_hex(len(dataset_obj.image_categories))
         }
-        return render_template('visualize_images.html', images=all_imgs, dataset=json.dumps(dataset_d))
+        return render_template('visualize_images.html', images=all_imgs, dataset=json.dumps(dataset_d), dataset_name=dataset)
 
 
     

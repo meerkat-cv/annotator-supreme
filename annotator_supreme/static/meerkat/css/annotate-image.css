@@ -1,0 +1,15 @@
+.bootstrap-tagsinput {
+    display: block !important;
+}
+
+.bootstrap-tagsinput.disabled input{
+   visibility:hidden !important; 
+}
+.bootstrap-tagsinput.disabled > span > span{
+  display:none !important;
+}
+
+
+.img-anno {
+    width: 100%;
+}

@@ -9,19 +9,18 @@
         anchorRadius = 6;
 
     Annotator.init = function () {
-        $('#anno-img').attr('src','/annotator-supreme/static/meerkat/images/heineken.jpg');
+        // $('#anno-img').attr('src','/annotator-supreme/static/meerkat/images/heineken.jpg');
         anno_div = $('#annotation-container');
-        var image = new Image(),
-            self = this;
-        image.onload = function() {
-            self.setStage(image);
-        };
-        image.src = "/annotator-supreme/static/meerkat/images/heineken.jpg";
+        // var image = new Image(),
+        //     self = this;
+        // image.onload = function() {
+        //     self.setStage(image);
+        // };
+        // image.src = "/annotator-supreme/static/meerkat/images/heineken.jpg";
         this.bboxes = [];
 
-        this.bindSelectors();
-        this.bindKeyEvents();
-
+        this.bind();
+        
         // Populate the default selected dataset
         self.dataset = $('#dataset-sel').find(":selected").text().trim();
         self.getDatasetImages(self);
@@ -31,15 +30,28 @@
     Annotator.selectDatasetImage = function(dataset, image) {
         if (dataset !== "" && image !== "") {
             dataset_sel.val(dataset);
+            dataset_sel.trigger("change");
             this.getDatasetImages(this, function() {
-                console.log("clb");
                 image_sel.val(image);  
-                image_sel.emit("change");
+                image_sel.trigger("change");
             });
-            
-
         }
         console.log('Trying to change to ',dataset, image);
+    }
+
+    Annotator.bind = function () {
+        this.bindSelectors();
+        this.bindKeyEvents();
+
+        $("#use-categories-chk").change(function () {
+            console.log("change", $(this).is(":checked"))
+            if ($(this).is(":checked")) {
+                $(".bootstrap-tagsinput").addClass("disabled");
+            }
+            else {
+                $(".bootstrap-tagsinput").removeClass("disabled");
+            }
+        });
     }
 
     Annotator.bindSelectors = function() {
@@ -54,6 +66,7 @@
             anno_div = $('#annotation-container');
             var image = new Image();
             var option_value = this.value;
+            $("#annotation-title").html("Annotating <b>"+image_sel.val()+"</b> from <b>"+dataset_sel.val()+"</b>");
 
             image.onload = function() {
                 // Update Konva stage after the annotations are saved, otherwise
