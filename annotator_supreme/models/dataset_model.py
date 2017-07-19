@@ -6,7 +6,7 @@ TABLE = "datasets"
 
 class DatasetModel():
 
-    def __init__(self, dataset_name, tags = [], annotation_labels = [], image_categories = []):
+    def __init__(self, dataset_name, tags = [], annotation_labels = [], image_categories = [], last_modified = None):
         self.dataset_name = dataset_name
         self.tags = tags
         if annotation_labels is None:
@@ -17,6 +17,8 @@ class DatasetModel():
             self.image_categories = []
         else:
             self.image_categories = image_categories
+
+        self.last_modified = last_modified
         with app.app_context():
             self.db_session = database_controller.get_db(app.config)
 
@@ -37,7 +39,7 @@ class DatasetModel():
                 return None
             elif len(rows) == 1:
                 r = rows[0]
-                return cls(r.name, r.tags, r.annotation_labels, r.image_categories)
+                return cls(r.name, r.tags, r.annotation_labels, r.image_categories, r.last_modified)
             elif len(rows) > 1:
                 app.logger.warning('Query error: the same dataset cannot appear twice.')
                 return None

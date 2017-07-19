@@ -12,6 +12,10 @@ class DatasetController():
         d = DatasetModel(dataset_name, tags)
         d.upsert()
 
+    def get_dataset(self, dataset_name):
+        d = DatasetModel.from_name(dataset_name)
+        return d
+
     def get_datasets(self, dataset_name = ""):
         if dataset_name == "":
             rows = DatasetModel.list_datasets()

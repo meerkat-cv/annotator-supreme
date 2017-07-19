@@ -1,7 +1,7 @@
 {% extends "main_template.html" %}
 {% block content_header %}
       <h1>
-        All images from <b>{{ dataset }}</b>
+        All images from <b>{{ dataset.name }}</b>
         <!-- <small>Optional description</small> -->
       </h1>
       <ol class="breadcrumb">
@@ -16,7 +16,7 @@
     <article class="image__cell is-collapsed">
       <a class="remove-img" data-id="{{ i.phash }}" href="#"><i class="fa fa-times-circle" aria-hidden="true"></i></a>
       <div class="image--basic">
-          <div class="category-img"> {{ i.category }}</div>
+          <div class="category-img">{{ i.category }}</div>
           <a href="#expand-jump-0"><img id="expand-jump-0" class="basic__img lazy" data-original="/annotator-supreme/image/thumb/{{ i.url }}" alt="{{i.phash}}" width=200 height=200></a>
           <div class="arrow--up"></div>
       </div>
@@ -76,6 +76,6 @@
     $("img.lazy").lazyload({
       effect : "fadeIn"
     });
-    window.VisualizeImages.setDataset("{{dataset}}");
+    window.VisualizeImages.setDataset({{dataset|safe}});
   });
 {% endblock %}
