@@ -9,6 +9,7 @@
         anchorRadius = 6;
 
     Annotator.init = function () {
+        this.sel_labels = [];
         this.bboxes = [];
 
         this.bind();
@@ -16,7 +17,6 @@
         // Populate the default selected dataset
         this.dataset = $('#dataset-sel').find(":selected").text().trim();
         this.getDatasetImages(this);
-        this.updateTags();
     }
 
     Annotator.selectDatasetImage = function(dataset, image) {
@@ -35,6 +35,7 @@
         this.bindSelectors();
         this.bindKeyEvents();
 
+
         $("#use-categories-chk").change(function () {
             console.log("change", $(this).is(":checked"))
             if ($(this).is(":checked")) {
@@ -44,6 +45,8 @@
                 $(".bootstrap-tagsinput").removeClass("disabled");
             }
         });
+
+        $("#use-categories-chk").prop('checked', true);
     }
 
     Annotator.bindSelectors = function() {
@@ -59,23 +62,22 @@
             $("#annotation-title").html("Annotating <b>"+image_sel.val()+"</b> from <b>"+dataset_sel.val()+"</b>");
 
             $("#img-to-anno").on("load", function() {
-                // Update Konva stage after the annotations are saved, otherwise
-                // they will be destroyed
+                // self.saveAnnotation(dataset_sel)
+                self.setStage();
+
+                // also make a request to get the details of the image
                 $.ajax({
-                    type: 'post',
-                    url: "/annotator-supreme/image/anno/"+self.image_list[curr_image_id].url,
-                    data: JSON.stringify(self.getAnnotationData(self)),
-                    contentType: 'application/json',
+                    type: 'get',
+                    url: "/annotator-supreme/image/details/"+dataset_sel.val()+"/"+image_sel.val(),
                     error: function (jqXHR, textStatus, errorThrown) {
-                        self.showError(jqXHR.responseText);
+                        console.log("error"+jqXHR.responseText);
                     },
-                    complete: function () {
-                        // Keeping the "previous" image so that we can save them when the image is changed
-                        curr_image_id = option_value;
-                        // Update Konva Stage
-                        self.setStage();
-                        // Get current annotations
-                        self.getAnnotations(self);
+                    success: function (data) {
+                        console.log("got data", data);
+                        if ($("#use-categories-chk").is(":checked")) {
+                            self.setCurrentLabel([data.image.category]);
+
+                        }
                     }
                 });
             });
@@ -83,12 +85,37 @@
             $("#img-to-anno").attr("src", '/annotator-supreme/image/'+self.image_list[this.value].url);
             $(this).blur();
         });
+    }
 
-        tag_sel.on("change", function() {
-            console.log('changing', this.value);
-            self.tag = this.value;
-            $(this).blur();
-        })
+    Annotator.setCurrentLabel = function(labels) {
+        $("#labelInput").tagsinput('removeAll');
+        for (var i = 0; i < labels.length; ++i) {
+            $("#labelInput").tagsinput('add', labels[i]);
+            this.sel_labels.push(labels[i]);
+        }
+    }
+
+
+    Annotator.saveAnnotation = function(dataset, image_id) {
+        // Update Konva stage after the annotations are saved, otherwise
+        // they will be destroyed
+        $.ajax({
+            type: 'post',
+            url: "/annotator-supreme/image/anno/"+self.image_list[curr_image_id].url,
+            data: JSON.stringify(self.getAnnotationData(self)),
+            contentType: 'application/json',
+            error: function (jqXHR, textStatus, errorThrown) {
+                self.showError(jqXHR.responseText);
+            },
+            complete: function () {
+                // Keeping the "previous" image so that we can save them when the image is changed
+                curr_image_id = option_value;
+                // Update Konva Stage
+                self.setStage();
+                // Get current annotations
+                self.getAnnotations(self);
+            }
+        });
     }
 
 
@@ -132,27 +159,6 @@
         return d;
     }
 
-
-    Annotator.updateTags = function() {
-        var self = this;
-
-        $.get( "/annotator-supreme/dataset/all", function( data ) {
-            for (var i = 0; i < data.datasets.length; ++i) {
-                if (data.datasets[i].name != self.dataset) {
-                    continue;
-                }
-                for (var j=0; j < data.datasets[i].tags.length; ++j) {
-                    console.log('tags', data.datasets[i]);
-                    var option = new Option(data.datasets[i].tags[j], data.datasets[i].tags[j]);
-                    tag_sel.append($(option));
-                }
-                self.tag = data.datasets[i].tags[0];
-            }
-            // Set the curr image id
-            tag_sel.val(self.tag).change();
-        });
-    }
-
     Annotator.getDatasetImages = function(self, callback) {
         // populate the list of images
         self.image_list = [];
@@ -173,8 +179,6 @@
                 callback();
             }
         });
-
-        self.updateTags();
     }
 
     Annotator.getAnnotations = function(self) {
@@ -268,7 +272,7 @@
             if (creatingBBox) {
                 // now, the bbox was officially created
                 self.bboxes.push(self.currentBBox);
-                self.finishBBoxCreation(self.currentBBox, [self.tag]);
+                self.finishBBoxCreation(self.currentBBox, self.sel_labels);
                 creatingBBox = false;
             }
 

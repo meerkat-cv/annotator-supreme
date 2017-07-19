@@ -24,6 +24,21 @@ class ImageController():
         except:
             return (False, "Unexpected error while adding in database.", None)
 
+    def get_image_details(self, dataset_name, id):
+        img_o = ImageModel.from_database_and_key(dataset_name, id)
+        return {
+            "id": img_o.phash,
+            "dataset": img_o.dataset_name,
+            "name": img_o.name,
+            "width": img_o.width,
+            "height": img_o.height,
+            "category": img_o.category,
+            "partition": img_o.partition,
+            "fold": img_o.fold,
+            "last_modified": img_o.last_modified
+        }
+
+
     def get_image(self, dataset_name, id):
         img_o = ImageModel.from_database_and_key(dataset_name, id)
         return img_o.image

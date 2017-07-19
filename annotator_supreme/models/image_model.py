@@ -28,6 +28,8 @@ class ImageModel():
         if image is None or image.shape[0] == 0:
             raise Exception("An image needs an image.")
         self.image = image
+        self.width = image.shape[1];
+        self.height = image.shape[0];
         # cv2.imshow("asd", image)
         # cv2.waitKey()
 

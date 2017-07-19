@@ -22,6 +22,12 @@ class ImageView(FlaskView):
             return '', 200
 
 
+    @route('/image/details/<dataset>/<imageid>', methods=['GET'])
+    def get_image_details(self, dataset, imageid):
+        img_details = self.controller.get_image_details(dataset, imageid)
+        
+        return flask.jsonify({"image": img_details})
+
     @route('/image/<dataset>/<imageid>', methods=['GET'])
     def get_image(self, dataset, imageid):
         img = self.controller.get_image(dataset, imageid)
@@ -31,6 +37,7 @@ class ImageView(FlaskView):
         filename = 'static/'+fileid+'.jpg'
 
         return flask.send_file(filename, mimetype='image/jpeg')
+
 
     @route('/image/thumb/<dataset>/<imageid>', methods=['GET'])
     def get_image_thumb(self, dataset, imageid):
