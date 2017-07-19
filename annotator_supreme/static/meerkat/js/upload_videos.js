@@ -20,7 +20,6 @@
             }
         }).on('slide', function (value) {
             self.EXTRACT_FRAME_STEP = parseInt(value, 10);
-            console.log("step", self.EXTRACT_FRAME_STEP);
         });
     } 
 

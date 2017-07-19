@@ -146,7 +146,7 @@ class ImageModel():
                         "partition, " + \
                         "fold, " + \
                         "last_modified FROM "+TABLE+" WHERE dataset=\'"+dataset_name+"\'"
-            rows = db_session.execute(cql)
+            rows = db_session.execute(cql, timeout=60)
             imgs = list(rows)
 
             return imgs

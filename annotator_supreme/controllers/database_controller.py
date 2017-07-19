@@ -16,8 +16,10 @@ def get_db(config):
     with app.app_context():
         if db_global is None:
             app.logger.info("database connection done again")
-            cluster = Cluster()
+            cluster = Cluster(connect_timeout=1000)
+            
             session = cluster.connect(KEYSPACE)
+            session.default_timeout = 100
             db_global = session
 
         return db_global
@@ -84,7 +86,7 @@ class DatabaseController:
                     fold int,
                     last_modified timestamp,
                     annotation frozen<list<bbox>>,
-                    PRIMARY KEY (dataset, phash)
+                    PRIMARY KEY ((dataset), phash)
                 )
                 """)
         except cassandra.AlreadyExists:
