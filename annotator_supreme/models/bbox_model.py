@@ -10,3 +10,9 @@ class BBox:
         self.right = right
         self.labels = labels
         self.ignore = ignore
+
+    def scale_itself(self, scale_factor):
+        self.top = self.top*scale_factor
+        self.left = self.left*scale_factor
+        self.bottom = self.bottom*scale_factor
+        self.right = self.right*scale_factor
