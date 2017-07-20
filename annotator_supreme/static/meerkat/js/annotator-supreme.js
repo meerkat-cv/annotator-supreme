@@ -75,20 +75,22 @@
             console.log("image_sel change");
             $("#annotation-title").html("Annotating <b>"+image_sel.val()+"</b> from <b>"+dataset_sel.val()+"</b>");
 
-            $("#img-to-anno").on("load", function() {
-                console.log("image load");
-                // self.saveAnnotation(dataset_sel)
-                self.setStage();
-                self.getStoredAnnotations();
-                self.getDetails();
-                
-            });
-
+            
             console.log("image_sel", image_sel.val());
             $("#img-to-anno").attr("src", '/annotator-supreme/image/'+dataset_sel.val()+"/"+$(this).val());
             $(this).data("previous", $(this).val());
             $(this).blur();
         });
+
+        $("#img-to-anno").on("load", function() {
+            console.log("image load");
+            // self.saveAnnotation(dataset_sel)
+            self.setStage();
+            self.getStoredAnnotations();
+            self.getDetails();
+            
+        });
+
     }
 
 
@@ -102,7 +104,6 @@
                 console.log("error"+jqXHR.responseText);
             },
             success: function (data) {
-                console.log("got data", data);
                 if ($("#use-categories-chk").is(":checked")) {
                     self.setLabelsInInput([data.image.category]);
                 }
@@ -274,6 +275,7 @@
     }
 
     Annotator.setStage = function() {
+        console.log("setting stage");
         // create the konva stage
         var self = this,
             width = $("#img-to-anno").width(),
@@ -325,6 +327,9 @@
             }
 
         });
+
+        console.log("setting ready");
+
     }
 
     Annotator.getCurrentLabels = function() {
