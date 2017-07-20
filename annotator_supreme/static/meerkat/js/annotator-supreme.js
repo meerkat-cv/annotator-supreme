@@ -64,22 +64,16 @@
         image_sel.on("change", function() {
             // first thing here is to save the annotations of the previous guy
             var previous_img = $(this).data("previous") || "";
-            console.log("previous_img", previous_img);
             if (previous_img != "") {
-                // var anno_data = self.getCanvasAnnotationData();
-                // self.saveAnnotation(dataset_sel.val(), image_sel.val(), anno_data);
+                var anno_data = self.getCanvasAnnotationData(),
+                    elem = $(this);
+                self.saveAnnotation(dataset_sel.val(), previous_img, anno_data, function () {
+                    self.setImageTag(elem);
+                });
             }
-            // now set the current
-            console.log("current", $(this).val());
-
-            console.log("image_sel change");
-            $("#annotation-title").html("Annotating <b>"+image_sel.val()+"</b> from <b>"+dataset_sel.val()+"</b>");
-
-            
-            console.log("image_sel", image_sel.val());
-            $("#img-to-anno").attr("src", '/annotator-supreme/image/'+dataset_sel.val()+"/"+$(this).val());
-            $(this).data("previous", $(this).val());
-            $(this).blur();
+            else {
+                self.setImageTag(this);    
+            }
         });
 
         $("#img-to-anno").on("load", function() {
@@ -90,7 +84,13 @@
             self.getDetails();
             
         });
+    }
 
+    Annotator.setImageTag = function(elem) {
+        $("#annotation-title").html("Annotating <b>"+image_sel.val()+"</b> from <b>"+dataset_sel.val()+"</b>");
+        $("#img-to-anno").attr("src", '/annotator-supreme/image/'+dataset_sel.val()+"/"+$(elem).val());
+        $(elem).data("previous", $(elem).val());
+        $(elem).blur();
     }
 
 
@@ -119,24 +119,23 @@
     }
 
 
-    Annotator.saveAnnotation = function(dataset, image_id, anno_data) {
+    Annotator.saveAnnotation = function(dataset, image_id, anno_data, callback) {
+        console.log("saveAnnotation");
         // Update Konva stage after the annotations are saved, otherwise
         // they will be destroyed
         $.ajax({
             type: 'post',
-            url: "/annotator-supreme/image/anno/"+dataset_sel.val()+"/"+image_sel.val(),
+            url: "/annotator-supreme/image/anno/"+dataset+"/"+image_id,
             data: JSON.stringify(anno_data),
             contentType: 'application/json',
             error: function (jqXHR, textStatus, errorThrown) {
                 console.log("error saveAnnotation:",(jqXHR.responseText));
             },
             complete: function () {
-                // Keeping the "previous" image so that we can save them when the image is changed
-                // curr_image_id = option_value;
-                // Update Konva Stage
-                // self.setStage();
-                // Get current annotations
-                // self.getStoredAnnotations(self);
+                console.log("calling callback!");
+                if (callback) {
+                    callback();
+                }
             }
         });
     }
@@ -196,6 +195,9 @@
             }
             d['anno'].push(curr_anno);
         }
+
+        // The images were annotated in scaled version
+        d['scale'] = 1.0/this.scale;
 
         return d;
     }
