@@ -11,7 +11,7 @@ train_file = '/Users/gfuhr/meerkat/datasets/cole_tv/nascar/blurred/nascar_brands
 
 tags = [ 'Alpinestars', 'Bank_of_America', 'Bugles', 'CarQuest', 'Cheezit', 'Chevrolet', 'DuPont', 'Ford', 'GM', 'Goodwrench', 'KBB', 'Kellogs', 'Nascar', 'PopTarts', 'QuakerState', 'Sprint', 'Strohs_Light', 'Toyota', 'Valvoline', 'Wrangler']
 
-res = requests.post(HOST+'/dataset/create', json={'name': 'nascar2', 'tags':tags})
+res = requests.post(HOST+'/dataset/create', json={'name': 'nascar', 'tags':['nascar', 'logos']})
 
 with open(train_file) as f:
     content = f.readlines()
@@ -25,20 +25,21 @@ for im in content:
     with open(labels_file) as f:
         content2 = f.readlines()
 
-    m = MultipartEncoder(
-            fields={'image': ('filename', open(im, 'rb'))}
-    )
-    res = requests.post(HOST+'/image/nascar2/add', data=m, headers={'Content-Type': m.content_type})
-    if res.status_code != 200:
-        continue
-
-    res = res.json()
+    
     first_line = content2[0].split()
     class_id = int(first_line[0])
     # if (res['imageId'] == '0b78334720c0b108d31322ac5221ada6'):
     #     print(res)
     #     print(content2)
     #     print('label', tags[class_id])
+    m = MultipartEncoder(
+            fields={'image': ('filename', open(im, 'rb')), 'category': tags[class_id]}
+    )
+    res = requests.post(HOST+'/image/nascar/add', data=m, headers={'Content-Type': m.content_type})
+    print("res", res.text)
+    if res.status_code != 200:
+        continue
+    res = res.json()
 
     im_cv  = cv2.imread(im)
     height = im_cv.shape[0]

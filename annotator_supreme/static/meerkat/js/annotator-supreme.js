@@ -16,28 +16,30 @@
         
         // Populate the default selected dataset
         this.dataset = $('#dataset-sel').find(":selected").text().trim();
-        this.getDatasetImages(this);
+        
     }
 
     Annotator.selectDatasetImage = function(dataset, image) {
+        var self = this;
         if (dataset !== "" && image !== "") {
+            console.log('Trying to change to ',dataset, image);
             dataset_sel.val(dataset);
-            dataset_sel.trigger("change");
-            this.getDatasetImages(this, function() {
-                image_sel.val(image);  
-                image_sel.trigger("change");
+            this.getDatasetImages(function() {
+                self.selectImage(image);    
             });
+            
         }
-        console.log('Trying to change to ',dataset, image);
+        
     }
 
     Annotator.bind = function () {
         this.bindSelectors();
         this.bindKeyEvents();
+        this.bindCategoryCheckbox();
+    }
 
-
+    Annotator.bindCategoryCheckbox = function() {
         $("#use-categories-chk").change(function () {
-            console.log("change", $(this).is(":checked"))
             if ($(this).is(":checked")) {
                 $(".bootstrap-tagsinput").addClass("disabled");
             }
@@ -47,86 +49,124 @@
         });
 
         $("#use-categories-chk").prop('checked', true);
+        $(".bootstrap-tagsinput").addClass("disabled");
     }
 
     Annotator.bindSelectors = function() {
         var self = this;
         dataset_sel.on("change", function() {
+            console.log("datasetl change")
             self.dataset = this.value;
-            self.getDatasetImages(self);
+            self.getDatasetImages();
             $(this).blur();
         })
 
         image_sel.on("change", function() {
-            var option_value = this.value;
+            // first thing here is to save the annotations of the previous guy
+            var previous_img = $(this).data("previous") || "";
+            console.log("previous_img", previous_img);
+            if (previous_img != "") {
+                // var anno_data = self.getCanvasAnnotationData();
+                // self.saveAnnotation(dataset_sel.val(), image_sel.val(), anno_data);
+            }
+            // now set the current
+            console.log("current", $(this).val());
+
+            console.log("image_sel change");
             $("#annotation-title").html("Annotating <b>"+image_sel.val()+"</b> from <b>"+dataset_sel.val()+"</b>");
 
             $("#img-to-anno").on("load", function() {
+                console.log("image load");
                 // self.saveAnnotation(dataset_sel)
                 self.setStage();
-
-                // also make a request to get the details of the image
-                $.ajax({
-                    type: 'get',
-                    url: "/annotator-supreme/image/details/"+dataset_sel.val()+"/"+image_sel.val(),
-                    error: function (jqXHR, textStatus, errorThrown) {
-                        console.log("error"+jqXHR.responseText);
-                    },
-                    success: function (data) {
-                        console.log("got data", data);
-                        if ($("#use-categories-chk").is(":checked")) {
-                            self.setCurrentLabel([data.image.category]);
-
-                        }
-                    }
-                });
+                self.getStoredAnnotations();
+                self.getDetails();
+                
             });
-            console.log('image_list', self.image_list);
-            $("#img-to-anno").attr("src", '/annotator-supreme/image/'+self.image_list[this.value].url);
+
+            console.log("image_sel", image_sel.val());
+            $("#img-to-anno").attr("src", '/annotator-supreme/image/'+dataset_sel.val()+"/"+$(this).val());
+            $(this).data("previous", $(this).val());
             $(this).blur();
         });
     }
 
-    Annotator.setCurrentLabel = function(labels) {
+
+    Annotator.getDetails = function() {
+        var self = this;
+        // also make a request to get the details of the image
+        $.ajax({
+            type: 'get',
+            url: "/annotator-supreme/image/details/"+dataset_sel.val()+"/"+image_sel.val(),
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.log("error"+jqXHR.responseText);
+            },
+            success: function (data) {
+                console.log("got data", data);
+                if ($("#use-categories-chk").is(":checked")) {
+                    self.setLabelsInInput([data.image.category]);
+                }
+            }
+        });
+    }
+
+    Annotator.setLabelsInInput = function(labels) {
         $("#labelInput").tagsinput('removeAll');
         for (var i = 0; i < labels.length; ++i) {
             $("#labelInput").tagsinput('add', labels[i]);
-            this.sel_labels.push(labels[i]);
         }
     }
 
 
-    Annotator.saveAnnotation = function(dataset, image_id) {
+    Annotator.saveAnnotation = function(dataset, image_id, anno_data) {
         // Update Konva stage after the annotations are saved, otherwise
         // they will be destroyed
         $.ajax({
             type: 'post',
-            url: "/annotator-supreme/image/anno/"+self.image_list[curr_image_id].url,
-            data: JSON.stringify(self.getAnnotationData(self)),
+            url: "/annotator-supreme/image/anno/"+dataset_sel.val()+"/"+image_sel.val(),
+            data: JSON.stringify(anno_data),
             contentType: 'application/json',
             error: function (jqXHR, textStatus, errorThrown) {
-                self.showError(jqXHR.responseText);
+                console.log("error saveAnnotation:",(jqXHR.responseText));
             },
             complete: function () {
                 // Keeping the "previous" image so that we can save them when the image is changed
-                curr_image_id = option_value;
+                // curr_image_id = option_value;
                 // Update Konva Stage
-                self.setStage();
+                // self.setStage();
                 // Get current annotations
-                self.getAnnotations(self);
+                // self.getStoredAnnotations(self);
             }
         });
     }
 
 
-    Annotator.getAnnotationData = function(self) {
+    Annotator.getStoredAnnotations = function() {
+        console.log("getting stored annotations for",image_sel.val());
+        var self = this;
+        $.get( "/annotator-supreme/image/anno/"+dataset_sel.val()+"/"+image_sel.val(), function( data ) {
+            self.bboxes = [];
+            for (var i=0; i<data.anno.length; ++i) {
+                self.createCompleteBBox(data.anno[i].left, 
+                                        data.anno[i].top, 
+                                        data.anno[i].right, 
+                                        data.anno[i].bottom, 
+                                        data.anno[i].labels, 
+                                        data.anno[i].ignore,
+                                        self.scale);
+            }
+        });
+    }
+
+
+    Annotator.getCanvasAnnotationData = function() {
         var d = { 'anno': []};
         var default_label = '';
-        for (var i=0; i<self.bboxes.length; i++) {
-            if (self.bboxes[i].children.length <= 0) {
+        for (var i=0; i<this.bboxes.length; i++) {
+            if (this.bboxes[i].children.length <= 0) {
                 continue;
             }
-            var tag = self.bboxes[i].findOne('#tag');
+            var tag = this.bboxes[i].findOne('#tag');
             if (tag == null) {
                 continue;
             } else if (tag == 'ignore') {
@@ -135,19 +175,19 @@
             default_label = tag.attrs.text;
         }
 
-        for (var i=0; i<self.bboxes.length; i++) {
-            if (self.bboxes[i].children.length <= 0) {
+        for (var i=0; i<this.bboxes.length; i++) {
+            if (this.bboxes[i].children.length <= 0) {
                 console.log('SKIPING');
                 continue;
             }
 
             var curr_anno = {};
-            var tag = self.bboxes[i].findOne('#tag');
-            curr_anno['left'] = self.bboxes[i].attrs.x;
-            curr_anno['top'] = self.bboxes[i].attrs.y;
-            curr_anno['right'] = curr_anno['left'] + self.bboxes[i].get('Rect')[0].attrs.width;
-            curr_anno['bottom'] = curr_anno['top'] + self.bboxes[i].get('Rect')[0].attrs.height;
-            curr_anno['ignore'] = self.bboxes[i].attrs.ignore;
+            var tag = this.bboxes[i].findOne('#tag');
+            curr_anno['left'] = this.bboxes[i].attrs.x;
+            curr_anno['top'] = this.bboxes[i].attrs.y;
+            curr_anno['right'] = curr_anno['left'] + this.bboxes[i].get('Rect')[0].attrs.width;
+            curr_anno['bottom'] = curr_anno['top'] + this.bboxes[i].get('Rect')[0].attrs.height;
+            curr_anno['ignore'] = this.bboxes[i].attrs.ignore;
             if (tag == null) {
                 curr_anno['labels'] = [default_label];
             } else {
@@ -159,36 +199,40 @@
         return d;
     }
 
-    Annotator.getDatasetImages = function(self, callback) {
+    Annotator.getDatasetImages = function(callback) {
+        var self = this;
         // populate the list of images
-        self.image_list = [];
+        this.image_list = [];
         image_sel.empty();
-        tag_sel.empty();
-        $.get( "/annotator-supreme/image/"+self.dataset+"/all", function( data ) {
+        $.get( "/annotator-supreme/image/" + dataset_sel.val() + "/all", function( data ) {
             self.image_list = self.imagesToDict(data.images);
             for (var i = 0; i < data.images.length; ++i) {
                 var option = new Option(data.images[i].phash, data.images[i].phash);
                 image_sel.append($(option));
             }
-            // Set the curr image id
-            curr_image_id = data.images[0].phash;
-            self.getAnnotations(self);
-            image_sel.val(curr_image_id).change();
 
             if (callback) {
                 callback();
             }
+
+            
+            // Set the curr image id
+            // curr_image_id = data.images[0].phash;
+            // self.getStoredAnnotations();
+            // image_sel.val(curr_image_id).change();
         });
     }
 
-    Annotator.getAnnotations = function(self) {
-        $.get( "/annotator-supreme/image/anno/"+self.image_list[curr_image_id].url, function( data ) {
-            self.bboxes = [];
-            for (var i=0; i<data.anno.length; ++i) {
-                self.createCompleteBBox(data.anno[i].left, data.anno[i].top, data.anno[i].right, data.anno[i].bottom, data.anno[i].labels, data.anno[i].ignore);
-            }
-        });
+    Annotator.selectImage = function(selected_image) {
+        // MAKE sure that the image is in the options
+        if (selected_image) {
+            image_sel.val(selected_image).trigger("change");
+            image_sel.data("previous", image_sel.val());
+        }
     }
+    
+
+
 
     Annotator.imagesToDict = function(image_list) {
         // this function transform a list of images to a dict where
@@ -205,23 +249,27 @@
         var self = this;
         $(document).keydown(function (e) {
             if (e.keyCode == 37 || e.keyCode == 40) { // Left or Down
-                if (curr_page <= 0) {
-                    curr_page = image_sel[0].length-1
-                } else {curr_page = curr_page-1;
+                console.log("down");
+                var curr_index = $('#image-sel').prop("selectedIndex");
+                    prev_value = $($('#image-sel option')[curr_index-1]).val();
+
+                if (prev_value) {
+                    image_sel.val(prev_value).trigger("change");
                 }
-            } else if (e.keyCode == 39 || e.keyCode == 38) { // Right or Up
-                if (curr_page >= image_sel[0].length-1) {
-                    curr_page = 0;
-                } else {
-                    curr_page = curr_page+1;
+            } 
+            else if (e.keyCode == 39 || e.keyCode == 38) { // Right or Up
+                console.log("up");
+                var curr_index = $('#image-sel').prop("selectedIndex");
+                    next_value = $($('#image-sel option')[curr_index+1]).val();
+
+                if (next_value) {
+                    image_sel.val(next_value).trigger("change");
                 }
-            } else {
+            } 
+            else {
                 // console.log('key code ', e.keyCode);
                 return;
             }
-
-            var selection = image_sel[0][curr_page].value;
-            image_sel.val(selection).change();
         });
     }
 
@@ -272,11 +320,16 @@
             if (creatingBBox) {
                 // now, the bbox was officially created
                 self.bboxes.push(self.currentBBox);
-                self.finishBBoxCreation(self.currentBBox, self.sel_labels);
+                self.finishBBoxCreation(self.currentBBox, self.getCurrentLabels());
                 creatingBBox = false;
             }
 
         });
+    }
+
+    Annotator.getCurrentLabels = function() {
+        // the current labels are always those in the tags input
+        return $("#labelInput").tagsinput("items");
     }
 
     Annotator.createBBox = function(startPoint) {
@@ -301,8 +354,16 @@
         this.currentBBox = rectGroup;
     }
 
-    Annotator.createCompleteBBox = function(l, t, r, b, labels, ignore) {
+    Annotator.createCompleteBBox = function(l, t, r, b, labels, ignore, scale) {
         var self = this;
+
+        if (scale && scale != 1.0) {
+            l = l*scale;
+            r = r*scale;
+            t = t*scale;
+            b = b*scale;
+        }
+
         var rect = new Konva.Rect({
             width: (r-l),
             height: (b-t),
