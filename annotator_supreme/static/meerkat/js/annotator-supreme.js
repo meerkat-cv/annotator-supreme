@@ -11,6 +11,7 @@
         this.sel_labels = [];
         this.bboxes = [];
         this.color_pallete = {};
+        this.blood_hounds = {};
         this.bind();
         
         // Populate the default selected dataset
@@ -54,6 +55,28 @@
 
     }
 
+    Annotator.initDatasetData = function(dataset_list) {
+        this.computeColorPallete(dataset_list);
+        this.setBloodHounds(dataset_list);
+        this.bindLabelInput();
+    }
+
+    Annotator.setBloodHounds = function(dataset_list) {
+        // make category for type ahhead
+        all_categories = []
+        for (var i = 0; i < dataset_list.length; ++i) {
+            all_categories = all_categories.concat(dataset_list[i].image_categories);
+        }
+
+        this.blood_hound = new Bloodhound({
+            local: all_categories,
+            queryTokenizer: Bloodhound.tokenizers.whitespace,
+            datumTokenizer: Bloodhound.tokenizers.whitespace
+        });    
+
+        this.blood_hound.initialize();
+    }
+
     Annotator.computeColorPallete = function(dataset_list) {
         console.log("dataset_list", dataset_list);
         this.color_pallete = {};
@@ -91,13 +114,17 @@
         this.bindSelectors();
         this.bindKeyEvents();
         this.bindCategoryCheckbox();
-        this.bindLabelInput();
     }
 
     Annotator.bindLabelInput = function() {
+        var dataset_name = dataset_sel.val().toLowerCase();
         $("#labelInput").tagsinput({
             tagClass: function(item) {
-                return "label label-default label-"+dataset_sel.val().toLowerCase()+"-"+item.toLowerCase();
+                return "label label-default label-"+dataset_name+"-"+item.toLowerCase();
+            },
+            typeaheadjs: {
+                name: dataset_name,
+                source: this.blood_hound.ttAdapter()
             }
         })
     }
@@ -315,7 +342,7 @@
     Annotator.bindKeyEvents = function() {
         var self = this;
         $(document).keydown(function (e) {
-            if (e.keyCode == 37 || e.keyCode == 40) { // Left or Down
+            if (e.keyCode == 37) { // Left or Down
                 console.log("down");
                 var curr_index = $('#image-sel').prop("selectedIndex");
                     prev_value = $($('#image-sel option')[curr_index-1]).val();
@@ -324,7 +351,7 @@
                     image_sel.val(prev_value).trigger("change");
                 }
             } 
-            else if (e.keyCode == 39 || e.keyCode == 38) { // Right or Up
+            else if (e.keyCode == 39) { // Right or Up
                 console.log("up");
                 var curr_index = $('#image-sel').prop("selectedIndex");
                     next_value = $($('#image-sel option')[curr_index+1]).val();

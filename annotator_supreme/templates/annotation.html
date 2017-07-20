@@ -63,6 +63,7 @@
 {% endblock %}
 {% block load_script %}
 <!-- <script src="/annotator-supreme/static/meerkat/js/via.js"></script> -->
+<script src="/annotator-supreme/static/plugins/typeahead/typeahead.bundle.js"></script>
 <script src="/annotator-supreme/static/plugins/konva/konva.min.js"></script>
 <script src="/annotator-supreme/static/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js"></script>
 <script src="/annotator-supreme/static/meerkat/js/annotator-supreme.js"></script>
@@ -73,7 +74,7 @@
   $('body').addClass('sidebar-collapse');  
   $(document).ready(function() {
     window.Annotator.selectDatasetImage("{{sel_dataset}}", "{{sel_image}}");
-    window.Annotator.computeColorPallete({{datasets | safe}})
+    window.Annotator.initDatasetData({{datasets | safe}})
   });
   
 
