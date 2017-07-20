@@ -3,7 +3,6 @@
         anno_div = $('#konva-container'),
         dataset_sel = $("#dataset-sel"),
         image_sel = $("#image-sel"),
-        tag_sel = $("#tag-sel"),
         curr_page = 0,
         curr_image_id = '', // Keeping the "previous" image so that we can save their annotations when the image is changed
         anchorRadius = 6;
@@ -11,12 +10,18 @@
     Annotator.init = function () {
         this.sel_labels = [];
         this.bboxes = [];
+        this.color_pallete = {};
 
         this.bind();
         
         // Populate the default selected dataset
         this.dataset = $('#dataset-sel').find(":selected").text().trim();
         
+        if (global.location.search.search("dataset=") == -1 && global.location.search.search("image=") == -1) {
+            this.getDatasetImages(function() {
+                image_sel.trigger("change");
+            });    
+        }
     }
 
     Annotator.selectDatasetImage = function(dataset, image) {
@@ -32,10 +37,70 @@
         
     }
 
+    Annotator.textColorFromBackgroundColor = function(background_color) {
+        function hexToRgb(hex) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        rgbcolor = hexToRgb(background_color);
+        if ((rgbcolor.r*0.299 + rgbcolor.g*0.587 + rgbcolor.b*0.114) > 186)
+            return 'black'
+        else
+            return 'white';
+
+    }
+
+    Annotator.computeColorPallete = function(dataset_list) {
+        console.log("dataset_list", dataset_list);
+        this.color_pallete = {}
+        css_rules = ""
+        for (var i = 0; i < dataset_list.length; ++i) {
+            console.log("dataset_list")
+            this.color_pallete[dataset_list[i].name] = {}
+
+            for (var j = 0; j < dataset_list[i].image_categories.length; ++j) {
+                var cat = dataset_list[i].image_categories[j].toLowerCase(),
+                    bck_color = dataset_list[i].category_colors[j],
+                    txt_color = this.textColorFromBackgroundColor(bck_color);
+                css_rules = css_rules +"\
+                .label-"+dataset_list[i].name.toLowerCase()+"-"+cat+" {\
+                    background-color: "+bck_color+" !important;\
+                    color: "+txt_color+" !important;\
+                }"
+
+                // also add to color pallete
+                this.color_pallete[dataset_list[i].name][cat] = {
+                    "background": bck_color,
+                    "text": txt_color
+                };
+            }
+        }
+        console.log("css_rules", css_rules);
+        // add rules to labels
+        $("<style>")
+            .prop("type", "text/css")
+            .html(css_rules)
+            .appendTo("head");
+    }
+
     Annotator.bind = function () {
         this.bindSelectors();
         this.bindKeyEvents();
         this.bindCategoryCheckbox();
+        this.bindLabelInput();
+    }
+
+    Annotator.bindLabelInput = function() {
+        $("#labelInput").tagsinput({
+            tagClass: function(item) {
+                return "label label-default label-"+dataset_sel.val().toLowerCase()+"-"+item.toLowerCase();
+            }
+        })
     }
 
     Annotator.bindCategoryCheckbox = function() {

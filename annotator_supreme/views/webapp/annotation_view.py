@@ -4,6 +4,8 @@ from annotator_supreme.views.view_tools import *
 from annotator_supreme import app
 from annotator_supreme.controllers.dataset_controller import DatasetController
 from flask import render_template
+from annotator_supreme.controllers.color_utils import ColorUtils
+import json 
 
 class AnnotationViewWebApp(FlaskView):
     route_base = '/'
@@ -15,6 +17,16 @@ class AnnotationViewWebApp(FlaskView):
     def index(self):
         # get the datasets to see which one the user wants to annotate
         datasets = self.dataset_controller.get_datasets()
+        dataset_names = []
+        for i,d in enumerate(datasets):
+            dataset_names.append(d["name"])
+            print("i", datasets[i])
+            datasets[i]["category_colors"] = ColorUtils.distiguishable_colors_hex(len(d["image_categories"]))
+            datasets[i]["last_modified"] = "" # it is not serialiable
+            print("i", datasets[i])
+            print("=========")
+
+        print("datasets", datasets)
 
         # the user can choose to annotate a specif image/dataset
         sel_dataset = ""
@@ -25,4 +37,4 @@ class AnnotationViewWebApp(FlaskView):
             sel_image = request.args.get("image")
 
 
-        return render_template('annotation.html', datasets=datasets, sel_dataset=sel_dataset, sel_image=sel_image)
+        return render_template('annotation.html', dataset_names=dataset_names, datasets=json.dumps(datasets), sel_dataset=sel_dataset, sel_image=sel_image)
