@@ -11,7 +11,6 @@
         this.sel_labels = [];
         this.bboxes = [];
         this.color_pallete = {};
-
         this.bind();
         
         // Populate the default selected dataset
@@ -57,7 +56,7 @@
 
     Annotator.computeColorPallete = function(dataset_list) {
         console.log("dataset_list", dataset_list);
-        this.color_pallete = {}
+        this.color_pallete = {};
         css_rules = ""
         for (var i = 0; i < dataset_list.length; ++i) {
             console.log("dataset_list")
@@ -74,7 +73,7 @@
                 }"
 
                 // also add to color pallete
-                this.color_pallete[dataset_list[i].name][cat] = {
+                this.color_pallete[dataset_list[i].name.toLowerCase()][cat] = {
                     "background": bck_color,
                     "text": txt_color
                 };
@@ -861,14 +860,24 @@
         });
 
         for (var i=0; i<labels.length; ++i) {
-            this.addLabel(labelGroup, labels[i], "green");
+            var bck_color = "gray",
+                txt_color = "white";
+
+            // see if there is the label color in the pallete
+            var dt = dataset_sel.val().toLowerCase(),
+                cat = labels[i].toLowerCase();
+            if (this.color_pallete[dt] && this.color_pallete[dt][cat]) {
+                bck_color = this.color_pallete[dt][cat]["background"];
+                txt_color = this.color_pallete[dt][cat]["text"];
+            }
+            this.addLabel(labelGroup, labels[i], bck_color, txt_color);
         }
 
         group.add(labelGroup);
     }
 
 
-    Annotator.addLabel = function(group, label, color) {
+    Annotator.addLabel = function(group, label, background_color, text_color) {
         var labelsAdded = group.get('Label'),
             offsetX = 10
         for (var i = 0; i < labelsAdded.length; ++i)
@@ -880,7 +889,7 @@
             opacity: 0.85
         });
         simpleLabel.add(new Konva.Tag({
-            fill: color
+            fill: background_color
         }));
 
         simpleLabel.add(new Konva.Text({
@@ -888,7 +897,7 @@
             fontFamily: 'Calibri',
             fontSize: 14,
             padding: 3,
-            fill: 'white',
+            fill: text_color,
             id: 'tag'
         }));
 
