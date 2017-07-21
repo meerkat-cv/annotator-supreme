@@ -27,11 +27,10 @@ class ImageModel():
         self.name = name
         if image is None or image.shape[0] == 0:
             raise Exception("An image needs an image.")
-        self.image = image
+
         self.width = image.shape[1];
         self.height = image.shape[0];
-        # cv2.imshow("asd", image)
-        # cv2.waitKey()
+        self.image = image
 
         if phash == "":
             # given the image, we compute the percepetual hash to use as key
@@ -76,11 +75,9 @@ class ImageModel():
                 return None
             elif len(rows) == 1:
                 r = rows[0]
-                # have transform the image to jpeg matrix
                 image = np.fromstring(r.img, dtype=np.uint8)
+                image = cv2.imdecode(image, cv2.IMREAD_COLOR)
                 image = image.reshape(r.height, r.width, 3)
-                # dec_string = base64.b64decode(rows[0].value[0])
-                # jpeg_img = np.fromstring(dec_string, dtype=np.uint8)
 
                 return cls(r.phash, r.dataset, image, r.name, r.annotation, r.category, r.partition, r.fold, r.last_modified)
             elif len(rows) > 1:
@@ -116,11 +113,12 @@ class ImageModel():
                                     "last_modified) " + \
                                     " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ")
 
+        image = cv2.imencode('.png', self.image)[1]
         self.db_session.execute(cql, [self.phash, \
                                         self.dataset_name, \
-                                        self.image.tostring(), \
-                                        self.image.shape[1], \
-                                        self.image.shape[0], \
+                                        image.tostring(), \
+                                        self.width, \
+                                        self.height, \
                                         self.name, \
                                         self.bboxes, \
                                         self.category, \
@@ -158,20 +156,18 @@ class ImageModel():
     def delete_image(dataset_name, image_id):
         with app.app_context():
             db_session = database_controller.get_db(app.config)
-            
-            cql = "DELETE FROM "+TABLE+" WHERE dataset=\'"+dataset_name+"\'" + " AND phash=\'" + image_id +"\'" 
+
+            cql = "DELETE FROM "+TABLE+" WHERE dataset=\'"+dataset_name+"\'" + " AND phash=\'" + image_id +"\'"
             res = db_session.execute(cql)
-            
+
             return (True, "")
 
     @staticmethod
     def delete_all_images(dataset_name):
         with app.app_context():
             db_session = database_controller.get_db(app.config)
-            
-            cql = "DELETE FROM "+TABLE+" WHERE dataset=\'"+dataset_name+"\'" 
+
+            cql = "DELETE FROM "+TABLE+" WHERE dataset=\'"+dataset_name+"\'"
             res = db_session.execute(cql)
-            
+
             return (True, "")
-
-

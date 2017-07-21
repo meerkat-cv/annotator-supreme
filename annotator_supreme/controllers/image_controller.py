@@ -13,7 +13,7 @@ class ImageController():
         try:
             img = ImageModel("", dataset_name, image, name, bboxes, category, partition, fold)
             img.upsert()
-            
+
             # att the category and labels of the dataset
             dataset = DatasetModel.from_name(dataset_name)
             if category not in dataset.image_categories:
@@ -21,8 +21,8 @@ class ImageController():
 
             return (True, "", img.phash)
 
-        except:
-            return (False, "Unexpected error while adding in database.", None)
+        except BaseException as e:
+            return (False, "Unexpected error while adding in database: "+str(e), None)
 
     def get_image_details(self, dataset_name, id):
         img_o = ImageModel.from_database_and_key(dataset_name, id)

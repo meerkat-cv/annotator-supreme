@@ -29,6 +29,6 @@ class ImageTestViewWebApp(FlaskView):
             curr_im = (curr_im % 4) + 1
             im_src = "/annotator-supreme/static/meerkat/images/im_0"+str(curr_im)+".jpg"
         except BaseException as e:
-            print(str(e))
+            print('Exception:',str(e))
             traceback.print_exc()
         return json.dumps({'im': im_src})
