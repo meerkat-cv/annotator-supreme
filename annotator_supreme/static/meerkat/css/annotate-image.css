@@ -9,6 +9,26 @@
   display:none !important;
 }
 
+#tooltip-tag{
+    position: absolute;
+    top: 100px;
+    left: 300px;
+}
+
+.tooltip-inner{
+    background-color: rgba(128, 128, 128, 0.7);
+    padding: 10px;
+}
+
+.tooltip-inner input {
+    color: black;
+}
+
+.tooltip-arrow{
+    border-top-color: rgba(128, 128, 128, 0.7) !important;
+}
+
+
 
 .img-anno {
     width: 100%;

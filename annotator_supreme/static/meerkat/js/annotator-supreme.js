@@ -13,6 +13,8 @@
         this.color_pallete = {};
         this.blood_hounds = {};
         this.bind();
+
+        
         
         // Populate the default selected dataset
         this.dataset = $('#dataset-sel').find(":selected").text().trim();
@@ -27,7 +29,6 @@
     Annotator.selectDatasetImage = function(dataset, image) {
         var self = this;
         if (dataset !== "" && image !== "") {
-            console.log('Trying to change to ',dataset, image);
             dataset_sel.val(dataset);
             this.getDatasetImages(function() {
                 self.selectImage(image);    
@@ -36,6 +37,16 @@
         }
         
     }
+
+    Annotator.bindTooltip = function() {
+        // set to manual to only appear when we want
+        $("#tooltip-tag").tooltip({
+            trigger: "manual"
+        });
+
+        // $("#tooltip-tag")
+    }
+    // .tooltip("show")
 
     Annotator.textColorFromBackgroundColor = function(background_color) {
         function hexToRgb(hex) {
@@ -78,11 +89,9 @@
     }
 
     Annotator.computeColorPallete = function(dataset_list) {
-        console.log("dataset_list", dataset_list);
         this.color_pallete = {};
         css_rules = ""
         for (var i = 0; i < dataset_list.length; ++i) {
-            console.log("dataset_list")
             this.color_pallete[dataset_list[i].name] = {}
 
             for (var j = 0; j < dataset_list[i].image_categories.length; ++j) {
@@ -102,7 +111,6 @@
                 };
             }
         }
-        console.log("css_rules", css_rules);
         // add rules to labels
         $("<style>")
             .prop("type", "text/css")
@@ -114,6 +122,7 @@
         this.bindSelectors();
         this.bindKeyEvents();
         this.bindCategoryCheckbox();
+        this.bindTooltip();
     }
 
     Annotator.bindLabelInput = function() {
@@ -252,20 +261,6 @@
 
     Annotator.getCanvasAnnotationData = function() {
         var d = { 'anno': []};
-        var default_label = '';
-        for (var i=0; i<this.bboxes.length; i++) {
-            if (this.bboxes[i].children.length <= 0) {
-                continue;
-            }
-            var tag = this.bboxes[i].findOne('#tag');
-            if (tag == null) {
-                continue;
-            } else if (tag == 'ignore') {
-                continue;
-            }
-            default_label = tag.attrs.text;
-        }
-
         for (var i=0; i<this.bboxes.length; i++) {
             if (this.bboxes[i].children.length <= 0) {
                 console.log('SKIPING');
@@ -279,11 +274,7 @@
             curr_anno['right'] = curr_anno['left'] + this.bboxes[i].get('Rect')[0].attrs.width;
             curr_anno['bottom'] = curr_anno['top'] + this.bboxes[i].get('Rect')[0].attrs.height;
             curr_anno['ignore'] = this.bboxes[i].attrs.ignore;
-            if (tag == null) {
-                curr_anno['labels'] = [default_label];
-            } else {
-                curr_anno['labels'] = [tag.attrs.text];
-            }
+            curr_anno['labels'] = this.bboxes[i].attrs.labels;
             d['anno'].push(curr_anno);
         }
 
@@ -442,7 +433,8 @@
             x: startPoint.x,
             y: startPoint.y,
             draggable: true,
-            ignore: false
+            ignore: false, 
+            labels: []
         });
 
 
@@ -472,7 +464,8 @@
             x: l,
             y: t,
             draggable: true,
-            ignore: false
+            ignore: false,
+            labels: []
         });
 
 
@@ -558,7 +551,9 @@
         else {
             this.addBBoxAnchors(group);
             this.addIconBar(group);
-            this.addLabelGroup(group, labels);
+            console.log("labels", labels);
+            this.addLabelsToBBox(group, labels);
+            this.addLabelGroup(group);
 
             group.on('mouseover', function() {
                 var rect = group.get('Rect')[0],
@@ -871,33 +866,67 @@
 
         addButtonText.on('mousedown', function() {
             console.log("click add label");
+            var bbox = iconGroup.getParent();
+            self.processAddLabel(bbox);
             // iconGroup.destroy();
-            self.annoLayer.draw();
+            // self.annoLayer.draw();
         });
 
         iconGroup.add(addButtonText);
     }
 
+    Annotator.processAddLabel = function(bbox) {
+        var self = this;
+        $("#tooltip-tag").css("top", bbox.attrs.y+"px")
+        $("#tooltip-tag").css("left", (bbox.attrs.x+60)+"px")
+        $("#tooltip-tag").tooltip("show");
 
-    Annotator.addLabelGroup = function(group, labels=[]) {
+        // focus on text
+        $("#tag-tooltip-input").focus();
+
+        $("#tag-tooltip-input").on('keypress', function (e) {
+            if(e.which === 13) {
+                // press enter
+                var label = [$("#tag-tooltip-input").val()];
+                self.addLabelsToBBox(bbox, label);
+                self.addLabelGroup(bbox);
+                self.annoLayer.draw();
+                $("#tooltip-tag").tooltip("hide");
+            }
+        });
+    }
+
+    Annotator.addLabelsToBBox = function(bbox, labels) {
+        // console.log("bbox", bbox);
+        // debugger;
+        for (var i = 0; i < labels.length; ++i) {
+            console.log("adding", labels[i]);
+            bbox.attrs.labels.push(labels[i]);
+        }
+    }
+
+    Annotator.addLabelGroup = function(group) {
         var labelGroup = new Konva.Group({
             x: 0,
             y: -20,
             id: 'labelBar'
         });
 
-        for (var i=0; i<labels.length; ++i) {
+
+        // group.labels.push(labels[i])
+
+        for (var i=0; i<group.attrs.labels.length; ++i) {
             var bck_color = "gray",
                 txt_color = "white";
 
             // see if there is the label color in the pallete
             var dt = dataset_sel.val().toLowerCase(),
-                cat = labels[i].toLowerCase();
+                cat = group.attrs.labels[i].toLowerCase();
             if (this.color_pallete[dt] && this.color_pallete[dt][cat]) {
                 bck_color = this.color_pallete[dt][cat]["background"];
                 txt_color = this.color_pallete[dt][cat]["text"];
             }
-            this.addLabel(labelGroup, labels[i], bck_color, txt_color);
+            this.addLabel(labelGroup, group.attrs.labels[i], bck_color, txt_color);
         }
 
         group.add(labelGroup);
