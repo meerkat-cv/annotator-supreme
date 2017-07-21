@@ -3,7 +3,6 @@
         anno_div = $('#konva-container'),
         dataset_sel = $("#dataset-sel"),
         image_sel = $("#image-sel"),
-        tag_sel = $("#tag-sel"),
         curr_page = 0,
         curr_image_id = '', // Keeping the "previous" image so that we can save their annotations when the image is changed
         anchorRadius = 6;
@@ -11,12 +10,18 @@
     Annotator.init = function () {
         this.sel_labels = [];
         this.bboxes = [];
-
+        this.color_pallete = {};
+        this.blood_hounds = {};
         this.bind();
         
         // Populate the default selected dataset
         this.dataset = $('#dataset-sel').find(":selected").text().trim();
         
+        if (global.location.search.search("dataset=") == -1 && global.location.search.search("image=") == -1) {
+            this.getDatasetImages(function() {
+                image_sel.trigger("change");
+            });    
+        }
     }
 
     Annotator.selectDatasetImage = function(dataset, image) {
@@ -32,10 +37,96 @@
         
     }
 
+    Annotator.textColorFromBackgroundColor = function(background_color) {
+        function hexToRgb(hex) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        }
+
+        rgbcolor = hexToRgb(background_color);
+        if ((rgbcolor.r*0.299 + rgbcolor.g*0.587 + rgbcolor.b*0.114) > 186)
+            return 'black'
+        else
+            return 'white';
+
+    }
+
+    Annotator.initDatasetData = function(dataset_list) {
+        this.computeColorPallete(dataset_list);
+        this.setBloodHounds(dataset_list);
+        this.bindLabelInput();
+    }
+
+    Annotator.setBloodHounds = function(dataset_list) {
+        // make category for type ahhead
+        all_categories = []
+        for (var i = 0; i < dataset_list.length; ++i) {
+            all_categories = all_categories.concat(dataset_list[i].image_categories);
+        }
+
+        this.blood_hound = new Bloodhound({
+            local: all_categories,
+            queryTokenizer: Bloodhound.tokenizers.whitespace,
+            datumTokenizer: Bloodhound.tokenizers.whitespace
+        });    
+
+        this.blood_hound.initialize();
+    }
+
+    Annotator.computeColorPallete = function(dataset_list) {
+        console.log("dataset_list", dataset_list);
+        this.color_pallete = {};
+        css_rules = ""
+        for (var i = 0; i < dataset_list.length; ++i) {
+            console.log("dataset_list")
+            this.color_pallete[dataset_list[i].name] = {}
+
+            for (var j = 0; j < dataset_list[i].image_categories.length; ++j) {
+                var cat = dataset_list[i].image_categories[j].toLowerCase(),
+                    bck_color = dataset_list[i].category_colors[j],
+                    txt_color = this.textColorFromBackgroundColor(bck_color);
+                css_rules = css_rules +"\
+                .label-"+dataset_list[i].name.toLowerCase()+"-"+cat+" {\
+                    background-color: "+bck_color+" !important;\
+                    color: "+txt_color+" !important;\
+                }"
+
+                // also add to color pallete
+                this.color_pallete[dataset_list[i].name.toLowerCase()][cat] = {
+                    "background": bck_color,
+                    "text": txt_color
+                };
+            }
+        }
+        console.log("css_rules", css_rules);
+        // add rules to labels
+        $("<style>")
+            .prop("type", "text/css")
+            .html(css_rules)
+            .appendTo("head");
+    }
+
     Annotator.bind = function () {
         this.bindSelectors();
         this.bindKeyEvents();
         this.bindCategoryCheckbox();
+    }
+
+    Annotator.bindLabelInput = function() {
+        var dataset_name = dataset_sel.val().toLowerCase();
+        $("#labelInput").tagsinput({
+            tagClass: function(item) {
+                return "label label-default label-"+dataset_name+"-"+item.toLowerCase();
+            },
+            typeaheadjs: {
+                name: dataset_name,
+                source: this.blood_hound.ttAdapter()
+            }
+        })
     }
 
     Annotator.bindCategoryCheckbox = function() {
@@ -251,7 +342,7 @@
     Annotator.bindKeyEvents = function() {
         var self = this;
         $(document).keydown(function (e) {
-            if (e.keyCode == 37 || e.keyCode == 40) { // Left or Down
+            if (e.keyCode == 37) { // Left or Down
                 console.log("down");
                 var curr_index = $('#image-sel').prop("selectedIndex");
                     prev_value = $($('#image-sel option')[curr_index-1]).val();
@@ -260,7 +351,7 @@
                     image_sel.val(prev_value).trigger("change");
                 }
             } 
-            else if (e.keyCode == 39 || e.keyCode == 38) { // Right or Up
+            else if (e.keyCode == 39) { // Right or Up
                 console.log("up");
                 var curr_index = $('#image-sel').prop("selectedIndex");
                     next_value = $($('#image-sel option')[curr_index+1]).val();
@@ -796,14 +887,24 @@
         });
 
         for (var i=0; i<labels.length; ++i) {
-            this.addLabel(labelGroup, labels[i], "green");
+            var bck_color = "gray",
+                txt_color = "white";
+
+            // see if there is the label color in the pallete
+            var dt = dataset_sel.val().toLowerCase(),
+                cat = labels[i].toLowerCase();
+            if (this.color_pallete[dt] && this.color_pallete[dt][cat]) {
+                bck_color = this.color_pallete[dt][cat]["background"];
+                txt_color = this.color_pallete[dt][cat]["text"];
+            }
+            this.addLabel(labelGroup, labels[i], bck_color, txt_color);
         }
 
         group.add(labelGroup);
     }
 
 
-    Annotator.addLabel = function(group, label, color) {
+    Annotator.addLabel = function(group, label, background_color, text_color) {
         var labelsAdded = group.get('Label'),
             offsetX = 10
         for (var i = 0; i < labelsAdded.length; ++i)
@@ -815,7 +916,7 @@
             opacity: 0.85
         });
         simpleLabel.add(new Konva.Tag({
-            fill: color
+            fill: background_color
         }));
 
         simpleLabel.add(new Konva.Text({
@@ -823,7 +924,7 @@
             fontFamily: 'Calibri',
             fontSize: 14,
             padding: 3,
-            fill: 'white',
+            fill: text_color,
             id: 'tag'
         }));
 

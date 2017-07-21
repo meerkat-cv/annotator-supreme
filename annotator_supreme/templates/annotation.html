@@ -1,8 +1,7 @@
 {% extends "main_template.html" %}
 {% block content_header %}
       <h1 id="annotation-title">
-        Annotating 
-          <!-- <small>Optional description</small> -->
+        
       </h1>
       <ol class="breadcrumb">
         <li><a href="/annotator-supreme/">Home</a></li>
@@ -38,8 +37,8 @@
                 <div class="form-group col-lg-6">
                     <label>Select the dataset:</label>
                     <select mutiple class="form-control" id="dataset-sel">
-                        {% for d in datasets %}
-                            <option> {{ d.name }} </option>
+                        {% for d in dataset_names %}
+                            <option> {{ d }} </option>
                         {% endfor %}
                     </select>
                 </div>
@@ -64,15 +63,18 @@
 {% endblock %}
 {% block load_script %}
 <!-- <script src="/annotator-supreme/static/meerkat/js/via.js"></script> -->
+<script src="/annotator-supreme/static/plugins/typeahead/typeahead.bundle.js"></script>
 <script src="/annotator-supreme/static/plugins/konva/konva.min.js"></script>
-<script src="/annotator-supreme/static/meerkat/js/annotator-supreme.js"></script>
 <script src="/annotator-supreme/static/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js"></script>
+<script src="/annotator-supreme/static/meerkat/js/annotator-supreme.js"></script>
+
 {% endblock %}
 
 {% block script %}
   $('body').addClass('sidebar-collapse');  
   $(document).ready(function() {
     window.Annotator.selectDatasetImage("{{sel_dataset}}", "{{sel_image}}");
+    window.Annotator.initDatasetData({{datasets | safe}})
   });
   
 
