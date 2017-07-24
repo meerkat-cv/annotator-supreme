@@ -94,20 +94,24 @@
             this.color_pallete[dataset_list[i].name] = {}
 
             for (var j = 0; j < dataset_list[i].image_categories.length; ++j) {
-                var cat = dataset_list[i].image_categories[j].toLowerCase(),
-                    bck_color = dataset_list[i].category_colors[j],
-                    txt_color = this.textColorFromBackgroundColor(bck_color);
-                css_rules = css_rules +"\
-                .label-"+dataset_list[i].name.toLowerCase()+"-"+cat+" {\
-                    background-color: "+bck_color+" !important;\
-                    color: "+txt_color+" !important;\
-                }"
+                var cat = dataset_list[i].image_categories[j].toLowerCase();
 
-                // also add to color pallete
-                this.color_pallete[dataset_list[i].name.toLowerCase()][cat] = {
-                    "background": bck_color,
-                    "text": txt_color
-                };
+                if (cat != "default") {
+                    var bck_color = dataset_list[i].category_colors[j],
+                        txt_color = this.textColorFromBackgroundColor(bck_color);
+                    css_rules = css_rules +"\
+                    .label-"+dataset_list[i].name.toLowerCase()+"-"+cat+" {\
+                        background-color: "+bck_color+" !important;\
+                        color: "+txt_color+" !important;\
+                    }"
+
+                    // also add to color pallete
+                    this.color_pallete[dataset_list[i].name.toLowerCase()][cat] = {
+                        "background": bck_color,
+                        "text": txt_color
+                    };
+                }
+                    
             }
         }
         // add rules to labels
