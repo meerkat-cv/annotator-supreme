@@ -26,3 +26,24 @@ class ImageUtils:
         for a in annotations.bboxes:
             cv2.rectangle(image, (int(a.left), int(a.top)), (int(a.right), int(a.bottom)), (20, 20, 200), 5)
         return image
+
+    @staticmethod
+    def rotate_image(image, orientation):
+        if orientation == "ccw":
+            img_ccw = cv2.transpose(image)
+            return cv2.flip(img_ccw, 0)
+        elif orientation == "cw":
+            img_cw = cv2.flip(image, 0)
+            return cv2.transpose(img_cw)
+        else:
+            return image
+
+
+    @staticmethod
+    def flip_image(image, direction):
+        if direction == "h":
+            return cv2.flip(image, 1)
+        elif direction == "v":
+            return cv2.flip(image, 0)
+        else:
+            return image

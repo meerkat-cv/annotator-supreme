@@ -2,6 +2,7 @@
 from annotator_supreme.models.image_model import ImageModel
 from annotator_supreme.controllers.base_controller import memoized_ttl
 from annotator_supreme.models.dataset_model import DatasetModel
+from annotator_supreme.controllers.image_utils import ImageUtils
 
 
 class ImageController():
@@ -54,6 +55,37 @@ class ImageController():
     def delete_image(self, dataset, image_id):
         (ok, error) = ImageModel.delete_image(dataset, image_id)
         return (ok, error)
+
+    def rotate_image(self, dataset, image_id, orientation):
+        img_o = ImageModel.from_database_and_key(dataset, image_id)
+        if img_o is None:
+            return (False, "No able to find image, check you parameters!")
+
+        orientation = orientation.lower()
+        if orientation != "cw" and orientation != "ccw":
+            return (False, "Orientation must be cw or ccw!")
+
+        img_o.image = ImageUtils.rotate_image(img_o.image, orientation)
+        aux = img_o.width
+        img_o.width = img_o.height
+        img_o.height = aux
+        img_o.upsert();
+
+        return (True, "")
+
+    def flip_image(self, dataset, image_id, direction):
+        img_o = ImageModel.from_database_and_key(dataset, image_id)
+        if img_o is None:
+            return (False, "No able to find image, check you parameters!")
+
+        direction = direction.lower()
+        if direction != "h" and direction != "v":
+            return (False, "Direction must be h or v!")
+
+        img_o.image = ImageUtils.flip_image(img_o.image, direction)
+        img_o.upsert();
+
+        return (True, "")
 
     @staticmethod
     def all_images(dataset_name):

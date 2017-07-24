@@ -13,7 +13,6 @@
         this.color_pallete = {};
         this.blood_hounds = {};
         this.bind();
-
         
         
         // Populate the default selected dataset
@@ -123,6 +122,63 @@
         this.bindKeyEvents();
         this.bindCategoryCheckbox();
         this.bindTooltip();
+        this.bindImageEditButtons();
+    }
+
+    Annotator.bindImageEditButtons = function () {
+        var self = this;
+        $("#image-rotate-ccw").click(function() {
+            // make a request to rotate the image
+            $.ajax({
+                type: 'get',
+                url: "/annotator-supreme/image/edit/rotate/"+dataset_sel.val()+"/"+image_sel.val()+"?orientation=ccw",
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.log("error"+jqXHR.responseText);
+                },
+                success: function (data) {
+                    self.setImageTag(image_sel);
+                }
+            });
+        });
+        $("#image-rotate-cw").click(function() {
+            // make a request to rotate the image
+            $.ajax({
+                type: 'get',
+                url: "/annotator-supreme/image/edit/rotate/"+dataset_sel.val()+"/"+image_sel.val()+"?orientation=cw",
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.log("error"+jqXHR.responseText);
+                },
+                success: function (data) {
+                    self.setImageTag(image_sel);
+                }
+            });
+        });
+        $("#image-flip-h").click(function() {
+            // make a request to rotate the image
+            $.ajax({
+                type: 'get',
+                url: "/annotator-supreme/image/edit/flip/"+dataset_sel.val()+"/"+image_sel.val()+"?direction=h",
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.log("error"+jqXHR.responseText);
+                },
+                success: function (data) {
+                    self.setImageTag(image_sel);
+                }
+            });
+        });
+        $("#image-flip-v").click(function() {
+            // make a request to rotate the image
+            $.ajax({
+                type: 'get',
+                url: "/annotator-supreme/image/edit/flip/"+dataset_sel.val()+"/"+image_sel.val()+"?direction=v",
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.log("error"+jqXHR.responseText);
+                },
+                success: function (data) {
+                    self.setImageTag(image_sel);
+                }
+            });
+        });
     }
 
     Annotator.bindLabelInput = function() {
@@ -188,7 +244,7 @@
 
     Annotator.setImageTag = function(elem) {
         $("#annotation-title").html("Annotating <b>"+image_sel.val()+"</b> from <b>"+dataset_sel.val()+"</b>");
-        $("#img-to-anno").attr("src", '/annotator-supreme/image/'+dataset_sel.val()+"/"+$(elem).val());
+        $("#img-to-anno").attr("src", '/annotator-supreme/image/'+dataset_sel.val()+"/"+$(elem).val()+"?t=" + new Date().getTime());
         $(elem).data("previous", $(elem).val());
         $(elem).blur();
     }
@@ -829,6 +885,7 @@
             }
             else {
                 bbox.attrs.ignore = true;
+                bbox.attrs.labels = []; // remove labels
                 var rect = bbox.get('Rect')[0];
                 rect.fill('rgba(100,100,100,0.5)');
                 rect.stroke('rgba(100,100,100,1.0)');
@@ -906,6 +963,7 @@
     }
 
     Annotator.addLabelGroup = function(group) {
+        // TODO: this could be included multiple times
         var labelGroup = new Konva.Group({
             x: 0,
             y: -20,
@@ -967,7 +1025,7 @@
 
     Annotator.setIgnoreLabel = function(group) {
         this.clearLabels(group);
-        this.addLabel(group.findOne("#labelBar"), "ignore", "gray");
+        this.addLabel(group.findOne("#labelBar"), "ignore", "gray", "white");
     }
 
 

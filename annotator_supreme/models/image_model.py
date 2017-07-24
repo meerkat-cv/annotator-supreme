@@ -77,7 +77,7 @@ class ImageModel():
                 r = rows[0]
                 image = np.fromstring(r.img, dtype=np.uint8)
                 image = cv2.imdecode(image, cv2.IMREAD_COLOR)
-                image = image.reshape(r.height, r.width, 3)
+                # image = image.reshape(r.height, r.width, 3)
 
                 return cls(r.phash, r.dataset, image, r.name, r.annotation, r.category, r.partition, r.fold, r.last_modified)
             elif len(rows) > 1:
