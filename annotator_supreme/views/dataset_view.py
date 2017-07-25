@@ -33,6 +33,22 @@ class DatasetView(FlaskView):
         else:
             return '', 200
 
+    @route('/dataset/<dataset>/partition', methods=['POST'])
+    def create_partition(self, dataset):
+        (ok, error, partitions) = view_tools.get_param_from_request(request, "partitions")
+        if not ok:
+            raise error_views.InvalidParametersError(error)
+
+        (ok, error, percentages) = view_tools.get_param_from_request(request, "percentages")
+        if not ok:
+            raise error_views.InvalidParametersError(error)
+
+        (ok, error) = self.controller.set_partition(dataset, partitions, percentages)
+        if not ok:
+            raise error_views.InvalidParametersError(error)
+
+        return '', 200
+
     @route('/dataset/create', methods=['POST'])
     def create_datasets(self):
         (ok, error, name) = view_tools.get_param_from_request(request, "name")
@@ -45,3 +61,5 @@ class DatasetView(FlaskView):
 
         self.controller.create_dataset(name, tags)
         return flask.jsonify({"ok": "to-do"})
+
+    

@@ -5,8 +5,9 @@ import importlib
 class PluginsController():
     """
     A plugin must have the following interface:
-        def process(im, anno): -> process the image/annotations
-            return (im, anno)
+        def process(im, anno, dataset_name): -> process the image/annotations
+            return (im, anno, res)
+                where res is a dictionary serialziable (json)
         def init():            -> does the script initialization (possibly nothing)
         def end():             -> does the script termination (possibly nothing)
         def get_parameters():  -> returns the script parameters. Not implemented yet.
