@@ -20,6 +20,13 @@ html {
   padding: 10px 5px 0;
 }
 
+.part-icon {
+  position: absolute;
+  top: 180px;
+  left: 30px;
+  color: lightgray;
+}
+
 .remove-img {
   float: left;
   position: absolute;
