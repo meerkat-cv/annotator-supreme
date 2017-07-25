@@ -4,7 +4,7 @@ from cassandra.cluster import Cluster
 from annotator_supreme.models import bbox_model
 # from annotator_supreme.models import image_model
 
-KEYSPACE = "annotator_supreme"
+
 
 db_global = None
 
@@ -12,6 +12,8 @@ def get_db(config):
     """
     This functions connect to the Cassandra database and kept in the flask app
     """
+    KEYSPACE = app.config["KEYSPACE"]
+
     global db_global
     with app.app_context():
         if db_global is None:
@@ -27,6 +29,7 @@ def get_db(config):
 class DatabaseController:
 
     def setup_database(self):
+        KEYSPACE = app.config["KEYSPACE"]
         cluster = Cluster(protocol_version=3)
         session = cluster.connect()
 
