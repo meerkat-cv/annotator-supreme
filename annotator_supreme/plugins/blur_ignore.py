@@ -3,7 +3,7 @@ import numpy as np
 
 _VERSION = '0.0.1'
 
-def process(im, anno):
+def process(im, anno, dataset_name):
     im_blur = im
 
     if anno is not None:
@@ -22,7 +22,7 @@ def process(im, anno):
             kernel_size = int(biggest_dim/5.0) + (1-int(biggest_dim/5.0)%2)
             im_blur[t:b,l:r] = cv2.GaussianBlur(im_blur[t:b,l:r], (kernel_size, kernel_size), biggest_dim/5.0)
 
-    return (im_blur, anno)
+    return (im_blur, anno, {})
 
 
 def init():

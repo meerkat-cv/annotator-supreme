@@ -42,11 +42,12 @@ class PluginsController():
         return True
 
 
-    def process(self, im, anno):
-        return self.plugin.process(im, anno)
+    def process(self, im, anno, dataset_name):
+        return self.plugin_obj.process(im, anno, dataset_name)
 
-    def init_plugin(self):
-        self.plugin.init()
-
+    def init_plugin(self, dataset_name):
+        
+        self.plugin_obj = self.plugin.AnnotatorPlugin(dataset_name)
+        
     def end_plugin(self):
-        self.plugin.end()
+        self.plugin_obj.end()

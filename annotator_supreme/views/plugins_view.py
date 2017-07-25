@@ -19,9 +19,9 @@ class PluginsView(FlaskView):
     def get_plugin_process_image(self, dataset, imageid):
         self.get_plugin_from_request(request)
 
-        self.controller.init_plugin()
+        self.controller.init_plugin(dataset, imageid)
         (img, anno) = self.get_image_and_anno(dataset, imageid)
-        (img, anno) = self.controller.process(img, anno)
+        (img, anno, plugin_res) = self.controller.process(img, anno, dataset)
         self.controller.end_plugin()
 
         fileid = "img" # uuid.uuid4().hex
@@ -33,19 +33,19 @@ class PluginsView(FlaskView):
         img_bytes = cv2.imencode('.jpg', img)[1].tostring()
         img_encoded = base64.b64encode(img_bytes).decode()
 
-        return flask.jsonify({'image': img_encoded})
+        return flask.jsonify({'image': img_encoded, 'res': plugin_res})
 
 
     @route('/plugins/process/<dataset>', methods=['GET'])
     def get_plugin_process(self, dataset):
         self.get_plugin_from_request(request)
-        self.controller.init_plugin()
+        self.controller.init_plugin(dataset)
         all_imgs = ImageController.all_images(dataset)
         for im_obj in all_imgs:
             (img, anno) = self.get_image_and_anno(dataset, im_obj['phash'])
-            (img, anno) = self.controller.process(img, anno)
+            (img, anno, plugin_res) = self.controller.process(img, anno, dataset)
         self.controller.end_plugin()
-        return '',200
+        return flask.jsonify({"res": plugin_res})
 
 
     @route('/plugins/all', methods=['GET'])

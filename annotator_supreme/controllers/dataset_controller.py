@@ -2,6 +2,8 @@
 from annotator_supreme.models.dataset_model import DatasetModel
 from annotator_supreme.models.image_model import ImageModel
 from annotator_supreme.controllers.image_controller import ImageController
+from annotator_supreme.controllers.ref_count_controller import RefCountController
+
 import random
 
 
@@ -9,6 +11,7 @@ class DatasetController():
 
     def __init__(self):
         self.image_controller = ImageController()
+        self.ref_controller = RefCountController()
 
     def create_dataset(self, dataset_name, tags):
         d = DatasetModel(dataset_name, tags)
@@ -23,10 +26,11 @@ class DatasetController():
             rows = DatasetModel.list_datasets()
             datasets = []
             for ds_row in rows:
+                print("catigoria", self.ref_controller.get_all_categories(ds_row.name))
                 datasets.append({'name': ds_row.name, 
                         'tags': ds_row.tags, 
-                        'annotation_labels': ds_row.annotation_labels, 
-                        'image_categories': ds_row.image_categories, 
+                        'annotation_labels': self.ref_controller.get_all_labels(ds_row.name), 
+                        'image_categories': self.ref_controller.get_all_categories(ds_row.name), 
                         'last_modified': ds_row.last_modified})
 
             return datasets

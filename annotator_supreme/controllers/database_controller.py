@@ -91,3 +91,31 @@ class DatabaseController:
                 """)
         except cassandra.AlreadyExists:
             app.logger.info("Table 'images' already exists.")
+
+
+        try:
+            app.logger.info("\t- creating table label_ref_count")
+            session.execute("""
+                CREATE TABLE label_ref_count (
+                    dataset text,
+                    label text,
+                    ref_count int,
+                    PRIMARY KEY ((dataset), label)
+                )
+                """)
+        except cassandra.AlreadyExists:
+            app.logger.info("Table 'label_ref_count' already exists.")
+
+
+        try:
+            app.logger.info("\t- creating table category_ref_count")
+            session.execute("""
+                CREATE TABLE category_ref_count (
+                    dataset text,
+                    category text,
+                    ref_count int,
+                    PRIMARY KEY ((dataset), category)
+                )
+                """)
+        except cassandra.AlreadyExists:
+            app.logger.info("Table 'category_ref_count' already exists.")
