@@ -5,11 +5,10 @@ import importlib
 class PluginsController():
     """
     A plugin must have the following interface:
-        def process(im, anno, dataset_name): -> process the image/annotations
-            return (im, anno, res)
-                where res is a dictionary serialziable (json)
-        def init():            -> does the script initialization (possibly nothing)
-        def end():             -> does the script termination (possibly nothing)
+        def process(im, anno): -> process the image/annotations
+            return (im, anno)
+        def init(dataset):            -> does the script initialization (possibly nothing)
+        def end():             -> return json; does the script termination (possibly nothing)
         def get_parameters():  -> returns the script parameters. Not implemented yet.
             return {'parameters': []}
         def get_version():     -> get plugin version
@@ -17,6 +16,7 @@ class PluginsController():
     """
     def __init__(self):
         self.plugin = None
+        self.plugin_obj = None
 
     def get_all_plugins(self):
         plugins = os.listdir('./annotator_supreme/plugins/')
@@ -42,12 +42,11 @@ class PluginsController():
         return True
 
 
-    def process(self, im, anno, dataset_name):
-        return self.plugin_obj.process(im, anno, dataset_name)
+    def process(self, im, anno):
+        return self.plugin_obj.process(im, anno)
 
-    def init_plugin(self, dataset_name):
-        
-        self.plugin_obj = self.plugin.AnnotatorPlugin(dataset_name)
+    def init_plugin(self, dataset):
+        self.plugin_obj = self.plugin.AnnotatorPlugin(dataset)
         
     def end_plugin(self):
-        self.plugin_obj.end()
+        return self.plugin_obj.end()
