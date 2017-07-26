@@ -69,13 +69,86 @@
             })
         });
 
+        $("#supreme-url").val("http://mserver:4248");
         $("#export-dataset-btn").click(function() {
             global.Main.enableLoading("Exporting all...");
-            setTimeout(function() {
-                global.Main.disableLoading();
-            }, 5000);
-
+            self.checkIfDatasetExist(self.sendImages);
         });
+    }
+
+
+    Dataset.checkIfDatasetExist = function(callback) {
+        $.ajax({
+            url: $("#supreme-url").val()+"/dataset/"+$("#dataset-sel-export").val(),
+            type: 'GET',
+            success: function(data) {
+                // if exists, for now, dont accept
+                console.log("Dataset already exists, cancelled.");
+                global.Main.disableLoading();
+            },
+            error: function() {
+                console.log("not");
+            }
+        });
+    }
+
+    Dataset.sendImages = function () {
+        $.ajall_imagesax({
+            url: "http://localhost/annotator-supreme/image/"+$("#dataset-sel-export").val()+"/all",
+            type: 'GET',
+            success: function(data) {
+                console.log("Cool, ok!",data);
+                var images = data.images;
+
+                for (var i = 0; i < images.length; ++i) {
+                    var img_url = "http://localhost/annotator-supreme/image/"+images[i].url;
+                    self.toDataURL(i, img_url, function(i, base64_img) {
+                        console.log("image cat", i);
+
+                        var data = {
+                            "category": images[i].category,
+                            "name": images[i].name,
+                            "imageB64": base64_img.replace("data:image/jpg;base64,", "")
+                        };
+
+                        $.ajax({
+                                url: $("#supreme-url").val()+"/image",
+                                type: 'POST',
+                                contentType: 'application/json',
+                                data: JSON.stringify(data),
+                            success: function(result) {
+                                console.log("Done!");
+                                window.location.reload();
+                            }
+                        });
+                        console.log("data", data);
+                    });
+
+                    
+                }
+
+                global.Main.disableLoading();
+            },
+            error: function() {
+                console.log("yaks, could not get image list");
+                global.Main.disableLoading();
+            }
+        });
+    }
+
+
+    Dataset.toDataURL = function(i, url, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.onload = function () {
+            var reader = new FileReader();
+            reader.onloadend = function () {
+                callback(i, reader.result);
+            }
+            reader.readAsDataURL(xhr.response);
+        };
+        xhr.open('GET', url);
+        xhr.responseType = 'blob';
+        xhr.send();
     }
 
     Dataset.purgeDataset = function(dataset) {
