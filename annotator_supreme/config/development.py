@@ -7,5 +7,7 @@ APP_DEBUG = False
 CORS_HEADERS = 'Content-Type'
 CORS_ORIGINS = '*'
 
+KEYSPACE = "annotator_supreme"
+
 #Logging
 LOG_LEVEL = logging.INFO
