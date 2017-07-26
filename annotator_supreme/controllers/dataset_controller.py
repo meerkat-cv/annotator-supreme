@@ -20,6 +20,8 @@ class DatasetController():
 
     def get_dataset(self, dataset_name):
         dataset_obj = DatasetModel.from_name(dataset_name)
+        if dataset_obj is None:
+            return None
         labels = self.ref_controller.get_all_labels(dataset_obj.dataset_name)
         categories = self.ref_controller.get_all_categories(dataset_obj.dataset_name)
         dataset_d = {
