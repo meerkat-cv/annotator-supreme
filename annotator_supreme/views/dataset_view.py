@@ -20,7 +20,20 @@ class DatasetView(FlaskView):
 
     @route('/dataset/<dataset>', methods=['GET'])
     def get_dataset_size(self, dataset):
+        # obj = self.image_controller.all_images(dataset)
+    
+        d = self.controller.get_dataset(dataset)
+        if obj is not None:
+            return "Dataset not found", 404
+        else:
+            return "", 200
+
+
+
+    @route('/dataset/<dataset>/size', methods=['GET'])
+    def get_dataset_size(self, dataset):
         obj = self.image_controller.all_images(dataset)
+        print("obj", obj)
         # return flask.jsonify({"dataset_size": len(obj)})
         print('returning', flask.jsonify({"dataset_size": len(obj)}))
         return flask.jsonify({"dataset_size": len(obj)})
