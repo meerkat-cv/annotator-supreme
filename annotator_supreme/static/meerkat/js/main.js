@@ -44,6 +44,17 @@
         });   
     }
 
+    Main.enableLoading = function (msg) {
+        if (msg) {
+            $('#loading-msg').html(msg);
+        }
+        $('#modal-loading').modal('show');
+    }
+
+    Main.disableLoading = function (msg) {
+        $('#modal-loading').modal('hide');
+    }
+
     global.Main = Main;
     global.Main.init();
 

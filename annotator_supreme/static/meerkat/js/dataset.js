@@ -49,6 +49,33 @@
             });
 
         });
+
+
+        $("#check-supreme-server-btn").click(function() {
+            var btn = $(this);
+            btn.html('<i class="fa fa-refresh"></i>\nCheck')
+            $.ajax({
+                url: $("#supreme-url").val() + '/version',
+                type: 'GET',
+                success: function(d) {
+                    console.log("Cool, ok!",d);
+                    btn.html('<i class="fa fa-check"></i>\nCheck')
+
+                },
+                error: function() {
+                    console.log("yaks, is off")
+                    btn.html('<i class="fa fa-close"></i>\nCheck')
+                }
+            })
+        });
+
+        $("#export-dataset-btn").click(function() {
+            global.Main.enableLoading("Exporting all...");
+            setTimeout(function() {
+                global.Main.disableLoading();
+            }, 5000);
+
+        });
     }
 
     Dataset.purgeDataset = function(dataset) {

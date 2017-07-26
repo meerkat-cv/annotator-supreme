@@ -18,3 +18,9 @@
 #api-error-alert {
     margin-top: 20px;
 }
+
+.loading-full {
+    font-size: 20px;
+    margin-top: 30%;
+    color: white;
+}
