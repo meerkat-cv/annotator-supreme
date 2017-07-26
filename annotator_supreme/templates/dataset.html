@@ -1,11 +1,12 @@
 {% extends "main_template.html" %} {% block content %}
 <link rel="stylesheet" href="/annotator-supreme/static/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.css" />
+<link rel="stylesheet" href="/annotator-supreme/static/plugins/bootstrap-slider/slider.css" />
 <link rel="stylesheet" href="/annotator-supreme/static/meerkat/css/dataset.css" />
 <div class="row">
     <div class="col-xs-10">
         <div class="box box-success">
             <div class="box-header">
-                <h3 class="box-title">datasets</h3>
+                <h3 class="box-title">Datasets</h3>
             </div>
             <div class="box-body">
                 <table id="dataset-table" class="table table-bordered table-hover">
@@ -14,6 +15,7 @@
                             <th>Name</th>
                             <th>Tags</th>
                             <th>All categories</th>
+                            <th>All labels</th>
                             <th>Last modified</th>
                             <th>Images</th>
                             <th>Purge</th>
@@ -25,6 +27,7 @@
                             <td>{{ d.name }}</td>
                             <td>{{ d.tags }}</td>
                             <td>{{ d.image_categories }}</td>
+                            <td>{{ d.annotation_labels }}</td>
                             <td>{{ d.last_modified }}</td>
                             <td>
                                 <a href="/annotator-supreme/visualize/{{d.name}}">
@@ -45,7 +48,62 @@
                 
             </div>
             <div class="box-footer">
-                <button id="add-dataset-btn" type="button" class="btn btn-success"><i class="fa fa-dataset-plus"></i> Add another dataset</button>
+                <button id="add-dataset-btn" type="button" class="btn btn-success"><i class="fa fa-plus"></i>
+                Add another dataset</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-xs-10">
+        <div class="box box-danger">
+            <div class="box-header">
+                <h3 class="box-title">Partition dataset</h3>
+            </div>
+            <div class="box-body">
+                <!-- <div class="row clearfix"> -->
+                    <div class="form-group">
+                        <label>Select the dataset:</label>
+                        <select mutiple class="form-control" id="dataset-sel">
+                            {% for d in datasets %}
+                            <option> {{ d.name }} </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                <!-- </div> -->
+                
+                <div class="row clearfix">
+                    
+                    <div class="col-md-8 slider-part-container">
+                        <input id="percentageSlider" data-slider-id='red' type="text" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="80" />
+                    </div>
+                    <div class="col-md-2">
+                        <div class="row part-percentage training">
+                            80%
+                        </div>
+                        <div class="row part-label">
+                            training
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="row part-percentage testing">
+                            20%
+                        </div>
+                        <div class="row part-label">
+                            testing
+                        </div>
+                    </div>
+                </div>
+
+                
+            </div>
+            <div class="box-footer partition">
+                <button id="part-dataset-btn" type="button" class="btn btn-primary"><i class="fa fa-hand-scissors-o">
+                </i> 
+                Partition</button>
             </div>
 
         </div>
@@ -147,7 +205,8 @@
 {% endblock %}
 
 {% block load_script %}
-<script src="/annotator-supreme/static/meerkat/js/dataset.js"></script>
+<script src="/annotator-supreme/static/plugins/bootstrap-slider/bootstrap-slider.js"></script>
 <script src="/annotator-supreme/static/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js"></script>
+<script src="/annotator-supreme/static/meerkat/js/dataset.js"></script>
 {% endblock %}
 

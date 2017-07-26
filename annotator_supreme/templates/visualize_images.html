@@ -19,6 +19,13 @@
           <div class="category-img">{{ i.category }}</div>
           <a href="#expand-jump-0"><img id="expand-jump-0" class="basic__img lazy" data-original="/annotator-supreme/image/thumb/{{ i.url }}" alt="{{i.phash}}" width=200 height=200></a>
           <div class="arrow--up"></div>
+          <div class="part-icon">
+            {% if i.partition == 0 %}
+              <i class="fa fa-fw fa-database"></i>
+            {% else %}
+              <i class="fa fa-fw fa-rocket"></i>
+            {% endif %}
+          </div>
       </div>
       <div class="image--expand">
           <a href="#close-jump-0" class="expand__close"></a>
@@ -50,6 +57,8 @@
                 <button type="button" class="btn btn-block btn-default"><i class="fa fa-fw fa-mail-forward"></i>Annotate</button>
               </a>
             </div>
+
+
 
 
 

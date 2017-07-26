@@ -4,6 +4,7 @@ import importlib
 from flask.ext.classy import FlaskView, route, request
 from annotator_supreme.controllers.plugins_controller import PluginsController
 from annotator_supreme.controllers.image_controller import ImageController
+from annotator_supreme.controllers.dataset_controller import DatasetController
 from annotator_supreme.views import view_tools
 from annotator_supreme.views import error_views
 import cv2
@@ -14,15 +15,17 @@ class PluginsView(FlaskView):
     def __init__(self):
         self.controller = PluginsController()
         self.image_controller = ImageController()
+        self.dataset_controller = DatasetController()
 
     @route('/plugins/process/<dataset>/<imageid>', methods=['GET'])
     def get_plugin_process_image(self, dataset, imageid):
         self.get_plugin_from_request(request)
 
-        self.controller.init_plugin()
+        self.controller.init_plugin(self.dataset_controller.get_dataset(dataset))
+
         (img, anno) = self.get_image_and_anno(dataset, imageid)
         (img, anno) = self.controller.process(img, anno)
-        self.controller.end_plugin()
+        plugin_res = self.controller.end_plugin()
 
         fileid = "img" # uuid.uuid4().hex
         full_filename = 'annotator_supreme/static/'+fileid+'.jpg'
@@ -33,19 +36,22 @@ class PluginsView(FlaskView):
         img_bytes = cv2.imencode('.jpg', img)[1].tostring()
         img_encoded = base64.b64encode(img_bytes).decode()
 
-        return flask.jsonify({'image': img_encoded})
+        return flask.jsonify({'image': img_encoded, 'plugin_response': plugin_res})
 
 
     @route('/plugins/process/<dataset>', methods=['GET'])
     def get_plugin_process(self, dataset):
         self.get_plugin_from_request(request)
-        self.controller.init_plugin()
+        
+        self.controller.init_plugin(self.dataset_controller.get_dataset(dataset))
+
         all_imgs = ImageController.all_images(dataset)
         for im_obj in all_imgs:
             (img, anno) = self.get_image_and_anno(dataset, im_obj['phash'])
             (img, anno) = self.controller.process(img, anno)
-        self.controller.end_plugin()
-        return '',200
+        
+        plugin_res = self.controller.end_plugin()
+        return flask.jsonify({"plugin_response": plugin_res})
 
 
     @route('/plugins/all', methods=['GET'])

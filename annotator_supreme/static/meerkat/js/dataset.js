@@ -9,6 +9,8 @@
 
     Dataset.init = function () {
         this.bindButtons();
+        this.initSlider();
+        this.TRAINING_PERCENTAGE = 80/100.0;
     };
 
     Dataset.bindButtons = function() {
@@ -47,7 +49,25 @@
                     window.location.reload();
                 }
             });
+        });
 
+        $("#part-dataset-btn").click(function() {
+            var post_data = {
+                "partitions": ["training", "testing"],
+                "percentages": [self.TRAINING_PERCENTAGE, 1-self.TRAINING_PERCENTAGE]
+            }
+            $.ajax({
+                url: '/annotator-supreme/dataset/' + $("#dataset-sel").val() + "/partition",
+                type: 'POST',
+                data: JSON.stringify(post_data),
+                contentType: 'application/json',
+                success: function(result) {
+                    console.log("ok");
+                },
+                error: function() {
+                    console.log("error");
+                }
+            })
         });
 
 
@@ -150,6 +170,20 @@
         xhr.responseType = 'blob';
         xhr.send();
     }
+
+
+    Dataset.initSlider = function () {
+        var self = this;
+        this.slider = new Slider('#percentageSlider', {
+            formatter: function (value) {
+                return 'Training percentage: ' + value + '%.';
+            }
+        }).on('slide', function (value) {
+            self.TRAINING_PERCENTAGE = parseInt(value, 10)/100.0;
+            $('.part-percentage.training').html(value+"%");
+            $('.part-percentage.testing').html((100-value)+"%");
+        });
+    } 
 
     Dataset.purgeDataset = function(dataset) {
         // make the request to remove dataset and associated images

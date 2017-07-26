@@ -19,7 +19,8 @@
 
     VisualizeImages.bindExpand = function () {
         //bind click events
-        $cell.find('.image--basic').click(function() {
+        $cell.find('.image--basic').click(function(e) {
+            e.preventDefault();
           var $thisCell = $(this).closest('.image__cell');
           
           if ($thisCell.hasClass('is-collapsed')) {

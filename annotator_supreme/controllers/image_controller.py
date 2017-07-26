@@ -3,22 +3,25 @@ from annotator_supreme.models.image_model import ImageModel
 from annotator_supreme.controllers.base_controller import memoized_ttl
 from annotator_supreme.models.dataset_model import DatasetModel
 from annotator_supreme.controllers.image_utils import ImageUtils
+from annotator_supreme.controllers.ref_count_controller import RefCountController
 
 
 class ImageController():
 
     def __init__(self):
-        pass
+        self.ref_controller = RefCountController()
 
     def create_image(self, dataset_name, image, name = "", bboxes=[], category="", partition = 0, fold = 0):
         try:
             img = ImageModel("", dataset_name, image, name, bboxes, category, partition, fold)
             img.upsert()
 
-            # att the category and labels of the dataset
-            dataset = DatasetModel.from_name(dataset_name)
-            if category not in dataset.image_categories:
-                dataset.add_image_category(category)
+            self.ref_controller.increment_category_reference(dataset_name, category)
+
+            # # att the category and labels of the dataset
+            # dataset = DatasetModel.from_name(dataset_name)
+            # if category not in dataset.image_categories:
+            #     dataset.add_image_category(category)
 
             return (True, "", img.phash)
 
@@ -44,15 +47,34 @@ class ImageController():
         img_o = ImageModel.from_database_and_key(dataset_name, id)
         return img_o.image
 
+    def set_partition(self, dataset_name, id, partition):
+        img_o = ImageModel.from_database_and_key(dataset_name, id)
+        img_o.partition = partition
+        img_o.upsert()
+
     def get_image_anno(self, dataset_name, id):
         img_o = ImageModel.from_database_and_key(dataset_name, id)
         return img_o
 
     def change_annotations(self, dataset, id, anno):
         img_o = ImageModel.from_database_and_key(dataset, id)
+
+        # decrement label from old annotation and increment for the new ones
+        for an in img_o.bboxes:
+            for lbl in an.labels:
+                self.ref_controller.decrement_label_reference(dataset, lbl)
+
+        for an in anno:
+            for lbl in an.labels:
+                self.ref_controller.increment_label_reference(dataset, lbl)
         img_o.change_bboxes(anno)
 
     def delete_image(self, dataset, image_id):
+        img_o = ImageModel.from_database_and_key(dataset, image_id)
+
+        # remove reference for category
+        self.ref_controller.decrement_category_reference(dataset, img_o.category)
+
         (ok, error) = ImageModel.delete_image(dataset, image_id)
         return (ok, error)
 
