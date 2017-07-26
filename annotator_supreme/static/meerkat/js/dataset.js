@@ -89,7 +89,6 @@
             })
         });
 
-        $("#supreme-url").val("http://mserver:4248");
         $("#export-dataset-btn").click(function() {
             global.Main.enableLoading("Exporting all...");
             self.checkIfDatasetExist(self.sendImages.bind(self));
@@ -160,41 +159,7 @@
                 console.log("Cool, ok!",data);
                 var images = data.images;
 
-                for (var i = 0; i < images.length; ++i) {
-                    var img_url = "/annotator-supreme/image/"+images[i].url;
-                    toDataURL(i, img_url, function(i, base64_img) {
-                        console.log("image cat", i);
-
-                        var data = {
-                            "category": images[i].category,
-                            "name": images[i].name,
-                            "imageB64": base64_img.replace("data:image/jpeg;base64,", "")
-                        };
-
-                        $.ajax({
-                                url: $("#supreme-url").val()+"/image/" + dataset + "/add",
-                                type: 'POST',
-                                contentType: 'application/json',
-                                data: JSON.stringify(data),
-                            success: function(result) {
-                                console.log("Added :", result);
-                                var imageId = result.imageId;
-
-                                self.sendAnnotation(images[i].phash, imageId);
-                                // window.location.reload();
-                            },
-                            error: function(result) {
-                                console.log("Error including image!");
-                                global.Main.disableLoading();
-                            }
-                        });
-                        console.log("data", data);
-                    });
-
-                    
-                }
-
-                global.Main.disableLoading();
+                self.sendImageLoop(0, images);
             },
             error: function() {
                 console.log("yaks, could not get image list");
@@ -202,6 +167,49 @@
             }
         });
     }
+
+    Dataset.sendImageLoop = function (i, images) {
+        var dataset = $("#dataset-sel-export").val(),
+            img_url = "/annotator-supreme/image/"+images[i].url,
+            self = this;
+        toDataURL(i, img_url, function(i, base64_img) {
+            console.log("image cat", i);
+
+            var data = {
+                "category": images[i].category,
+                "name": images[i].name,
+                "imageB64": base64_img.replace("data:image/jpeg;base64,", "")
+            };
+
+            $.ajax({
+                    url: $("#supreme-url").val()+"/image/" + dataset + "/add",
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                success: function(result) {
+                    console.log("Added :", result);
+                    var imageId = result.imageId;
+
+                    self.sendAnnotation(images[i].phash, imageId);
+                    if (i+1 < images.length) {
+                        self.sendImageLoop(i+1, images);
+                    }
+                    else {
+                        console.log("Finished all");
+                        global.Main.disableLoading();    
+                    }
+                    
+                },
+                error: function(result) {
+                    console.log("Error including image!");
+                    global.Main.disableLoading();
+                }
+            });
+            console.log("data", data);
+        });
+    }
+
+
 
     Dataset.sendAnnotation = function(localImageId, remoteImageId) {
         var dataset = $("#dataset-sel-export").val();
