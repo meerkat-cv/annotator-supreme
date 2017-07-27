@@ -18,6 +18,7 @@ class AnnotatorPlugin:
         except:
             pass
         os.system('mkdir ' + self.dataset_dir)
+        os.system('mkdir ' + self.dataset_dir+"/data/")
 
         
         for t in self.tags:
@@ -52,7 +53,7 @@ class AnnotatorPlugin:
             for a in annotations:
                 f.write(a+'\n')
 
-        cv2.imwrite(self.dataset_dir+'/'+curr_tag+'/'+image_object['phash']+'.png', im)
+        cv2.imwrite(self.dataset_dir+'/'+curr_tag+'/'+image_object['phash']+'.png', image_matrix)
         if image_object["partition"] == 0:
             self.images_list_training.append(self.dataset_dir+'/'+curr_tag+'/'+image_object['phash']+'.png')
         elif image_object["partition"] == 1:
@@ -83,9 +84,9 @@ class AnnotatorPlugin:
               "valid = {valid_path}\n"+\
               "thresh = 0.5\n"+\
               "names = {names_path}\n"+\
-              "backup = backup"
+              "backup = /tmp/data/"
 
-        cfg.format(n_classes = len(self.tags), 
+        cfg = cfg.format(n_classes = len(self.tags), 
                     train_path = self.dataset_dir+"/train.txt",
                     valid_path = self.dataset_dir+"/text.txt",
                     names_path = self.dataset_dir+"/"+self.dataset_name+".names")
