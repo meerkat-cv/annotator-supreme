@@ -42,8 +42,8 @@ class ImageView(FlaskView):
     @route('/image/thumb/<dataset>/<imageid>', methods=['GET'])
     def get_image_thumb(self, dataset, imageid):
         img = self.controller.get_image(dataset, imageid)
-        anno = self.controller.get_image_anno(dataset, imageid)
-        thumb = ImageUtils.create_thumbnail(img, anno)
+        img_o = self.controller.get_image_object(dataset, imageid)
+        thumb = ImageUtils.create_thumbnail(img, img_o)
         fileid = "imgthumb" # uuid.uuid4().hex
         full_filename = 'annotator_supreme/static/'+fileid+'.jpg'
         cv2.imwrite(full_filename, thumb)

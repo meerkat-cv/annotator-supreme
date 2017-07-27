@@ -5,10 +5,13 @@ import numpy as np
 class AnnotatorPlugin:
     _VERSION = '0.0.1'
 
-    def __init__(self, dataset):
+    def __init__(self, dataset, partition = None):
+        self.dataset_name = dataset["name"]
         self.dataset_dir = '/tmp/logo_detection_' + dataset["name"]
         self.tags = dataset["annotation_labels"]
-        self.images_list = []
+        self.images_list_training = []
+        self.images_list_testing = []
+        self.partition = partition
 
         try:
             os.system('rm -rf ' + self.dataset_dir)
@@ -22,17 +25,17 @@ class AnnotatorPlugin:
         os.system('mkdir ' + self.dataset_dir + '/Distractors')
 
 
-    def process(self, im, anno):
-        im_name = self.dataset_dir + '/' + anno['phash']
-        width   = float(im.shape[1])
-        height  = float(im.shape[0])
+    def process(self, image_matrix, image_object):
+        im_name = self.dataset_dir + '/' + image_object['phash']
+        width   = float(image_matrix.shape[1])
+        height  = float(image_matrix.shape[0])
         curr_tag = ''
 
-        print('processing', anno['phash'])
-        (im, anno) = self.blur_img(im, anno)
+        print('processing', image_object['phash'])
+        (image_matrix, image_object) = self.blur_img(image_matrix, image_object)
 
         annotations = []
-        for bb in anno['anno']:
+        for bb in image_object['anno']:
             if bb['ignore']:
                 continue
             x = ((bb['left']+bb['right'])/2.0) / width
@@ -45,23 +48,53 @@ class AnnotatorPlugin:
 
         if curr_tag == '':
             curr_tag = 'Distractors'
-        with open(self.dataset_dir+'/'+curr_tag+'/'+anno['phash']+'.txt', 'w') as f:
+        with open(self.dataset_dir+'/'+curr_tag+'/'+image_object['phash']+'.txt', 'w') as f:
             for a in annotations:
                 f.write(a+'\n')
 
-        cv2.imwrite(self.dataset_dir+'/'+curr_tag+'/'+anno['phash']+'.png', im)
-        self.images_list.append(self.dataset_dir+'/'+curr_tag+'/'+anno['phash']+'.png')
+        cv2.imwrite(self.dataset_dir+'/'+curr_tag+'/'+image_object['phash']+'.png', im)
+        if image_object["partition"] == 0:
+            self.images_list_training.append(self.dataset_dir+'/'+curr_tag+'/'+image_object['phash']+'.png')
+        elif image_object["partition"] == 1:
+            self.images_list_testing.append(self.dataset_dir+'/'+curr_tag+'/'+image_object['phash']+'.png')
 
-        return (im, anno)
+        return (image_matrix, image_object)
 
 
 
     def end(self):
         with open(self.dataset_dir+'/train.txt', 'w') as f:
-            for im in self.images_list:
+            for im in self.images_list_training:
                 f.write(im+'\n')
 
+        with open(self.dataset_dir+'/test.txt', 'w') as f:
+            for im in self.images_list_testing:
+                f.write(im+'\n')
+
+
+        # create .names file
+        names_content = "\n".join(self.tags)
+        with open(self.dataset_dir+"/"+self.dataset_name+".names", 'w') as f:
+            f.write(names_content)
+
+        # create config file
+        cfg = "classes = {n_classes}\n"+\
+              "train = {train_path}\n"+\
+              "valid = {valid_path}\n"+\
+              "thresh = 0.5\n"+\
+              "names = {names_path}\n"+\
+              "backup = backup"
+
+        cfg.format(n_classes = len(self.tags), 
+                    train_path = self.dataset_dir+"/train.txt",
+                    valid_path = self.dataset_dir+"/text.txt",
+                    names_path = self.dataset_dir+"/"+self.dataset_name+".names")
+        with open(self.dataset_dir+"/"+self.dataset_name+".cfg", 'w') as f:
+            f.write(cfg)
+         
+
         return {"out_folder": self.dataset_dir}
+        
 
     def get_parameters(self):
         return {'parameters': []}

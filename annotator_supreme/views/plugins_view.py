@@ -23,8 +23,8 @@ class PluginsView(FlaskView):
 
         self.controller.init_plugin(self.dataset_controller.get_dataset(dataset))
 
-        (img, anno) = self.get_image_and_anno(dataset, imageid)
-        (img, anno) = self.controller.process(img, anno)
+        (img_m, img_o) = self.get_image_matrix_and_dict(dataset, imageid)
+        (img_m, img_o) = self.controller.process(img_m, img_o)
         plugin_res = self.controller.end_plugin()
 
         fileid = "img" # uuid.uuid4().hex
@@ -47,8 +47,8 @@ class PluginsView(FlaskView):
 
         all_imgs = ImageController.all_images(dataset)
         for im_obj in all_imgs:
-            (img, anno) = self.get_image_and_anno(dataset, im_obj['phash'])
-            (img, anno) = self.controller.process(img, anno)
+            (img_m, img_o) = self.get_image_matrix_and_dict(dataset, im_obj['phash'])
+            (img_m, img_o) = self.controller.process(img_m, img_o)
         
         plugin_res = self.controller.end_plugin()
         return flask.jsonify({"plugin_response": plugin_res})
@@ -61,14 +61,13 @@ class PluginsView(FlaskView):
         if partition == "" or (partition != "training" and partition != "testing"):
             raise error_views.InvalidParametersError("Partition not informed or invalid.")
         
-        self.controller.init_plugin(self.dataset_controller.get_dataset(dataset))
+        self.controller.init_plugin(self.dataset_controller.get_dataset(dataset), partition)
 
         all_imgs = ImageController.all_images(dataset)
         for im_obj in all_imgs:
-            if im_obj['partition'] == DatasetController.partition_id(partition):
-                (img, anno) = self.get_image_and_anno(dataset, im_obj['phash'])
-                (img, anno) = self.controller.process(img, anno)
-        
+            (img_m, img_o) = self.get_image_matrix_and_dict(dataset, im_obj['phash'])
+            (img_m, img_o) = self.controller.process(img_m, img_o)
+    
         plugin_res = self.controller.end_plugin()
         return flask.jsonify({"plugin_response": plugin_res})
 
@@ -90,9 +89,9 @@ class PluginsView(FlaskView):
             raise error_views.InternalError('An error occurred while loading plugin: '+ plugin_name)
 
 
-    def get_image_and_anno(self, dataset, imageid):
+    def get_image_matrix_and_dict(self, dataset, imageid):
         img = self.image_controller.get_image(dataset, imageid)
-        anno_obj = self.image_controller.get_image_anno(dataset, imageid)
-        anno = view_tools.anno_to_dict(anno_obj)
+        img_o = self.image_controller.get_image_object(dataset, imageid)
+        img_d = view_tools.image_to_dict(img_o)
 
-        return (img, anno)
+        return (img, img_d)

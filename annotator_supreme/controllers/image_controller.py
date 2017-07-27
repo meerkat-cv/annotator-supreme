@@ -52,7 +52,7 @@ class ImageController():
         img_o.partition = partition
         img_o.upsert()
 
-    def get_image_anno(self, dataset_name, id):
+    def get_image_object(self, dataset_name, id):
         img_o = ImageModel.from_database_and_key(dataset_name, id)
         return img_o
 
