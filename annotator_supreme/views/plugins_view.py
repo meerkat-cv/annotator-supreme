@@ -54,19 +54,18 @@ class PluginsView(FlaskView):
         return flask.jsonify({"plugin_response": plugin_res})
 
 
-    @route('/plugins/process/<dataset>/<partition>', methods=['GET'])
+    @route('/plugins/process/partition/<dataset>/<partition>', methods=['GET'])
     def get_plugin_process_partition(self, dataset, partition):
         self.get_plugin_from_request(request)
 
-        (ok, error, partition) = view_tools.get_param_from_request(request, 'partition')
-        if not ok or (partition != "training" and partition != "testing"):
+        if partition == "" or (partition != "training" and partition != "testing"):
             raise error_views.InvalidParametersError("Partition not informed or invalid.")
         
         self.controller.init_plugin(self.dataset_controller.get_dataset(dataset))
 
         all_imgs = ImageController.all_images(dataset)
         for im_obj in all_imgs:
-            if im_obj == DatasetController.partition_id(im_obj["partition"]):
+            if im_obj['partition'] == DatasetController.partition_id(partition):
                 (img, anno) = self.get_image_and_anno(dataset, im_obj['phash'])
                 (img, anno) = self.controller.process(img, anno)
         
