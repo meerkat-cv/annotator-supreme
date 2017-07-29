@@ -47,17 +47,23 @@ class AnnotatorPlugin:
             curr_anno = curr_tag+' '+str(x)+' '+str(y)+' '+str(w)+' '+str(h)
             annotations.append(curr_anno)
 
+        has_annotation = True
+
         if curr_tag == '':
             curr_tag = 'Distractors'
-        with open(self.dataset_dir+'/'+curr_tag+'/'+image_object['phash']+'.txt', 'w') as f:
-            for a in annotations:
-                f.write(a+'\n')
+            has_annotation = False
 
-        cv2.imwrite(self.dataset_dir+'/'+curr_tag+'/'+image_object['phash']+'.png', image_matrix)
-        if image_object["partition"] == 0:
-            self.images_list_training.append(self.dataset_dir+'/'+curr_tag+'/'+image_object['phash']+'.png')
-        elif image_object["partition"] == 1:
-            self.images_list_testing.append(self.dataset_dir+'/'+curr_tag+'/'+image_object['phash']+'.png')
+
+        if has_annotation:
+            with open(self.dataset_dir+'/'+curr_tag+'/'+image_object['phash']+'.txt', 'w') as f:
+                for a in annotations:
+                    f.write(a+'\n')
+
+            cv2.imwrite(self.dataset_dir+'/'+curr_tag+'/'+image_object['phash']+'.png', image_matrix)
+            if image_object["partition"] == 0:
+                self.images_list_training.append(self.dataset_dir+'/'+curr_tag+'/'+image_object['phash']+'.png')
+            elif image_object["partition"] == 1:
+                self.images_list_testing.append(self.dataset_dir+'/'+curr_tag+'/'+image_object['phash']+'.png')
 
         return (image_matrix, image_object)
 
