@@ -1,5 +1,6 @@
 from annotator_supreme import app
 from annotator_supreme.controllers import database_controller
+from annotator_supreme.controllers import debug_utils
 from annotator_supreme.models.bbox_model import BBox
 from PIL import Image
 import hashlib
@@ -9,12 +10,56 @@ import cv2
 import numpy as np
 import datetime
 
-TABLE = "images"
+TABLE_IMAGES = "images"
+TABLE_IMAGES_IMG = "images_img"
 
-class Dummy:
 
-    def __init__(self, labels):
-        self.labels = "hehe"
+with app.app_context():
+    db_session = database_controller.get_db(app.config)
+
+upsert_image_cql = db_session.prepare(" INSERT INTO "+TABLE_IMAGES+ \
+                                                " (phash, "+ \
+                                                "dataset, " + \
+                                                "width, " + \
+                                                "height, " + \
+                                                "name, " + \
+                                                "annotation, " + \
+                                                "category, " + \
+                                                "partition, " + \
+                                                "fold, " + \
+                                                "last_modified) " + \
+                                                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ")
+
+upsert_image_img_cql = db_session.prepare(" INSERT INTO "+TABLE_IMAGES_IMG+ \
+                                                " (phash, img) " + \
+                                                " VALUES (?, ?) ")
+
+
+select_image_cql = db_session.prepare("SELECT phash, "+ \
+                                            "dataset, " + \
+                                            "width, " + \
+                                            "height, " + \
+                                            "name, " + \
+                                            "annotation, "+ \
+                                            "category, " + \
+                                            "partition, " + \
+                                            "fold, " + \
+                                            "last_modified FROM "+TABLE_IMAGES+" WHERE dataset=? AND phash=?")
+
+select_image_img_cql = db_session.prepare("SELECT img FROM "+TABLE_IMAGES_IMG+" WHERE phash=?")
+
+
+
+select_image_from_dataset_cql = db_session.prepare("SELECT phash, "+ \
+                                                        "width, " + \
+                                                        "height, " + \
+                                                        "name, " + \
+                                                        "annotation, "+ \
+                                                        "category, " + \
+                                                        "partition, " + \
+                                                        "fold, " + \
+                                                        "last_modified FROM "+TABLE_IMAGES+" WHERE dataset=?")
+
 
 class ImageModel():
 
@@ -49,34 +94,32 @@ class ImageModel():
         self.last_modified = last_modified
 
         with app.app_context():
-            self.db_session = database_controller.get_db(app.config)
+            db_session = database_controller.get_db(app.config)
+
 
     @classmethod
     def from_database_and_key(cls, dataset, image_key):
+        debug_utils.DebugUtils.tic()
         with app.app_context():
             db_session = database_controller.get_db(app.config)
-            cql = "SELECT phash, "+ \
-                        "dataset, " + \
-                        "img, " + \
-                        "width, " + \
-                        "height, " + \
-                        "name, " + \
-                        "annotation, "+ \
-                        "category, " + \
-                        "partition, " + \
-                        "fold, " + \
-                        "last_modified FROM "+TABLE+" WHERE dataset=\'"+dataset+"\' AND phash=\'"+image_key+"\'"
-            rows = db_session.execute(cql)
+            rows = db_session.execute(select_image_cql, [dataset, image_key])
             rows = list(rows)
-
-
+            
             if len(rows) == 0:
                 app.logger.warning('Did not found doc with the provided dataset and ID.')
                 return None
             elif len(rows) == 1:
                 r = rows[0]
-                image = np.fromstring(r.img, dtype=np.uint8)
+
+                # get image now
+                r_img = db_session.execute(select_image_img_cql, [image_key])
+                r_img = list(r_img)
+
+                image = np.fromstring(r_img[0].img, dtype=np.uint8)
                 image = cv2.imdecode(image, cv2.IMREAD_COLOR)
+
+                debug_utils.DebugUtils.toc("from_database_and_key")
+                
                 # image = image.reshape(r.height, r.width, 3)
 
                 return cls(r.phash, r.dataset, image, r.name, r.annotation, r.category, r.partition, r.fold, r.last_modified)
@@ -98,25 +141,9 @@ class ImageModel():
         self.upsert()
 
     def upsert(self):
-        # TODO: transform to update to really do upsert
-        cql = self.db_session.prepare(" INSERT INTO "+TABLE+ \
-                                    " (phash, "+ \
-                                    "dataset, " + \
-                                    "img, " + \
-                                    "width, " + \
-                                    "height, " + \
-                                    "name, " + \
-                                    "annotation, " + \
-                                    "category, " + \
-                                    "partition, " + \
-                                    "fold, " + \
-                                    "last_modified) " + \
-                                    " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ")
-
-        image = cv2.imencode('.png', self.image)[1]
-        self.db_session.execute(cql, [self.phash, \
+        debug_utils.DebugUtils.tic()
+        db_session.execute(upsert_image_cql, [self.phash, \
                                         self.dataset_name, \
-                                        image.tostring(), \
                                         self.width, \
                                         self.height, \
                                         self.name, \
@@ -125,6 +152,12 @@ class ImageModel():
                                         self.partition, \
                                         self.fold, \
                                         datetime.datetime.now() ] )
+
+        # also add the image in a different table
+        image = cv2.imencode('.png', self.image)[1]
+        db_session.execute(upsert_image_img_cql, [self.phash, image.tostring()])
+        debug_utils.DebugUtils.toc("image_model.upsert")
+
 
     def compute_phash(self, image):
         # pil_image = Image.fromarray(image)
@@ -136,17 +169,31 @@ class ImageModel():
 
     @staticmethod
     def list_images_from_dataset(dataset_name):
+        debug_utils.DebugUtils.tic()
+        
         with app.app_context():
             db_session = database_controller.get_db(app.config)
-            cql = "SELECT phash, "+ \
-                        "width, " + \
-                        "height, " + \
-                        "name, " + \
-                        "annotation, "+ \
-                        "category, " + \
-                        "partition, " + \
-                        "fold, " + \
-                        "last_modified FROM "+TABLE+" WHERE dataset=\'"+dataset_name+"\'"
+
+            # cql = "SELECT phash, "+ \
+            #             "width, " + \
+            #             "height, " + \
+            #             "name, " + \
+            #             "annotation, "+ \
+            #             "category, " + \
+            #             "partition, " + \
+            #             "fold, " + \
+            #             "last_modified FROM "+TABLE_IMAGES+" WHERE dataset=\'"+dataset_name+"\'"
+            rows = db_session.execute(select_image_from_dataset_cql, [dataset_name], timeout=100)
+            imgs = list(rows)
+
+            debug_utils.DebugUtils.toc("list_images_from_dataset ({})".format(dataset_name))
+            return imgs
+
+    @staticmethod
+    def list_images_phash_from_dataset(dataset_name):
+        with app.app_context():
+            db_session = database_controller.get_db(app.config)
+            cql = "SELECT phash FROM "+TABLE_IMAGES+" WHERE dataset=\'"+dataset_name+"\'"
             rows = db_session.execute(cql, timeout=60)
             imgs = list(rows)
 
@@ -157,9 +204,14 @@ class ImageModel():
         with app.app_context():
             db_session = database_controller.get_db(app.config)
 
-            cql = "DELETE FROM "+TABLE+" WHERE dataset=\'"+dataset_name+"\'" + " AND phash=\'" + image_id +"\'"
+            cql = "DELETE FROM "+TABLE_IMAGES_IMG+" WHERE phash=\'" + image_id +"\'"
+            res = db_session.execute(cql)
+    
+
+            cql = "DELETE FROM "+TABLE_IMAGES+" WHERE dataset=\'"+dataset_name+"\'" + " AND phash=\'" + image_id +"\'"
             res = db_session.execute(cql)
 
+            
             return (True, "")
 
     @staticmethod
@@ -167,7 +219,14 @@ class ImageModel():
         with app.app_context():
             db_session = database_controller.get_db(app.config)
 
-            cql = "DELETE FROM "+TABLE+" WHERE dataset=\'"+dataset_name+"\'"
+            # first, remove all imgs from images_img table
+            phashs = ImageModel.list_images_phash_from_dataset(dataset_name)
+            
+            for p in phashs:
+                cql = "DELETE FROM "+TABLE_IMAGES_IMG+" WHERE phash=\'" + p.phash +"\'"
+                res = db_session.execute(cql)
+
+            cql = "DELETE FROM "+TABLE_IMAGES+" WHERE dataset=\'"+dataset_name+"\'"
             res = db_session.execute(cql)
 
             return (True, "")
