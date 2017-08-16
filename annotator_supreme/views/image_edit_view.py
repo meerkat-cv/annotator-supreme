@@ -39,4 +39,17 @@ class ImageEditView(FlaskView):
         return "", 200
 
 
+    @route('/image/edit/ratio/<dataset>/<imageid>', methods=['GET'])
+    def ratio_image(self, dataset, imageid):
+        (ok, error, aspect) = view_tools.get_param_from_request(request, "aspect_ratio")
+        if not ok or aspect == "":
+            raise error_views.InvalidParametersError("Need to specify the aspect ratio: 4:3")
+
+        (ok, error) = self.controller.set_aspect_ratio_image(dataset, imageid, aspect)
+        if not ok:
+            raise error_views.InvalidParametersError(error)
+
+        return "", 200
+
+
         

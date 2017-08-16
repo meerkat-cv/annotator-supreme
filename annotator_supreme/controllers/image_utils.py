@@ -47,3 +47,35 @@ class ImageUtils:
             return cv2.flip(image, 0)
         else:
             return image
+
+
+    @staticmethod
+    def set_aspect_ratio(image, aspect_ratio):
+        # TODO: should solve for when the aspect ratio is lower than.
+
+        offset_x = 0
+        offset_y = 0
+        
+        if aspect_ratio.lower() == "4:3":
+            ar = 4/3.;
+
+        w = image.shape[1]
+        h = image.shape[0]
+
+        if h < w:
+            new_w = h*ar
+            d_w = w - new_w
+            
+            start_x = int(d_w//2)
+            offset_x = start_x
+            end_x = int(w-(d_w//2))
+            return (image[:, start_x:end_x, :], offset_x, offset_y)
+        else:
+            new_h = w*ar
+            d_h = h - new_h
+            
+            start_y = int(d_h//2)
+            offset_y = start_y
+            end_y = int(h-(d_h//2))
+            return (image[start_y:end_y, :, :], offset_x, offset_y)
+

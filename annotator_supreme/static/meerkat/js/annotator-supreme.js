@@ -132,7 +132,6 @@
     Annotator.bindImageEditButtons = function () {
         var self = this;
         $("#image-rotate-ccw").click(function() {
-            // make a request to rotate the image
             $.ajax({
                 type: 'get',
                 url: "/annotator-supreme/image/edit/rotate/"+dataset_sel.val()+"/"+image_sel.val()+"?orientation=ccw",
@@ -145,7 +144,6 @@
             });
         });
         $("#image-rotate-cw").click(function() {
-            // make a request to rotate the image
             $.ajax({
                 type: 'get',
                 url: "/annotator-supreme/image/edit/rotate/"+dataset_sel.val()+"/"+image_sel.val()+"?orientation=cw",
@@ -158,7 +156,6 @@
             });
         });
         $("#image-flip-h").click(function() {
-            // make a request to rotate the image
             $.ajax({
                 type: 'get',
                 url: "/annotator-supreme/image/edit/flip/"+dataset_sel.val()+"/"+image_sel.val()+"?direction=h",
@@ -171,10 +168,23 @@
             });
         });
         $("#image-flip-v").click(function() {
-            // make a request to rotate the image
             $.ajax({
                 type: 'get',
                 url: "/annotator-supreme/image/edit/flip/"+dataset_sel.val()+"/"+image_sel.val()+"?direction=v",
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.log("error"+jqXHR.responseText);
+                },
+                success: function (data) {
+                    self.setImageTag(image_sel);
+                }
+            });
+        });
+
+        $("#aspect-ratio43-btn").click(function() {
+            console.log("hellllll");
+            $.ajax({
+                type: 'get',
+                url: "/annotator-supreme/image/edit/ratio/"+dataset_sel.val()+"/"+image_sel.val()+"?aspect_ratio=4:3",
                 error: function (jqXHR, textStatus, errorThrown) {
                     console.log("error"+jqXHR.responseText);
                 },

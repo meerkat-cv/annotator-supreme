@@ -16,3 +16,12 @@ class BBox:
         self.left = self.left*scale_factor
         self.bottom = self.bottom*scale_factor
         self.right = self.right*scale_factor
+
+
+    def set_x_offset(self, x_offset):
+        self.left = self.left+x_offset
+        self.right = self.right+x_offset
+
+    def set_y_offset(self, y_offset):
+        self.top = self.top+y_offset
+        self.bottom = self.bottom+y_offset

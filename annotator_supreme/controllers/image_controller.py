@@ -1,5 +1,6 @@
 
 from annotator_supreme.models.image_model import ImageModel
+from annotator_supreme.models.bbox_model import BBox
 from annotator_supreme.controllers.base_controller import memoized_ttl
 from annotator_supreme.models.dataset_model import DatasetModel
 from annotator_supreme.controllers.image_utils import ImageUtils
@@ -107,6 +108,37 @@ class ImageController():
 
         img_o.image = ImageUtils.flip_image(img_o.image, direction)
         img_o.upsert();
+
+        return (True, "")
+
+
+    def set_aspect_ratio_image(self, dataset, image_id, aspect_ratio):
+        img_o = ImageModel.from_database_and_key(dataset, image_id)
+        if img_o is None:
+            return (False, "No able to find image, check you parameters!")
+
+        aspect_ratio = aspect_ratio.lower()
+        if aspect_ratio != "4:3":
+            return (False, "aspect_ratio must 4:3!")
+
+        (img_o.image, off_x, off_y) = ImageUtils.set_aspect_ratio(img_o.image, aspect_ratio)
+        print("off_x", off_x)
+
+        # TODO: these two lines should be on the upsert, no?
+        img_o.width = img_o.image.shape[1]
+        img_o.height = img_o.image.shape[0]
+
+        new_bboxes = []
+        for b in img_o.bboxes:
+            bb_obj = BBox(b.top, b.left, b.bottom, b.right, b.labels, b.ignore)
+            bb_obj.set_x_offset(-off_x)
+            bb_obj.set_y_offset(-off_y)
+
+            new_bboxes.append(bb_obj)
+
+        img_o.bboxes = new_bboxes
+
+        img_o.upsert()
 
         return (True, "")
 
