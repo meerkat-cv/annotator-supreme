@@ -14,10 +14,10 @@ class AnnoView(FlaskView):
 
     @route('/image/anno/<dataset>/<imageid>', methods=['GET'])
     def get_image_anno(self, dataset, imageid):
-        anno = self.controller.get_image_anno(dataset, imageid)
-        anno_dict = view_tools.anno_to_dict(anno)
+        image = self.controller.get_image_object(dataset, imageid)
+        image_dict = view_tools.image_to_dict(image)
 
-        return flask.jsonify(anno_dict)
+        return flask.jsonify(image_dict)
 
     @route('/image/anno/<dataset>/<imageid>', methods=['POST'])
     def post_image_anno(self, dataset, imageid):

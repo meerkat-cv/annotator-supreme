@@ -133,17 +133,15 @@
     }
 
     UploadVideo.enableSubmitLoading = function () {
-        $('#loading-msg').html('Submitting frames...');
-        $('#modal-loading').modal('show');
+        global.Main.enableLoading('Submitting frames...');
     }
 
     UploadVideo.enableExtractLoading = function () {
-        $('#loading-msg').html('Extracting frames...');
-        $('#modal-loading').modal('show');
+        global.Main.enableLoading('Extracting frames...');
     }
 
     UploadVideo.disableLoading = function () {
-        $('#modal-loading').modal('hide');        
+        global.Main.disableLoading();
     }
 
     UploadVideo.bind = function (){

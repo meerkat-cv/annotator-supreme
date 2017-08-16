@@ -10,15 +10,7 @@
         anchorRadius = 6;
 
     ImageProcessing.init = function () {
-        imgproc_div1 = $('#image-proc-container1')
-        imgproc_div2 = $('#image-proc-container2')
-        var image = new Image(),
-            self = this;
-        image.onload = function() {
-            self.setStage(image);
-        };
-        image.src = "/annotator-supreme/static/meerkat/images/heineken.jpg";
-
+        var self = this;
         this.bindSelectors();
 
         // bind apply plugin buttons
@@ -57,14 +49,7 @@
         image_sel.on("change", function() {
             var image = new Image();
             var option_value = this.value;
-
-            image.onload = function() {
-                // Keeping the "previous" image so that we can save them when the image is changed
-                curr_image_id = option_value;
-                // Update Konva Stage
-                self.setStage(image);
-            };
-            image.src = '/annotator-supreme/image/'+self.image_list[this.value].url;
+            $("#img1").attr('src', '/annotator-supreme/image/'+self.image_list[this.value].url);
             $(this).blur();
         });
 
@@ -101,27 +86,6 @@
         return d;
     }
 
-
-    ImageProcessing.setStage = function(backgroundImage) {
-        // create the konva stage
-        var self = this;
-        var width = backgroundImage.width;
-        var height = backgroundImage.height;
-        if (typeof this.stage != 'undefined')
-            this.stage.destroy();
-        this.stage = new Konva.Stage({
-            container: 'image-proc-container1',
-            width: width,
-            height: height
-        });
-
-        this.imgLayer = new Konva.Layer();
-        this.stage.add(this.imgLayer);
-
-        var context = this.imgLayer.getContext();
-        context.drawImage(backgroundImage, 0, 0);
-    }
-
     ImageProcessing.applyPluginOnImage = function() {
         var self = this;
 
@@ -131,9 +95,15 @@
     }
 
     ImageProcessing.applyPluginOnDataset = function() {
-        var self = this;
+        var self = this,
+            partition = $("input[name='options-partition']:checked").val();
 
-        $.get("/annotator-supreme/plugins/process/"+self.dataset+'?plugin='+self.plugin);
+        if (partition == "all") {
+            $.get("/annotator-supreme/plugins/process/"+self.dataset+'?plugin='+self.plugin);
+        }
+        else if (partition == "training" || partition == "testing") {
+            $.get("/annotator-supreme/plugins/process/partition/"+self.dataset+'/'+partition+'?plugin='+self.plugin);
+        }
     }
 
 

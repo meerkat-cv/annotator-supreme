@@ -43,7 +43,7 @@
                                 <div class="help-block">Frames in-between extractions:</div>
                             </div>
                             <div class="col-md-8 step-slider">
-                                <input id="stepSlider" data-slider-id='stepSlider' type="text" data-slider-min="10" data-slider-max="100" data-slider-step="1" data-slider-value="50" />
+                                <input id="stepSlider" data-slider-id='stepSlider' type="text" data-slider-min="5" data-slider-max="100" data-slider-step="1" data-slider-value="25" />
                             </div>
                         </div>
                         <button id="upload-submit-btn" type="button" class="btn btn-success"><i class="fa fa-dataset-plus"></i>Extract</button>
@@ -90,13 +90,6 @@
     </div>
 </div>
 
-<div class="modal" id="modal-loading">
-    <div class="modal-dialog modal-sm loading-full">
-        <i class="fa fa-fw fa-cog fa-spin"></i>
-        <span id="loading-msg">Extracting frames, should take some time...</span>
-      <!-- /.modal-content -->
-    </div>
-</div>
 
 {% endblock %} {% block load_script %}
 <script src="/annotator-supreme/static/plugins/dropzonejs/js/dropzone.js"></script>

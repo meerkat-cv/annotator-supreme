@@ -5,3 +5,23 @@
 .bootstrap-tagsinput {
     display: block !important;
 }
+
+.part-percentage {
+    font-size: 36px;
+    font-weight: bold;
+    text-align: center;
+}
+
+.part-label {
+    text-align: center;
+    color: darkgray;
+}
+
+.slider-part-container {
+    padding-top: 30px;
+    padding-left: 30px;
+}
+
+.box-footer.partition {
+    text-align: right;
+}

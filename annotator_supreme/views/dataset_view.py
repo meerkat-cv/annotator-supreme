@@ -19,8 +19,21 @@ class DatasetView(FlaskView):
         return flask.jsonify({"datasets": obj})
 
     @route('/dataset/<dataset>', methods=['GET'])
+    def get_dataset(self, dataset):
+        # obj = self.image_controller.all_images(dataset)
+    
+        d = self.controller.get_dataset(dataset)
+        if d == None:
+            return "Dataset not found", 404
+        else:
+            return flask.jsonify({"dataset": d})
+
+
+
+    @route('/dataset/<dataset>/size', methods=['GET'])
     def get_dataset_size(self, dataset):
         obj = self.image_controller.all_images(dataset)
+        print("obj", obj)
         # return flask.jsonify({"dataset_size": len(obj)})
         print('returning', flask.jsonify({"dataset_size": len(obj)}))
         return flask.jsonify({"dataset_size": len(obj)})
@@ -32,6 +45,22 @@ class DatasetView(FlaskView):
             raise error_views.InvalidParametersError(error)
         else:
             return '', 200
+
+    @route('/dataset/<dataset>/partition', methods=['POST'])
+    def create_partition(self, dataset):
+        (ok, error, partitions) = view_tools.get_param_from_request(request, "partitions")
+        if not ok:
+            raise error_views.InvalidParametersError(error)
+
+        (ok, error, percentages) = view_tools.get_param_from_request(request, "percentages")
+        if not ok:
+            raise error_views.InvalidParametersError(error)
+
+        (ok, error) = self.controller.set_partition(dataset, partitions, percentages)
+        if not ok:
+            raise error_views.InvalidParametersError(error)
+
+        return '', 200
 
     @route('/dataset/create', methods=['POST'])
     def create_datasets(self):
@@ -45,3 +74,5 @@ class DatasetView(FlaskView):
 
         self.controller.create_dataset(name, tags)
         return flask.jsonify({"ok": "to-do"})
+
+    
