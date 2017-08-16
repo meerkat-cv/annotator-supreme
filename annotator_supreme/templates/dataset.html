@@ -150,6 +150,59 @@
     </div>
 </div>
 
+
+
+<div class="row">
+    <div class="col-xs-10">
+        <div class="box box-warning">
+            <div class="box-header">
+                <h3 class="box-title">Merge datasets</h3>
+            </div>
+
+            <div class="box-body">
+                <div class="col-md-5">
+                    <div class="form-group">
+                      <label>Select the datasets you want to merge:</label>
+                      <select multiple class="form-control" id="merge-dataset-input">
+                        {% for d in datasets %}
+                            <option> {{ d.name }} </option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                </div>
+                <div class="col-md-2 merge-arrow-container">
+                    <i class="fa fa-long-arrow-right merge-arrow"></i> 
+                 </div>
+
+                 <div class="col-md-5">
+                    <div class="form-group">
+                        <label>Output dataset:</label>
+                        <select mutiple class="form-control" id="merge-dataset-output">
+                            {% for d in datasets %}
+                            <option> {{ d.name }} </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                 </div>
+            </div>
+            <div class="box-footer partition">
+                
+                  <div class="checkbox-merge">
+                    <label>
+                      <input type="checkbox" id="only-with-anno-chk">
+                      Only merge images with some annotation!
+                    </label>
+                    </div>
+                
+                <button id="merge-dataset-btn" type="button" class="btn btn-success"><i class="fa fa-space-shuttle">
+                </i> 
+                Merge baby</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <div class="modal modal-danger" id="modal-confirm-delete">
     <div class="modal-dialog">
         <div class="modal-content">

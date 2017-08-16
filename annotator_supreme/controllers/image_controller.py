@@ -39,7 +39,8 @@ class ImageController():
             "category": img_o.category,
             "partition": img_o.partition,
             "fold": img_o.fold,
-            "last_modified": img_o.last_modified
+            "last_modified": img_o.last_modified,
+            "has_annotation": len(img_o.bboxes) > 0
         }
 
 
