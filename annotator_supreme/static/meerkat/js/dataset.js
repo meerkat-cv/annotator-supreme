@@ -317,45 +317,112 @@
         });    
     }
 
-    
+
+
+
+
     Dataset.sendImageMergeLoop = function (i, images, input_dataset, output_dataset) {
         var img_url = "/annotator-supreme/image/"+images[i].url,
+            only_w_anno = $("#only-with-anno-chk").prop("checked"),
             self = this;
-        toDataURL(i, img_url, function(i, base64_img) {
-            // console.log("image cat", i);
 
-            var data = {
-                "category": images[i].category,
-                "name": images[i].name,
-                "imageB64": base64_img.replace("data:image/jpeg;base64,", "")
-            };
-
+        if (only_w_anno) {
             $.ajax({
-                    url: "/annotator-supreme/image/" + output_dataset + "/add",
-                    type: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(data),
-                success: function(result) {
-                    console.log("Added :", result);
-                    var imageId = result.imageId;
+                url: "/annotator-supreme/image/has_annotation/" + input_dataset + "/" + images[i].phash,
+                type: 'GET',
+                success: function(data) {
+                    console.log("has anno?", data);
+                    if (data.has_annotation) {
+                        // ok, send the image then:
+                        toDataURL(i, img_url, function(i, base64_img) {
+                            // console.log("image cat", i);
 
-                    self.sendAnnotationMerge(images[i].phash, imageId, input_dataset, output_dataset);
-                    if (i+1 < images.length) {
-                        self.sendImageMergeLoop(i+1, images, input_dataset, output_dataset);
+                            var data = {
+                                "category": images[i].category,
+                                "name": images[i].name,
+                                "imageB64": base64_img.replace("data:image/jpeg;base64,", "")
+                            };
+
+                            $.ajax({
+                                    url: "/annotator-supreme/image/" + output_dataset + "/add",
+                                    type: 'POST',
+                                    contentType: 'application/json',
+                                    data: JSON.stringify(data),
+                                success: function(result) {
+                                    console.log("Added :", result);
+                                    var imageId = result.imageId;
+
+                                    self.sendAnnotationMerge(images[i].phash, imageId, input_dataset, output_dataset);
+                                    if (i+1 < images.length) {
+                                        self.sendImageMergeLoop(i+1, images, input_dataset, output_dataset);
+                                    }
+                                    else {
+                                        console.log("Finished all merging");
+                                        global.Main.disableLoading();    
+                                    }
+                                    
+                                },
+                                error: function(result) {
+                                    console.log("Error including image!");
+                                    global.Main.disableLoading();
+                                }
+                            });
+                            
+                        });
                     }
                     else {
-                        console.log("Finished all merging");
-                        global.Main.disableLoading();    
+                        // just go in front
+                        if (i+1 < images.length) {
+                            self.sendImageMergeLoop(i+1, images, input_dataset, output_dataset);
+                        }
+                        else {
+                            console.log("Finished all merging");
+                            global.Main.disableLoading();    
+                        }
                     }
                     
                 },
-                error: function(result) {
-                    console.log("Error including image!");
-                    global.Main.disableLoading();
+                error: function() {
+                    console.error("");
                 }
             });
-            
-        });
+        }
+        else {
+            // dont need to verify if there is annotation
+            toDataURL(i, img_url, function(i, base64_img) {
+                // console.log("image cat", i);
+                var data = {
+                    "category": images[i].category,
+                    "name": images[i].name,
+                    "imageB64": base64_img.replace("data:image/jpeg;base64,", "")
+                };
+
+                $.ajax({
+                        url: "/annotator-supreme/image/" + output_dataset + "/add",
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(data),
+                    success: function(result) {
+                        console.log("Added :", result);
+                        var imageId = result.imageId;
+
+                        self.sendAnnotationMerge(images[i].phash, imageId, input_dataset, output_dataset);
+                        if (i+1 < images.length) {
+                            self.sendImageMergeLoop(i+1, images, input_dataset, output_dataset);
+                        }
+                        else {
+                            console.log("Finished all merging");
+                            global.Main.disableLoading();    
+                        }
+                        
+                    },
+                    error: function(result) {
+                        console.log("Error including image!");
+                        global.Main.disableLoading();
+                    }
+                });
+            });
+        }
     }
 
 

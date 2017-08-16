@@ -20,7 +20,7 @@ class AnnoView(FlaskView):
         return flask.jsonify(image_dict)
 
     @route('/image/has_annotation/<dataset>/<imageid>', methods=['GET'])
-    def get_image_anno(self, dataset, imageid):
+    def get_image_has_anno(self, dataset, imageid):
         image = self.controller.get_image_details(dataset, imageid)
         
         return flask.jsonify({"has_annotation": image["has_annotation"]})
