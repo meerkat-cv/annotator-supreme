@@ -99,6 +99,11 @@
             global.Main.enableLoading("Merging dataset...");
             self.mergeDatasetsClick();
         })
+
+        $("#transform-dataset-btn").click(function() {
+            global.Main.enableLoading("Applying transformation...");
+            self.ApplyTransformation($("#transform-dataset").val());
+        })
     }
 
 
@@ -456,6 +461,81 @@
             }
         });
     }
+
+
+
+    Dataset.ApplyTransformation = function(dataset) {
+        function get_edit_url(transformation) {
+            if (transformation == "aspect_ratio_43") {
+                url = "/image/edit/ratio"
+                param = "aspect_ratio=4:3"
+            }
+            else if (transformation == "rotate_cw") {
+                url = "/image/edit/rotate"
+                param = "orientation=cw"
+            }
+            else if (transformation == "rotate_ccw") {
+                url = "/image/edit/rotate"
+                param = "orientation=ccw"
+            }
+            else if (transformation == "flip_h") {
+                url = "/image/edit/flip"
+                param = "direction=h"
+            }
+            else if (transformation == "flip_v") {
+                url = "/image/edit/flip"
+                param = "direction=v"
+            }
+
+            return {
+                "url": url,
+                "param": param
+            }
+
+        }
+        var trans = $("#transform-dataset-transformation").val();
+            url_opts = get_edit_url(trans),
+            self = this;
+            
+        $.ajax({
+            url: "/annotator-supreme/image/"+dataset+"/all",
+            type: 'GET',
+            success: function(data) {
+                console.log("Cool, ok!",data);
+                var images = data.images;
+
+                self.transformImagesLoop(0, images, dataset, url_opts);
+            },
+            error: function() {
+                console.log("yaks, could not get image list");
+                global.Main.disableLoading();
+            }
+        });    
+    }
+
+
+    Dataset.transformImagesLoop = function (i, images, dataset, options) {
+        var self = this;
+        $.ajax({
+            url: "/annotator-supreme" + options.url + "/" + dataset + "/" + images[i].phash + "?" + options.param,
+            type: 'GET',
+            success: function(data) {
+                if (i+1 < images.length) {
+                    self.transformImagesLoop(i+1, images, dataset, options);
+                }
+                else {
+                    console.log("Done.");
+                    global.Main.disableLoading();    
+                }
+            },
+            error: function() {
+                console.log("yaks, could not get image list");
+                global.Main.disableLoading();
+            }
+        });    
+    }
+
+    
 
     global.Dataset = Dataset;
     global.Dataset.init();

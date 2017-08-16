@@ -203,6 +203,48 @@
 </div>
 
 
+
+<div class="row">
+    <div class="col-xs-10">
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Aplly image transformation for whole dataset</h3>
+            </div>
+
+            <div class="box-body">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Dataset:</label>
+                        <select mutiple class="form-control" id="transform-dataset">
+                            {% for d in datasets %}
+                            <option> {{ d.name }} </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                 </div>
+                 <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Transformation</label>
+                        <select mutiple class="form-control" id="transform-dataset-transformation">
+                            <option value="aspect_ratio_43"> Aspect ratio 4:3 </option>
+                            <option value="rotate_cw"> Rotate CW </option>
+                            <option value="rotate_ccw"> Rotate CCW </option>
+                            <option value="flip_h"> Flip Horizontally </option>
+                            <option value="flip_v"> Flip Vertically </option>
+                        </select>
+                    </div>
+                 </div>
+            </div>
+            <div class="box-footer partition">
+                  <button id="transform-dataset-btn" type="button" class="btn btn-warning"><i class="fa fa-magic">
+                </i> 
+                Apply to all</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <div class="modal modal-danger" id="modal-confirm-delete">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -222,6 +264,9 @@
         </div>
     </div>
 </div>
+
+
+
 
 <div class="modal" id="modal-dataset">
     <div class="modal-dialog">
