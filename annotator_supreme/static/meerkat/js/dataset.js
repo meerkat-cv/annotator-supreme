@@ -5,7 +5,8 @@
         purge_btns = $(".bomb-btn"),
         confirm_delete_btn = $("#confirm-delete-button"),
         add_dataset_btn = $("#add-dataset-btn"),
-        save_dataset_btn = $("#save-changes-btn");
+        save_dataset_btn = $("#save-changes-btn"),
+        merge_dataset_btn = $("#merge-dataset-btn");
 
     Dataset.init = function () {
         this.bindButtons();
@@ -93,6 +94,10 @@
             global.Main.enableLoading("Exporting all...");
             self.checkIfDatasetExist(self.sendImages.bind(self));
         });
+
+        merge_dataset_btn.click(function() {
+            self.mergeDatasetsClick();
+        })
     }
 
 
@@ -268,6 +273,17 @@
                 window.location.reload();
             }
         });
+    }
+
+    Dataset.mergeDatasetsClick = function() {
+        var merge_dataset_out = $("#merge-dataset-output"),
+            merge_dataset_in = $("#merge-dataset-input");
+            input_datasets = merge_dataset_in.val(),
+            output_dataset = merge_dataset_out.val();
+        
+        if (output_dataset in input_datasets) {
+            console.warn("Output is in the input list, will duplicate your life man!");
+        }
     }
 
     global.Dataset = Dataset;
