@@ -96,6 +96,7 @@
         });
 
         merge_dataset_btn.click(function() {
+            global.Main.enableLoading("Merging dataset...");
             self.mergeDatasetsClick();
         })
     }
@@ -284,6 +285,109 @@
         if (output_dataset in input_datasets) {
             console.warn("Output is in the input list, will duplicate your life man!");
         }
+
+        this.sendDatasetsMerge(input_datasets, output_dataset);
+    }
+
+
+    Dataset.sendDatasetsMerge = function (input_datasets, output_dataset) {
+        this.sendDatasetMergeLoop(0, input_datasets, output_dataset);
+    }
+
+
+    Dataset.sendDatasetMergeLoop = function (i, input_datasets, output_dataset) {
+        var self = this,
+            in_dataset = input_datasets[i];
+        $.ajax({
+            url: "/annotator-supreme/image/"+input_datasets[i]+"/all",
+            type: 'GET',
+            success: function(data) {
+                console.log("Cool, ok!",data);
+                var images = data.images;
+
+                self.sendImageMergeLoop(0, images, in_dataset, output_dataset);
+                if (i+1 < input_datasets.length) {
+                    self.sendDatasetMergeLoop(i+1, input_datasets, output_dataset);
+                }
+            },
+            error: function() {
+                console.log("yaks, could not get image list");
+                global.Main.disableLoading();
+            }
+        });    
+    }
+
+    
+    Dataset.sendImageMergeLoop = function (i, images, input_dataset, output_dataset) {
+        var img_url = "/annotator-supreme/image/"+images[i].url,
+            self = this;
+        toDataURL(i, img_url, function(i, base64_img) {
+            // console.log("image cat", i);
+
+            var data = {
+                "category": images[i].category,
+                "name": images[i].name,
+                "imageB64": base64_img.replace("data:image/jpeg;base64,", "")
+            };
+
+            $.ajax({
+                    url: "/annotator-supreme/image/" + output_dataset + "/add",
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                success: function(result) {
+                    console.log("Added :", result);
+                    var imageId = result.imageId;
+
+                    self.sendAnnotationMerge(images[i].phash, imageId, input_dataset, output_dataset);
+                    if (i+1 < images.length) {
+                        self.sendImageMergeLoop(i+1, images, input_dataset, output_dataset);
+                    }
+                    else {
+                        console.log("Finished all merging");
+                        global.Main.disableLoading();    
+                    }
+                    
+                },
+                error: function(result) {
+                    console.log("Error including image!");
+                    global.Main.disableLoading();
+                }
+            });
+            
+        });
+    }
+
+
+    Dataset.sendAnnotationMerge = function(inImageId, outImageId, input_dataset, output_dataset) {
+        $.ajax({
+            url: "/annotator-supreme/image/anno/" + input_dataset + "/" + inImageId,
+            type: 'GET',
+            success: function(result) {
+                console.log("got anno from", input_dataset, inImageId, result);
+                var data = {
+                    "anno": result.anno
+                }
+                $.ajax({
+                        url: "/annotator-supreme/image/anno/" + output_dataset + "/" + outImageId,
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify(data),
+                    success: function(result) {
+                        console.log("Added annotation!:", result);
+                    },
+                    error: function(result) {
+                        console.log("Error including annotation!");
+                        global.Main.disableLoading();
+                    }
+                });
+
+            },
+            error: function() {
+                global.Main.disableLoading();
+                console.log("Unable to obtain annotation of image!");
+            }
+        });
     }
 
     global.Dataset = Dataset;
