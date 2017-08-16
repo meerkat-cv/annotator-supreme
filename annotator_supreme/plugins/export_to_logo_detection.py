@@ -44,7 +44,7 @@ class AnnotatorPlugin:
             w = (bb['right']-bb['left']) / width
             h = (bb['bottom']-bb['top']) / height
             curr_tag = bb['labels'][0]
-            curr_anno = curr_tag+' '+str(x)+' '+str(y)+' '+str(w)+' '+str(h)
+            curr_anno = self.tags.index(curr_tag)+' '+str(x)+' '+str(y)+' '+str(w)+' '+str(h)
             annotations.append(curr_anno)
 
         has_annotation = True

@@ -96,6 +96,19 @@ class DatabaseController:
 
 
         try:
+            app.logger.info("\t- creating table images_img")
+            session.execute("""
+                CREATE TABLE images_img (
+                    phash text,
+                    img blob,
+                    PRIMARY KEY (phash)
+                )
+                """)
+        except cassandra.AlreadyExists:
+            app.logger.info("Table 'images_img' already exists.")
+
+
+        try:
             app.logger.info("\t- creating table label_ref_count")
             session.execute("""
                 CREATE TABLE label_ref_count (
