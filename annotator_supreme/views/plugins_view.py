@@ -7,6 +7,7 @@ from annotator_supreme.controllers.image_controller import ImageController
 from annotator_supreme.controllers.dataset_controller import DatasetController
 from annotator_supreme.views import view_tools
 from annotator_supreme.views import error_views
+from annotator_supreme.models.bbox_model import BBox
 import cv2
 
 class PluginsView(FlaskView):
@@ -29,11 +30,11 @@ class PluginsView(FlaskView):
 
         fileid = "img" # uuid.uuid4().hex
         full_filename = 'annotator_supreme/static/'+fileid+'.jpg'
-        cv2.imwrite(full_filename, img)
+        cv2.imwrite(full_filename, img_m)
         filename = 'static/'+fileid+'.jpg'
 
         # return flask.send_file(filename, mimetype='image/jpeg')
-        img_bytes = cv2.imencode('.jpg', img)[1].tostring()
+        img_bytes = cv2.imencode('.jpg', img_m)[1].tostring()
         img_encoded = base64.b64encode(img_bytes).decode()
 
         return flask.jsonify({'image': img_encoded, 'plugin_response': plugin_res})
@@ -49,6 +50,11 @@ class PluginsView(FlaskView):
         for im_obj in all_imgs:
             (img_m, img_o) = self.get_image_matrix_and_dict(dataset, im_obj['phash'])
             (img_m, img_o) = self.controller.process(img_m, img_o)
+            bbs_vec = []
+            for bb in img_o['anno']:
+                bbox_o = BBox(bb['top'], bb['left'], bb['bottom'], bb['right'], bb['labels'], bb['ignore'])
+                bbs_vec.append(bbox_o)
+            self.image_controller.change_annotations(dataset, img_o['phash'], bbs_vec)
         
         plugin_res = self.controller.end_plugin()
         return flask.jsonify({"plugin_response": plugin_res})
@@ -67,6 +73,11 @@ class PluginsView(FlaskView):
         for im_obj in all_imgs:
             (img_m, img_o) = self.get_image_matrix_and_dict(dataset, im_obj['phash'])
             (img_m, img_o) = self.controller.process(img_m, img_o)
+            bbs_vec = []
+            for bb in img_o['anno']:
+                bbox_o = BBox(bb['top'], bb['left'], bb['bottom'], bb['right'], bb['labels'], bb['ignore'])
+                bbs_vec.append(bbox_o)
+            self.image_controller.change_annotations(dataset, img_o['phash'], bbs_vec)
     
         plugin_res = self.controller.end_plugin()
         return flask.jsonify({"plugin_response": plugin_res})
