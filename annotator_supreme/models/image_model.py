@@ -118,7 +118,7 @@ class ImageModel():
                 image = np.fromstring(r_img[0].img, dtype=np.uint8)
                 image = cv2.imdecode(image, cv2.IMREAD_COLOR)
 
-                debug_utils.DebugUtils.toc("from_database_and_key")
+                # debug_utils.DebugUtils.toc("from_database_and_key")
                 
                 # image = image.reshape(r.height, r.width, 3)
 
@@ -156,7 +156,7 @@ class ImageModel():
         # also add the image in a different table
         image = cv2.imencode('.png', self.image)[1]
         db_session.execute(upsert_image_img_cql, [self.phash, image.tostring()])
-        debug_utils.DebugUtils.toc("image_model.upsert")
+        # debug_utils.DebugUtils.toc("image_model.upsert")
 
 
     def compute_phash(self, image):

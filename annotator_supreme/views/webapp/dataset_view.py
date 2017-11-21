@@ -16,4 +16,7 @@ class DatasetViewWebApp(FlaskView):
     @route('/', methods=['GET'])
     def datasets_get(self):
         datasets = self.dataset_controller.get_datasets()
+        for d in datasets:
+            if len(d['annotation_labels']) > 6:
+                d['annotation_labels'] = d['annotation_labels'][:6]
         return render_template('dataset.html', datasets=datasets)

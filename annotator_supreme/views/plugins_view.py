@@ -86,7 +86,7 @@ class PluginsView(FlaskView):
     @route('/plugins/all', methods=['GET'])
     def get_plugin_all(self):
         plugins = self.controller.get_all_plugins()
-        return flask.jsonify({"plugins": plugins})
+        return flask.jsonify({"plugins": sorted(plugins)})
 
 
     def get_plugin_from_request(self, request):

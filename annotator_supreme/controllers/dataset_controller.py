@@ -26,9 +26,9 @@ class DatasetController():
         categories = self.ref_controller.get_all_categories(dataset_obj.dataset_name)
         dataset_d = {
             "name": dataset_obj.dataset_name,
-            "tags": dataset_obj.tags,
-            "annotation_labels": labels,
-            "image_categories": categories,
+            "tags": (None if dataset_obj.tags is None else sorted(dataset_obj.tags)),
+            "annotation_labels": sorted(labels),
+            "image_categories": sorted(categories),
             "category_colors": ColorUtils.distiguishable_colors_hex(len(categories))
         }
         return dataset_d
@@ -39,10 +39,13 @@ class DatasetController():
             datasets = []
             for ds_row in rows:
                 datasets.append({'name': ds_row.name, 
-                        'tags': ds_row.tags, 
-                        'annotation_labels': self.ref_controller.get_all_labels(ds_row.name), 
-                        'image_categories': self.ref_controller.get_all_categories(ds_row.name), 
+                        'tags': (None if ds_row.tags is None else sorted(ds_row.tags)), 
+                        'annotation_labels': sorted(self.ref_controller.get_all_labels(ds_row.name)), 
+                        'image_categories': sorted(self.ref_controller.get_all_categories(ds_row.name)), 
                         'last_modified': ds_row.last_modified})
+
+            if len(datasets) > 0:
+                datasets = sorted(datasets, key=lambda k: k['name'].lower())
 
             return datasets
 
