@@ -1,3 +1,4 @@
+import os
 from annotator_supreme import app
 import cassandra
 from cassandra.cluster import Cluster
@@ -11,12 +12,13 @@ def get_db(config):
     This functions connect to the Cassandra database and kept in the flask app
     """
     KEYSPACE = app.config["KEYSPACE"]
+    CLUSTER_IP = app.config["CLUSTER_IP"]
 
     global db_global
     with app.app_context():
         if db_global is None:
-            app.logger.info("database connection done again")
-            cluster = Cluster(connect_timeout=1000)
+            app.logger.info("database connection done again with ip: %s",CLUSTER_IP)
+            cluster = Cluster([ CLUSTER_IP ], connect_timeout=1000)
             
             session = cluster.connect(KEYSPACE)
             session.default_timeout = 100
@@ -28,8 +30,10 @@ class DatabaseController:
 
     def setup_database(self):
         KEYSPACE = app.config["KEYSPACE"]
-
-        cluster = Cluster(protocol_version=3)
+        CLUSTER_IP = app.config["CLUSTER_IP"]
+        
+        cluster = Cluster([ CLUSTER_IP ], protocol_version=3)
+          
         session = cluster.connect()
 
         # first create the database (aka keyspace)

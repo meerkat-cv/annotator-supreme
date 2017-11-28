@@ -66,6 +66,12 @@ def build_app():
     app.config.from_pyfile(env_file)
     CORS(app)
 
+    CLUSTER_IP = os.getenv("CLUSTER_IP")
+    if CLUSTER_IP is None:
+        app.config["CLUSTER_IP"] = "127.0.0.1"
+    else:
+        app.config["CLUSTER_IP"] = CLUSTER_IP
+
     # we define an app secret key to keep session variables secure
     app.secret_key = '6869fab6ae6e276e7f6e1c3fcf5253ca'
 
