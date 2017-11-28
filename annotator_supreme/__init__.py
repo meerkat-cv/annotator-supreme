@@ -1,7 +1,6 @@
 
 from flask import Flask, jsonify, session
 from flask.ext.cors import CORS
-from flask_swagger import swagger
 from werkzeug.contrib.fixers import ProxyFix
 import logging
 import os
