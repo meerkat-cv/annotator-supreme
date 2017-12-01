@@ -41,7 +41,6 @@ docker run -d --name cassandraDB -p 7000:7000 -p 7001:7001 -p 7199:7199 -p 9042:
 #+end_src
 
 #+RESULTS:
-: 785c13e211812e815b138d78d2c513347c717d6153414f5787517727093ac21e
 
 ** Annotator Supreme in docker container
 
@@ -125,7 +124,7 @@ docker run -itd --name AnnotatorDEV \
        -v $HOME/Projects/annotator-supreme:/home \
        --env CLUSTER_IP=$CLUSTER_IP \
        -p 80:80 \
-       --add-host=cassandraDB:172.17.0.2 annotator_supreme bash
+       --add-host=cassandraDB:$CLUSTER_IP annotator_supreme bash
 #+end_src
 
 #+RESULTS:
@@ -133,7 +132,7 @@ docker run -itd --name AnnotatorDEV \
 
 Start nginx manually and the annotator api manually
 #+begin_src sh :results output :exports both
-root@1b8621841d27:/code# /usr/local/nginx/sbin/nginx & python3 run_api.py
+root@1b8621841d27:/home# /usr/local/nginx/sbin/nginx & python3 run_api.py
 #+end_src
 
 
