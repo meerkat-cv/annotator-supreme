@@ -60,9 +60,10 @@ if __name__ == '__main__':
         #adds annotations to image just inserted
         labelList = plate.findall(image_name)
         (top , left, w, h) = [ int(i) for i in  child.xpath('box/@*')]
+        #note: seems that "top" is actually the bottom in the dlib dataset...
         annotation_json = {
             'anno' : [
-                { 'top': top , 'left': left, 'right': left+w,'bottom':top-h,
+                { 'top': top , 'left': left, 'bottom':top+h, 'right': left+w,
                   'labels': labelList, 
                   'ignore': False }
             ]
