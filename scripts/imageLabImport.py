@@ -3,10 +3,11 @@ import json
 from requests_toolbelt import MultipartEncoder
 from lxml import etree
 import re 
+import sys
 
 _annotator_url = 'http://localhost/annotator-supreme'
 _dataset_name = 'default'
-_file_name = 'boxes_small.xml'
+#_file_name = 'boxes_small.xml'
 _image_category = "cars"
 
 def create_dataset(dataset_name):
@@ -37,8 +38,11 @@ def insert_annotation(image_id,annotation_json):
 
 
 if __name__ == '__main__':
-    
-    tree = etree.parse(_file_name)
+
+    file_name = str(sys.argv[1])
+    print("Reading dataset from: ", file_name)
+
+    tree = etree.parse(file_name)
     root = tree.getroot()
 
     dataset_name = root.xpath('name/text()')[0]
