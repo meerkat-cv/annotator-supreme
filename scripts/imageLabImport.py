@@ -7,7 +7,6 @@ import sys
 
 _annotator_url = 'http://localhost/annotator-supreme'
 _dataset_name = 'default'
-#_file_name = 'boxes_small.xml'
 _image_category = "cars"
 
 def create_dataset(dataset_name):
@@ -63,15 +62,19 @@ if __name__ == '__main__':
         
         #adds annotations to image just inserted
         labelList = plate.findall(image_name)
-        (top , left, w, h) = [ int(i) for i in  child.xpath('box/@*')]
-        #note: seems that "top" is actually the bottom in the dlib dataset...
-        annotation_json = {
-            'anno' : [
-                { 'top': top , 'left': left, 'bottom':top+h, 'right': left+w,
-                  'labels': labelList, 
-                  'ignore': False }
-            ]
-        }
+
+        boxList =  [ dict(i.attrib) for i in child.xpath('box')] 
+    
+        annotList = [ { 'top': int(d['top']) , 
+                        'left': int(d['left']), 
+                        'right': int(d['left'])+int(d['width']),
+                        'bottom': int(d['top'])+int(d['height']),
+                        'labels': labelList, 
+                        'ignore':  bool(d['ignore'] if 'ignore' in d else False ) }
+                      for d in boxList ]  
+
+        annotation_json = { 'anno' : annotList} 
+        
         r = insert_annotation(image_id,annotation_json)
         
         print(image_name,": ",r.status_code)
