@@ -16,6 +16,7 @@ RUN pip3 install -r /code/requirements.txt
 #ENV SERVER_ENV ON_PREMISE
 
 ARG SOURCE_COMMIT
+RUN test -n "$SOURCE_COMMIT"
 ENV SOURCE_COMMIT $SOURCE_COMMIT
 ADD server /code/server
 ADD annotator_supreme/ /code/annotator_supreme
