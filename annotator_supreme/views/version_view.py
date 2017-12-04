@@ -1,4 +1,5 @@
 import flask
+import os
 from flask.ext.classy import FlaskView, route, request
 from annotator_supreme._version import __version__
 
@@ -11,6 +12,7 @@ class VersionView(FlaskView):
     @route('/version', methods=['GET'])
     def version(self):
         current_version = __version__
-        obj = {"version": current_version}
+        source_commit = os.getenv("SOURCE_COMMIT")
+        obj = {"version": current_version, "source_commit": source_commit}
 
         return flask.jsonify(obj)

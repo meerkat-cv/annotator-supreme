@@ -47,48 +47,54 @@ docker run -d --name cassandraDB -p 7000:7000 -p 7001:7001 -p 7199:7199 -p 9042:
 *** Build the annotator
 
 #+begin_src sh :results output :exports code
-docker build -t annotator_supreme -f Dockerfile .
+docker build -t annotator_supreme --build-arg SOURCE_COMMIT=$(git rev-parse HEAD) -f Dockerfile .
 #+end_src
 
 #+RESULTS:
 #+begin_example
-Sending build context to Docker daemon  49.32MB
-Step 1/12 : FROM meerkatcvonpremise/meerkat_base:latest
+Sending build context to Docker daemon  50.11MB
+Step 1/14 : FROM meerkatcvonpremise/meerkat_base:latest
  ---> ff041dc8c125
-Step 2/12 : ADD requirements.txt /code/
+Step 2/14 : ADD requirements.txt /code/
  ---> Using cache
  ---> ce7b95ee5700
-Step 3/12 : RUN pip3 install pip --upgrade
+Step 3/14 : RUN pip3 install pip --upgrade
  ---> Using cache
  ---> 2f1f1f77859d
-Step 4/12 : RUN pip3 install -r /code/requirements.txt
+Step 4/14 : RUN pip3 install -r /code/requirements.txt
  ---> Using cache
  ---> 611de72d56de
-Step 5/12 : ADD server /code/server
+Step 5/14 : ARG SOURCE_COMMIT
  ---> Using cache
- ---> c077063939ef
-Step 6/12 : ADD annotator_supreme/ /code/annotator_supreme
+ ---> 974019e55ac0
+Step 6/14 : ENV SOURCE_COMMIT $SOURCE_COMMIT
  ---> Using cache
- ---> f02469ca54ec
-Step 7/12 : ADD run_api.py /code/
+ ---> a848a45d45ae
+Step 7/14 : ADD server /code/server
  ---> Using cache
- ---> de1df25e587b
-Step 8/12 : WORKDIR /code
+ ---> 3d99504059b5
+Step 8/14 : ADD annotator_supreme/ /code/annotator_supreme
  ---> Using cache
- ---> a3e38e8926ab
-Step 9/12 : RUN cp server/nginx.conf /usr/local/nginx/conf/nginx.conf
+ ---> 4fb641c3fc39
+Step 9/14 : ADD run_api.py /code/
  ---> Using cache
- ---> f1622bc0bcbd
-Step 10/12 : RUN ln -sf /dev/stdout /usr/local/nginx/logs/access.log
+ ---> b75990d95299
+Step 10/14 : WORKDIR /code
  ---> Using cache
- ---> e2ac8b55f60b
-Step 11/12 : RUN ln -sf /dev/stderr /usr/local/nginx/logs/error.log
+ ---> 6ee079f32a18
+Step 11/14 : RUN cp server/nginx.conf /usr/local/nginx/conf/nginx.conf
  ---> Using cache
- ---> 266c2bf21716
-Step 12/12 : CMD supervisord -c server/supervisord.conf
+ ---> a688bbdedd21
+Step 12/14 : RUN ln -sf /dev/stdout /usr/local/nginx/logs/access.log
  ---> Using cache
- ---> e023f82d8879
-Successfully built e023f82d8879
+ ---> ad48337a7b8f
+Step 13/14 : RUN ln -sf /dev/stderr /usr/local/nginx/logs/error.log
+ ---> Using cache
+ ---> 78a390c27bde
+Step 14/14 : CMD supervisord -c server/supervisord.conf
+ ---> Using cache
+ ---> 099e33f60697
+Successfully built 099e33f60697
 Successfully tagged annotator_supreme:latest
 #+end_example
 
@@ -111,7 +117,7 @@ docker run -d --env CLUSTER_IP=$CLUSTER_IP -p 80:80 \
 #+end_src
 
 #+RESULTS:
-: 789551a62e2b203b1ca698f7db8331bbbef07e1a11f91b11bd5b8dc4e348cb30
+: d42fe9810147dd325d187b605dce0a9fd28c0e25cbc28783b0b574cdfc9a901a
 
 If everything works as expected annotator is serving at [[http://localhost/annotator-supreme/]]
 

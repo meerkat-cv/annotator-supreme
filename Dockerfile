@@ -15,6 +15,8 @@ RUN pip3 install -r /code/requirements.txt
 #ENV LD_LIBRARY_PATH "/code/carpediem/third_party/yolo_py/linux/:/usr/lib/:/usr/local/lib"
 #ENV SERVER_ENV ON_PREMISE
 
+ARG SOURCE_COMMIT
+ENV SOURCE_COMMIT $SOURCE_COMMIT
 ADD server /code/server
 ADD annotator_supreme/ /code/annotator_supreme
 ADD run_api.py /code/
