@@ -1,0 +1,155 @@
+# -*- org-export-babel-evaluate: t; org-link-file-path-type: relative;-*-
+#+TITLE: Annotator Supreme
+#+LANGUAGE: en 
+#+STARTUP: indent
+#+STARTUP: logdrawer hideblocks
+#+SEQ_TODO: TODO INPROGRESS(i) | DONE DEFERRED(@) CANCELED(@)
+#+TAGS: ignore(i) DEPRECATED(d) noexport(n) export(e)
+#+OPTIONS: ^:{} H:3 author:nil todo:nil tags:nil
+#+PROPERTY: header-args :cache no :eval never-export
+
+A server to annotate and provide computer vision datasets
+
+* Table of Contents                                            :noexport:TOC:
+- [[#getting-started][Getting Started]]
+  - [[#running-cassandra-db-in-a-docker-container-recomended][Running cassandra db in a docker container (recomended)]]
+  - [[#annotator-supreme-in-docker-container][Annotator Supreme in docker container]]
+- [[#extra][Extra]]
+  - [[#connecting-to-a-local-cassandra-database][Connecting to a local Cassandra database]]
+
+* Getting Started  
+
+Supreme annotator uses a Cassandra database to store the datasets.
+
+** Running cassandra db in a docker container (recomended) 
+
+Get the cassandra docker ( [[https://hub.docker.com/_/cassandra/]] )
+
+#+begin_src sh :results output :exports code
+docker pull cassandra 
+#+end_src
+
+#+RESULTS:
+: Using default tag: latest
+: latest: Pulling from library/cassandra
+: Digest: sha256:afe579efbad590ac59992b2984d9010184e2f5c1e24e5f1107dde7dd74fd7913
+: Status: Image is up to date for cassandra:latest
+
+Run the cassandra container publishing its exposed ports to localhost. 
+#+begin_src sh :results output :exports code
+docker run -d --name cassandraDB -p 7000:7000 -p 7001:7001 -p 7199:7199 -p 9042:9042 cassandra:latest
+#+end_src
+
+#+RESULTS:
+
+** Annotator Supreme in docker container
+
+*** Build the annotator
+
+#+begin_src sh :results output :exports code
+docker build -t annotator_supreme --build-arg SOURCE_COMMIT=$(git rev-parse HEAD) -f Dockerfile .
+#+end_src
+
+#+RESULTS:
+#+begin_example
+Sending build context to Docker daemon  50.11MB
+Step 1/14 : FROM meerkatcvonpremise/meerkat_base:latest
+ ---> ff041dc8c125
+Step 2/14 : ADD requirements.txt /code/
+ ---> Using cache
+ ---> ce7b95ee5700
+Step 3/14 : RUN pip3 install pip --upgrade
+ ---> Using cache
+ ---> 2f1f1f77859d
+Step 4/14 : RUN pip3 install -r /code/requirements.txt
+ ---> Using cache
+ ---> 611de72d56de
+Step 5/14 : ARG SOURCE_COMMIT
+ ---> Using cache
+ ---> 974019e55ac0
+Step 6/14 : ENV SOURCE_COMMIT $SOURCE_COMMIT
+ ---> Using cache
+ ---> a848a45d45ae
+Step 7/14 : ADD server /code/server
+ ---> Using cache
+ ---> 3d99504059b5
+Step 8/14 : ADD annotator_supreme/ /code/annotator_supreme
+ ---> Using cache
+ ---> 4fb641c3fc39
+Step 9/14 : ADD run_api.py /code/
+ ---> Using cache
+ ---> b75990d95299
+Step 10/14 : WORKDIR /code
+ ---> Using cache
+ ---> 6ee079f32a18
+Step 11/14 : RUN cp server/nginx.conf /usr/local/nginx/conf/nginx.conf
+ ---> Using cache
+ ---> a688bbdedd21
+Step 12/14 : RUN ln -sf /dev/stdout /usr/local/nginx/logs/access.log
+ ---> Using cache
+ ---> ad48337a7b8f
+Step 13/14 : RUN ln -sf /dev/stderr /usr/local/nginx/logs/error.log
+ ---> Using cache
+ ---> 78a390c27bde
+Step 14/14 : CMD supervisord -c server/supervisord.conf
+ ---> Using cache
+ ---> 099e33f60697
+Successfully built 099e33f60697
+Successfully tagged annotator_supreme:latest
+#+end_example
+
+*** Starting the container for annotating 
+
+Get the IP address of the running cassandra container.
+#+NAME: clusterIP
+#+begin_src sh :results output :exports both 
+CLUSTER_IP=$(docker inspect --format='{{ .NetworkSettings.IPAddress }}' cassandraDB)
+echo $CLUSTER_IP
+#+end_src
+
+#+RESULTS: clusterIP
+: 172.17.0.2
+
+Start the annotator container passing the IP of the other container. 
+#+begin_src sh :results output :exports code :var CLUSTER_IP=clusterIP
+docker run -d --env CLUSTER_IP=$CLUSTER_IP -p 80:80 \
+       --add-host=cassandraDB:$CLUSTER_IP annotator_supreme
+#+end_src
+
+#+RESULTS:
+: d42fe9810147dd325d187b605dce0a9fd28c0e25cbc28783b0b574cdfc9a901a
+
+If everything works as expected annotator is serving at [[http://localhost/annotator-supreme/]]
+
+*** Starting for Development 
+
+You can mount a volume with your code directory into the container.
+By appending the =bash= command to the docker run, neither the application nor the nginx webserver will start.
+#+begin_src sh :results output :exports code :var CLUSTER_IP=clusterIP
+docker run -itd --name AnnotatorDEV \
+       -v $HOME/Projects/annotator-supreme:/home \
+       --env CLUSTER_IP=$CLUSTER_IP \
+       -p 80:80 \
+       --add-host=cassandraDB:$CLUSTER_IP annotator_supreme bash
+#+end_src
+
+#+RESULTS:
+: 1b8621841d271464ee7c27ff79c920617904089fe3218d45478dd46bc52f0bb5
+
+Start nginx manually and the annotator api manually
+#+begin_src sh :results output :exports both
+root@1b8621841d27:/home# /usr/local/nginx/sbin/nginx & python3 run_api.py
+#+end_src
+
+
+* Extra
+** Connecting to a local Cassandra database
+
+Alternatively it is possible to run connect to a cassandra database running natively on the host.
+
+To connect the app to a Cassandra database running you have to run the container on the =host= network [[https://docs.docker.com/engine/reference/run/#network-settings]]
+
+#+begin_src sh :results output :exports both
+docker run -d --network="host" annotator_supreme
+#+end_src
+

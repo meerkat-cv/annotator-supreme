@@ -28,6 +28,11 @@ class AnnoView(FlaskView):
 
     @route('/image/anno/<dataset>/<imageid>', methods=['POST'])
     def post_image_anno(self, dataset, imageid):
+        """
+        Parameters:
+        - anno: a list of bounding boxes 
+        - scale: optional
+        """
         (ok, error, anno) = view_tools.get_param_from_request(request, 'anno')
 
         (ok_scale, _, scale) = view_tools.get_param_from_request(request, 'scale')
