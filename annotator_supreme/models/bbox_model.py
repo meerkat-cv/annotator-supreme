@@ -4,6 +4,11 @@
 class BBox:
 
     def __init__(self, top, left, bottom, right, labels, ignore = False):
+        """
+        Top, left, bottom, right: float
+        labels : list of strings
+        ignore : boolean
+        """
         self.top = top
         self.left = left
         self.bottom = bottom

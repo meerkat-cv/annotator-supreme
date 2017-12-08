@@ -58,8 +58,18 @@ class ImageView(FlaskView):
         obj = ImageController.all_images(dataset)
         return flask.jsonify({"images": obj})
 
+    
     @route('/image/<dataset>/add', methods=['POST'])
     def create_image(self, dataset):
+        """
+        Add and image to the dataset 
+        ---
+        parameters:
+        - name: the name of the image 
+        - category: a name of the category
+        - image: multi-part from data
+        """
+
         (ok, error, image) = view_tools.get_image_from_request(request)
         if not ok:
             raise error_views.InvalidParametersError(error)
