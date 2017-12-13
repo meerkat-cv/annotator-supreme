@@ -3,9 +3,10 @@ from imgaug import augmenters as iaa
 import os
 import cv2
 import numpy as np
+import logging
 
 
-DATASET_DIR = 'media/meerkat/Data/datasets/alpr_old/alpr_dataset'
+OUTPUT_DIR = '/media/meerkat/Data/datasets/alpr_dec17'
 NUM_AUG_IMAGES = 10
 NUM_SCALES = 3
 MAX_SCALE = 1.6
@@ -103,25 +104,32 @@ class AnnotatorPlugin:
     def __init__(self, dataset, partition):
         self.image_path_list = [[],[]]
         self.label_list = [[],[]]
-        try:
-            os.system('rm -rf '+DATASET_DIR)
-        except:
-            pass
-        os.system('mkdir '+DATASET_DIR)
-        os.system('mkdir '+DATASET_DIR+'/train/')
-        os.system('mkdir '+DATASET_DIR+'/val/')
 
+        if os.system('mkdir -p '+OUTPUT_DIR+'/train/') :
+            logging.error("Cannot create %s/train/", OUTPUT_DIR)
+            return
+
+        if os.system('mkdir -p '+OUTPUT_DIR+'/val/') :
+            logging.error("Cannot create %s/val/", OUTPUT_DIR)
+            return
 
     def is_date(self, text):
         return len(text.split('/')) == 3
 
     def process(self, im, anno):
+        ''' 
+        main function of the plugin 
+
+        parameters:
+            - im : an opencv image matrix
+            - anno: a json representing the annotation for this image
+        '''
         part = anno['partition']
         print('partition', part)
         if part == 0:
-            im_name = DATASET_DIR+'/train/'+anno['phash']
+            im_name = OUTPUT_DIR+'/train/'+anno['phash']
         else:
-            im_name = DATASET_DIR+'/val/'+anno['phash']
+            im_name = OUTPUT_DIR+'/val/'+anno['phash']
         width   = float(im.shape[1])
         height  = float(im.shape[0])
         curr_tag = ''
@@ -138,13 +146,13 @@ class AnnotatorPlugin:
             if len(bb['labels']) <= 0:
                 continue
 
-            if bb['labels'][0] != 'plate' and bb['labels'][0] != 'plate1' and bb['labels'][0] != 'plate2' and bb['labels'][0] != 'plate_ant':
-                continue
+           #  if bb['labels'][0] != 'plate' and bb['labels'][0] != 'plate1' and bb['labels'][0] != 'plate2' and bb['labels'][0] != 'plate_ant':
+           #     continue
 
             curr_label = ''
-            if len(bb['labels']) > 1:
-                curr_label = bb['labels'][1].lower()
-            curr_label = curr_label.replace(' ','')
+            if len(bb['labels']) > 0:
+                curr_label = bb['labels'][0].lower()
+            curr_label = curr_label.replace(' ','').replace('-','')
             bad_letter = False
             for a in curr_label:
                 if a not in alphabet:
@@ -154,19 +162,30 @@ class AnnotatorPlugin:
             if bad_letter:
                 continue
                     
-            # curr_label = curr_label.replace('-','')
-            # curr_label = curr_label.replace('.','')
-
             l = int(bb['left'])
             t = int(bb['top'])
             r = int(bb['right'])
             b = int(bb['bottom'])
+
+            # Save the original cropped plate
+            org_im = np.copy(im[t:b,l:r,:])
+            org_name = im_name+'_org'
+
+            #save label file
+            with open(org_name+'.txt', 'w') as f:
+                f.write(curr_label+'\n')
+                
+            #save image file    
+            cv2.imwrite(org_name+'.png', org_im)
+            self.image_path_list[part].append(org_name+'.png')
+            self.label_list[part].append(curr_label)
 
             for i in range(0,NUM_SCALES):
                 curr_scale = 1+(MAX_SCALE-1)/NUM_SCALES*(i+1)
                 (nl, nt, nr, nb) = self.safe_scale_bbox(l, t, r, b, curr_scale, im.shape)
                 # imgs_vec = np.asarray([np.copy(im[nt:nb,nl:nr,:])])
                 aux_im = np.copy(im[nt:nb,nl:nr,:])
+                
                 if aux_im.shape[0] <= 0 or aux_im.shape[1] <= 0:
                     break
                 scale_im = IM_HEIGHT/float(aux_im.shape[0])
@@ -197,19 +216,19 @@ class AnnotatorPlugin:
 
 
     def end(self):
-        with open(DATASET_DIR+'/train/image_path_list.txt', 'w') as f:
+        with open(OUTPUT_DIR+'/train/image_path_list.txt', 'w') as f:
             for p in self.image_path_list[0]:
                 f.write(p+'\n')
 
-        with open(DATASET_DIR+'/train/label_list.txt', 'w') as f:
+        with open(OUTPUT_DIR+'/train/label_list.txt', 'w') as f:
             for l in self.label_list[0]:
                 f.write(l+'\n')
 
-        with open(DATASET_DIR+'/val/image_path_list.txt', 'w') as f:
+        with open(OUTPUT_DIR+'/val/image_path_list.txt', 'w') as f:
             for p in self.image_path_list[1]:
                 f.write(p+'\n')
 
-        with open(DATASET_DIR+'/val/label_list.txt', 'w') as f:
+        with open(OUTPUT_DIR+'/val/label_list.txt', 'w') as f:
             for l in self.label_list[1]:
                 f.write(l+'\n')
 
