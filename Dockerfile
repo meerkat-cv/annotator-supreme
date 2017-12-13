@@ -31,3 +31,8 @@ RUN ln -sf /dev/stderr /usr/local/nginx/logs/error.log
 	
 # run the Ngnix server
 CMD supervisord -c server/supervisord.conf
+
+#for the annotator API
+EXPOSE 4242
+#for Ngnix
+EXPOSE 80

@@ -36,82 +36,98 @@ docker pull cassandra
 : Status: Image is up to date for cassandra:latest
 
 Run the cassandra container publishing its exposed ports to localhost. 
-#+begin_src sh :results output :exports code
-docker run -d --name cassandraDB -p 7000:7000 -p 7001:7001 -p 7199:7199 -p 9042:9042 cassandra:latest
+#+begin_src sh :results output :exports code :session docker
+#docker run -d --name cassandraDB -p 7000:7000 -p 7001:7001 -p 7199:7199 -p 9042:9042 cassandra:latest
+sudo docker run -d --name cassandraDB cassandra:latest
 #+end_src
 
 #+RESULTS:
+: 
+: afabd8965991cb86f46409df16b5a885534e8788ad56ee95bd05c1a635ed7191
 
 ** Annotator Supreme in docker container
 
 *** Build the annotator
 
-#+begin_src sh :results output :exports code
-docker build -t annotator_supreme --build-arg SOURCE_COMMIT=$(git rev-parse HEAD) -f Dockerfile .
+#+begin_src sh :results output :exports code :session docker
+sudo docker build -t annotator_supreme --build-arg SOURCE_COMMIT=$(git rev-parse HEAD) -f Dockerfile .
 #+end_src
 
 #+RESULTS:
 #+begin_example
-Sending build context to Docker daemon  50.11MB
-Step 1/14 : FROM meerkatcvonpremise/meerkat_base:latest
- ---> ff041dc8c125
-Step 2/14 : ADD requirements.txt /code/
- ---> Using cache
- ---> ce7b95ee5700
-Step 3/14 : RUN pip3 install pip --upgrade
- ---> Using cache
- ---> 2f1f1f77859d
-Step 4/14 : RUN pip3 install -r /code/requirements.txt
- ---> Using cache
- ---> 611de72d56de
-Step 5/14 : ARG SOURCE_COMMIT
- ---> Using cache
- ---> 974019e55ac0
-Step 6/14 : ENV SOURCE_COMMIT $SOURCE_COMMIT
- ---> Using cache
- ---> a848a45d45ae
-Step 7/14 : ADD server /code/server
- ---> Using cache
- ---> 3d99504059b5
-Step 8/14 : ADD annotator_supreme/ /code/annotator_supreme
- ---> Using cache
- ---> 4fb641c3fc39
-Step 9/14 : ADD run_api.py /code/
- ---> Using cache
- ---> b75990d95299
-Step 10/14 : WORKDIR /code
- ---> Using cache
- ---> 6ee079f32a18
-Step 11/14 : RUN cp server/nginx.conf /usr/local/nginx/conf/nginx.conf
- ---> Using cache
- ---> a688bbdedd21
-Step 12/14 : RUN ln -sf /dev/stdout /usr/local/nginx/logs/access.log
- ---> Using cache
- ---> ad48337a7b8f
-Step 13/14 : RUN ln -sf /dev/stderr /usr/local/nginx/logs/error.log
- ---> Using cache
- ---> 78a390c27bde
-Step 14/14 : CMD supervisord -c server/supervisord.conf
- ---> Using cache
- ---> 099e33f60697
-Successfully built 099e33f60697
+
+$ Sending build context to Docker daemon  557.1kBSending build context to Docker daemon  24.51MBSending build context to Docker daemon  42.34MBSending build context to Docker daemon  49.24MB
+Step 1/17 : FROM meerkatcvonpremise/meerkat_base:latest
+0e79595684cf
+Step 2/17 : ADD requirements.txt /code/
+Using cache
+cdb8a57524e5
+Step 3/17 : RUN pip3 install pip --upgrade
+Using cache
+768ab0d3829f
+Step 4/17 : RUN pip3 install -r /code/requirements.txt
+Using cache
+63fcd7a90fb6
+Step 5/17 : ARG SOURCE_COMMIT
+Using cache
+f4c56fabc469
+SOURCE_COMMIT"
+Using cache
+5bb984caa5ce
+SOURCE_COMMIT
+Using cache
+a50617308098
+Step 8/17 : ADD server /code/server
+Using cache
+033b2d01e2db
+Step 9/17 : ADD annotator_supreme/ /code/annotator_supreme
+Using cache
+2b933cd4ec95
+Step 10/17 : ADD run_api.py /code/
+Using cache
+505fa0a1eed3
+Step 11/17 : WORKDIR /code
+Using cache
+c6e8d9cb9543
+Step 12/17 : RUN cp server/nginx.conf /usr/local/nginx/conf/nginx.conf
+Using cache
+1ea8474b53f7
+Step 13/17 : RUN ln -sf /dev/stdout /usr/local/nginx/logs/access.log
+Using cache
+420b6def0adf
+Step 14/17 : RUN ln -sf /dev/stderr /usr/local/nginx/logs/error.log
+Using cache
+109bae9dcac7
+Step 15/17 : CMD supervisord -c server/supervisord.conf
+Using cache
+145074ece999
+Step 16/17 : EXPOSE 4242
+Using cache
+9760c07c02cc
+Step 17/17 : EXPOSE 80
+Running in e00761a0641b
+303ae5972a66
+Removing intermediate container e00761a0641b
+Successfully built 303ae5972a66
 Successfully tagged annotator_supreme:latest
 #+end_example
+
 
 *** Starting the container for annotating 
 
 Get the IP address of the running cassandra container.
 #+NAME: clusterIP
-#+begin_src sh :results output :exports both 
-CLUSTER_IP=$(docker inspect --format='{{ .NetworkSettings.IPAddress }}' cassandraDB)
+#+begin_src sh :results output :exports both :session docker
+CLUSTER_IP=$(sudo docker inspect --format='{{ .NetworkSettings.IPAddress }}' cassandraDB)
 echo $CLUSTER_IP
 #+end_src
 
 #+RESULTS: clusterIP
-: 172.17.0.2
+: 
+: 172.17.0.5
 
 Start the annotator container passing the IP of the other container. 
-#+begin_src sh :results output :exports code :var CLUSTER_IP=clusterIP
+#+begin_src sh :results output :exports code :var CLUSTER_IP=clusterIP :session docker
 docker run -d --env CLUSTER_IP=$CLUSTER_IP -p 80:80 \
        --add-host=cassandraDB:$CLUSTER_IP annotator_supreme
 #+end_src
@@ -125,21 +141,48 @@ If everything works as expected annotator is serving at [[http://localhost/annot
 
 You can mount a volume with your code directory into the container.
 By appending the =bash= command to the docker run, neither the application nor the nginx webserver will start.
-#+begin_src sh :results output :exports code :var CLUSTER_IP=clusterIP
-docker run -itd --name AnnotatorDEV \
+#+begin_src sh :results output :exports code :session docker
+sudo docker run -itd -P \
        -v $HOME/Projects/annotator-supreme:/home \
        --env CLUSTER_IP=$CLUSTER_IP \
-       -p 80:80 \
        --add-host=cassandraDB:$CLUSTER_IP annotator_supreme bash
 #+end_src
 
 #+RESULTS:
-: 1b8621841d271464ee7c27ff79c920617904089fe3218d45478dd46bc52f0bb5
+: 
+: > > 810cae778b5aaad4a0ca96a306cbccd46b98eec1ca30c5b6d903937f39fb0781
 
-Start nginx manually and the annotator api manually
-#+begin_src sh :results output :exports both
-root@1b8621841d27:/home# /usr/local/nginx/sbin/nginx & python3 run_api.py
+#+begin_src sh :results output :exports both :session docker
+sudo docker ps | grep annotator_supreme
 #+end_src
+
+#+RESULTS:
+: 
+: 80/tcp, 0.0.0.0:32770->4242/tcp                                                                                                 laughing_hugle
+
+#+begin_src sh :results output :exports both :session docker
+sudo docker rm annotator_dev
+sudo docker rename laughing_hugle annotator_dev
+#+end_src
+
+#+RESULTS:
+: annotator_dev
+
+Start nginx manually and the annotator api manually (don't need this actually) 
+#+begin_src sh :results output :exports both :session docker
+sudo docker exec annotator_dev /usr/local/nginx/sbin/nginx & 
+#+end_src
+
+#+RESULTS:
+: [1] - Done(1)                    sudo docker exec annotator_dev /usr/local/nginx/sbin/nginx
+
+We can now start our development API running in /home
+#+begin_src sh :results output :exports both :session docker
+sudo docker exec annotator_dev python3 /home/run_api.py &
+#+end_src
+
+#+RESULTS:
+
 
 
 * Extra
@@ -149,7 +192,14 @@ Alternatively it is possible to run connect to a cassandra database running nati
 
 To connect the app to a Cassandra database running you have to run the container on the =host= network [[https://docs.docker.com/engine/reference/run/#network-settings]]
 
+NOTE: ports 80 and 4242 must not be in the host
 #+begin_src sh :results output :exports both
 docker run -d --network="host" annotator_supreme
 #+end_src
 
+#+begin_src sh :results output :exports code :session docker
+sudo docker run -itd -v $HOME/Projects/annotator-supreme:/home --network="host" annotator_supreme bash
+#+end_src
+
+#+RESULTS:
+: 15889fc05e765e3c848b9a5ab942cd4c3c4bdcb6369ac7969b5438d5e115c165
