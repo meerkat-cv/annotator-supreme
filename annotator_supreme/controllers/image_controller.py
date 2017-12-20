@@ -44,19 +44,20 @@ class ImageController():
             "has_annotation": len(img_o.bboxes) > 0
         }
 
+    def get_image_object(self, dataset_name, id):
+        """ Returns the metadata stored in database about this image """
+        img_o = ImageModel.from_database_and_key(dataset_name, id)
+        return img_o
 
     def get_image(self, dataset_name, id):
-        img_o = ImageModel.from_database_and_key(dataset_name, id)
+        """ Returns the actual image binary file """
+        img_o = self.get_image_object(dataset_name, id)
         return img_o.image
 
     def set_partition(self, dataset_name, id, partition):
         img_o = ImageModel.from_database_and_key(dataset_name, id)
         img_o.partition = partition
         img_o.upsert()
-
-    def get_image_object(self, dataset_name, id):
-        img_o = ImageModel.from_database_and_key(dataset_name, id)
-        return img_o
 
     def change_annotations(self, dataset, id, anno):
         img_o = ImageModel.from_database_and_key(dataset, id)

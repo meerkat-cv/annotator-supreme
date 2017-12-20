@@ -1,4 +1,5 @@
 import flask
+from io import BytesIO
 from flask.ext.classy import FlaskView, route, request
 from annotator_supreme.models.bbox_model import BBox
 from annotator_supreme.controllers.image_controller import ImageController
@@ -13,6 +14,7 @@ class ImageView(FlaskView):
     def __init__(self):
         self.controller = ImageController()
 
+        
     @route('/image/<dataset>/<imageid>', methods=['DELETE'])
     def delete_image(self, dataset, imageid):
         (ok, error) = self.controller.delete_image(dataset, imageid)
@@ -28,15 +30,12 @@ class ImageView(FlaskView):
         
         return flask.jsonify({"image": img_details})
 
+    
     @route('/image/<dataset>/<imageid>', methods=['GET'])
     def get_image(self, dataset, imageid):
         img = self.controller.get_image(dataset, imageid)
-        fileid = "img" # uuid.uuid4().hex
-        full_filename = 'annotator_supreme/static/'+fileid+'.jpg'
-        cv2.imwrite(full_filename, img)
-        filename = 'static/'+fileid+'.jpg'
-
-        return flask.send_file(filename, mimetype='image/jpeg')
+        ret, img_bin = cv2.imencode(".jpg", img)
+        return flask.send_file(BytesIO(img_bin), mimetype='image/jpeg')
 
 
     @route('/image/thumb/<dataset>/<imageid>', methods=['GET'])
@@ -44,12 +43,8 @@ class ImageView(FlaskView):
         img = self.controller.get_image(dataset, imageid)
         img_o = self.controller.get_image_object(dataset, imageid)
         thumb = ImageUtils.create_thumbnail(img, img_o)
-        fileid = "imgthumb" # uuid.uuid4().hex
-        full_filename = 'annotator_supreme/static/'+fileid+'.jpg'
-        cv2.imwrite(full_filename, thumb)
-        filename = 'static/'+fileid+'.jpg'
-
-        return flask.send_file(filename, mimetype='image/jpeg')
+        ret, img_bin = cv2.imencode(".jpg", thumb)
+        return flask.send_file( BytesIO(img_bin) , mimetype='image/jpeg')
 
 
     @route('/image/<dataset>/all', methods=['GET'])
