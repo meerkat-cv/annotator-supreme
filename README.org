@@ -23,6 +23,7 @@ A server to annotate and provide computer vision datasets
 Supreme annotator uses a Cassandra database to store the datasets.
 
 ** Running cassandra db in a docker container (recomended) 
+( [[file:initCassandra.sh]] )
 
 Get the cassandra docker ( [[https://hub.docker.com/_/cassandra/]] )
 #+begin_src sh :results output :exports code :session docker
@@ -36,6 +37,7 @@ sudo docker run -d --name cassandraDB cassandra:latest
 ** Annotator Supreme in docker container
 
 *** Build the annotator
+([[file:build_annotator.sh]])
 
 Build the annotator keeping track of the current source commit.
 #+begin_src sh :results none :exports none :tangle build_annotator.sh :shebang "#!/bin/bash"
@@ -50,77 +52,82 @@ fi
 sudo docker build -t annotator_supreme --build-arg SOURCE_COMMIT=$(git rev-parse HEAD) -f Dockerfile .
 #+end_src
 
-*** Starting the container for annotating 
+*** Running the container for annotating 
+([[file:run_annotator_prod.sh]])
 
 - Get the IP address of the running cassandra container.
 - Set is as an env variable in the annotator.
   
 #+begin_src sh :results output :exports both :session docker :tangle run_annotator_prod.sh :shebang "#!/bin/bash"
 CLUSTER_IP=$(sudo docker inspect --format='{{ .NetworkSettings.IPAddress }}' cassandraDB)
-echo $CLUSTER_IP
+echo "Using cassandra database from:" $CLUSTER_IP
 
-sudo docker rm annotator_supreme
+echo "Initializing annotator_supreme ..."
 sudo docker run -d -P \
      --env CLUSTER_IP=$CLUSTER_IP \
      --hostname annotator.prod.intranet \
      --name annotator_supreme \
      --add-host=cassandraDB:$CLUSTER_IP annotator_supreme
+
+sudo docker logs -f --since="10s" annotator_supreme | grep -m1 "INFO:annotator_supreme:App built successfully!" && \
+IP=$(sudo docker inspect --format='{{ .NetworkSettings.IPAddress }}' annotator_supreme)
+
+echo "Annotator running: http://$IP/annotator-supreme/"
 #+end_src
 
 #+RESULTS:
-: 
-: 172.17.0.2
+: Using cassandra database from: 172.17.0.3
 : sh-4.4$ annotator_supreme
-: > > > > f71ccacef8f037defb4f56fe6d6328a3a026c28e914aa1870ec0c2eff55c9c3a
+: Initializing annotator_supreme ...
+: > > > > 22e8cbbce24782a6dee8f6e18a20bff1d51bb773ab2337f14e7666912348f076
+: sh-4.4$ > INFO:annotator_supreme:App built successfully!
+: sh-4.4$ Annotator running: http://172.17.0.4/annotator-supreme/
 
-Check the port you have exported
-#+begin_src sh :results output :exports both :session
-docker port annotator_supreme
-#+end_src
+If you have [[#id20171221191434][DNS configured]] for dockers then access [[http://annotator.prod.intranet/annotator-supreme/]]
 
-#+RESULTS:
-: 4242/tcp -> 0.0.0.0:32778
-: 80/tcp -> 0.0.0.0:32779
+*** Running the container for development 
+([[file:run_annotator_dev.sh]])
 
-If everything works as expected annotator is serving at [[http://localhost:32779/annotator-supreme/]]
-
-If you have [[#id20171221191434][DNS configured]] for dockers then access [[http://annotator.prod.intranet/annotator-supreme]]
-
-*** Starting the container for Development 
-
-You can mount a volume with your code directory into the container.
-By appending the =bash= command to the docker run, neither the application nor the nginx webserver will start.
-
-#+begin_src sh :results output :exports both :session docker :tangle run_annotator_dev.sh :shebang "#!/bin/bash"
+Run the docker image and mount your local code directory into the container:
+#+begin_src sh :results output :exports code :session docker 
 CLUSTER_IP=$(sudo docker inspect --format='{{ .NetworkSettings.IPAddress }}' cassandraDB)
-echo $CLUSTER_IP
+echo "Using cassandra database from:" $CLUSTER_IP
 
-sudo docker rm annotator_supreme_dev
+echo "Initializing annotator_dev ..."
 sudo docker run -itd -P \
-       -v $(pwd):/home \
+       -v $(pwd):/code \
        --env CLUSTER_IP=$CLUSTER_IP \
        --hostname annotator.dev.intranet \
-       --name annotator_supreme_dev \
-       --add-host=cassandraDB:$CLUSTER_IP annotator_supreme bash
+       --name annotator_dev \
+       --add-host=cassandraDB:$CLUSTER_IP annotator_supreme
+
+sudo docker logs -f --since="10s" annotator_dev | grep -m1 "INFO:annotator_supreme:App built successfully!" && \
+IP=$(sudo docker inspect --format='{{ .NetworkSettings.IPAddress }}' annotator_dev)
+
+echo "Annotator running: http://$IP/annotator-supreme/"
 #+end_src
 
 #+RESULTS:
 : 172.17.0.2
 : > > > > > bfe5aef88b1352d00938b1d58f56d9f0d069ab7ea00f9345ace39a32525cf3c4
 
-#+begin_src sh :results output :exports both
-docker port annotator_supreme_dev
-#+end_src
+- Docker start : [[file:start_annotator_dev.sh]]
+    #+begin_src sh :session docker :results output :exports none :tangle "start_annotator_dev.sh" :shebang "#!/bin/bash"
+sudo docker start annotator_dev
 
-#+RESULTS:
-: 4242/tcp -> 0.0.0.0:32782
-: 80/tcp -> 0.0.0.0:32783
+echo "Initializing annotator_dev ..."
 
-Start nginx and the annotator api manually 
-(Note: change dir to the mounted volume to run my version of the API) 
-#+begin_src sh :results output :exports both :session docker :tangle run_annotator_dev.sh 
-sudo docker exec annotator_supreme_dev bash -c "/usr/local/nginx/sbin/nginx & cd /home ; python3 run_api.py"
-#+end_src
+sudo docker logs -f --since="10s" annotator_dev | grep -m1 "INFO:annotator_supreme:App built successfully!" && \
+    IP=$(sudo docker inspect --format='{{ .NetworkSettings.IPAddress }}' annotator_dev)
+
+echo "Annotator running: http://$IP/annotator-supreme/"
+    #+end_src
+
+    #+RESULTS:
+    : annotator_dev
+    : sh-4.4$ Initializing annotator_dev ...
+    : sh-4.4$ > INFO:annotator_supreme:App built successfully!
+    : sh-4.4$ Annotator running: http://172.17.0.4/annotator-supreme/
 
 If you have [[#id20171221191434][DNS configured]] for dockers then access [[http://annotator.dev.intranet/annotator-supreme]]
 
@@ -147,6 +154,7 @@ sudo docker run -itd -v $(pwd):/home --network="host" annotator_supreme bash
 :PROPERTIES:
 :CUSTOM_ID: id20171221191434
 :END:
+([[file:run_dns_proxy.sh]])
 
 Sometimes you may need to run several containers in the docker network.
 Enabling DNS in the docker network makes it easier to set containers to talk because you don't need to find the assigned ip address at every run. 
