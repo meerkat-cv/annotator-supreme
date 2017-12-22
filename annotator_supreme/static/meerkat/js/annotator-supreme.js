@@ -339,8 +339,12 @@
 
             var curr_anno = {};
             var tag = this.bboxes[i].findOne('#tag');
-            curr_anno['left'] = this.bboxes[i].attrs.x;
-            curr_anno['top'] = this.bboxes[i].attrs.y;
+            // debugger;
+
+            // TODO: not the right way to solve this,
+            // moving with anchor should change attrs.x or use getBBtoxTopLeft shoud be used.
+            curr_anno['left'] = this.bboxes[i].attrs.x + this.bboxes[i].get('Rect')[0].getX(); 
+            curr_anno['top'] = this.bboxes[i].attrs.y + this.bboxes[i].get('Rect')[0].getX();
             curr_anno['right'] = curr_anno['left'] + this.bboxes[i].get('Rect')[0].attrs.width;
             curr_anno['bottom'] = curr_anno['top'] + this.bboxes[i].get('Rect')[0].attrs.height;
             curr_anno['ignore'] = this.bboxes[i].attrs.ignore;
