@@ -1,0 +1,23 @@
+version: '3'
+services:
+  cassandra:
+    image: cassandra:latest
+    healthcheck:
+      test: ["CMD-SHELL", "[ $$(nodetool statusgossip) = running ]"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  annotator:
+    image: annotator_supreme
+    hostname: annotator.dev.intranet
+    volumes:
+    - ./:/code
+    depends_on:
+    - cassandra
+    environment:
+    - CLUSTER_IP=cassandra
+    ports:
+    - "4280:80"
+    - "4242:4242"
+    
