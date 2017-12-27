@@ -24,7 +24,7 @@ ADD run_api.py /code/
 
 WORKDIR /code
 # copy the nginx configuration to the correct location
-RUN cp server/nginx.conf /usr/local/nginx/conf/nginx.conf
+#RUN cp server/nginx.conf /usr/local/nginx/conf/nginx.conf
 
 RUN ln -sf /dev/stdout /usr/local/nginx/logs/access.log
 RUN ln -sf /dev/stderr /usr/local/nginx/logs/error.log
@@ -34,5 +34,3 @@ CMD supervisord -c server/supervisord.conf
 
 #for the annotator API
 EXPOSE 4242
-#for Ngnix
-EXPOSE 80
