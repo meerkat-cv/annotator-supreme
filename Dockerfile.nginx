@@ -1,0 +1,20 @@
+#FROM ngnix
+FROM meerkatcvonpremise/meerkat_base:latest
+
+#COPY nginx.conf /etc/nginx/nginx.conf
+#COPY /code/ /usr/share/nginx/html
+
+ADD server /code/server
+WORKDIR /code
+RUN cp server/nginx.conf /usr/local/nginx/conf/nginx.conf
+
+ADD annotator_supreme/static/ /code/annotator_supreme/static
+
+RUN ln -sf /dev/stdout /usr/local/nginx/logs/access.log
+RUN ln -sf /dev/stderr /usr/local/nginx/logs/error.log
+	
+# run the Ngnix server
+#CMD supervisord -c server/supervisord.conf
+CMD /usr/local/nginx/sbin/nginx
+
+EXPOSE 80
