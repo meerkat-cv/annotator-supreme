@@ -2,6 +2,8 @@ version: '3'
 services:
   cassandra:
     image: cassandra:latest
+    volumes:
+    - ~/cassandra_as/:/var/lib/cassandra
     healthcheck:
       test: ["CMD-SHELL", "[ $$(nodetool statusgossip) = running ]"]
       interval: 30s
