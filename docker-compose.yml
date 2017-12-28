@@ -32,7 +32,7 @@ services:
       context: .
       dockerfile: Dockerfile.nginx
     image: custom-nginx:latest
-   # hostname: annotator.dev.intranet
+    #hostname: annotator.dev.intranet ## BUG : messes-up the hostnames in docker-compose
     depends_on:
     - annotator
     volumes:
