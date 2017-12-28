@@ -1,0 +1,47 @@
+version: '3'
+services:
+  cassandra:
+    image: cassandra:latest
+    healthcheck:
+      test: ["CMD-SHELL", "[ $$(nodetool statusgossip) = running ]"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  annotator:
+    build:
+      context: . 
+      dockerfile: Dockerfile
+    #  args:
+    #    SOURCE_COMMIT: ${SOURCE_COMMIT}
+    image: annotator_supreme
+    volumes:
+    - static-data:/code/annotator_supreme/static
+    # Bind-mounts for development
+    - ./annotator_supreme/static/:/code/annotator_supreme/static
+    - ./:/code
+    depends_on:
+    - cassandra
+    environment:
+    - CLUSTER_IP=cassandra
+    ports:
+    - "4242:4242"
+    
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    image: custom-nginx:latest
+    #hostname: annotator.dev.intranet ## BUG : messes-up the hostnames in docker-compose
+    depends_on:
+    - annotator
+    volumes:
+    - static-data:/code/annotator_supreme/static
+    # Bind-mounts for development
+    - ./annotator_supreme/static/:/code/annotator_supreme/static
+    ports:
+    - "4280:80"
+
+volumes:
+  static-data:
+  

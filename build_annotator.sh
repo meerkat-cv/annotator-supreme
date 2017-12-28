@@ -5,4 +5,6 @@ then
     exit 1
 fi
 
-sudo docker build -t annotator_supreme --build-arg SOURCE_COMMIT=$(git rev-parse HEAD) -f Dockerfile .
+#sudo SOURCE_COMMIT=$(git rev-parse HEAD)
+sudo docker-compose build --build-arg SOURCE_COMMIT=$(git rev-parse HEAD) annotator
+
