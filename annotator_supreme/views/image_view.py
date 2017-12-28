@@ -46,12 +46,27 @@ class ImageView(FlaskView):
         ret, img_bin = cv2.imencode(".jpg", thumb)
         return flask.send_file( BytesIO(img_bin) , mimetype='image/jpeg')
 
+    def paginate(self, list, page_number, page_size):
+        start_elem = page_size * (page_number - 1)
+
+        return list[start_elem:start_elem+page_size]
+
 
     @route('/image/<dataset>/all', methods=['GET'])
     def get_all_images(self, dataset):
 
-        obj = ImageController.all_images(dataset)
-        return flask.jsonify({"images": obj})
+        all_images = ImageController.all_images(dataset)
+        ok_pagesize, _, page_size = view_tools.get_param_from_request(request, 'itemsPerPage')
+        ok_page, _, page_number = view_tools.get_param_from_request(request, 'pageNumber')
+
+        if ok_pagesize and ok_page:
+            return flask.jsonify({
+                "images": self.paginate(all_images, int(page_number), int(page_size)),
+                "pageNumber": int(page_number),
+                "itemsPerPage": int(page_size),
+                "totalPages": len(all_images)//int(page_size)})
+        else:
+            return flask.jsonify({"images": all_images})
 
     
     @route('/image/<dataset>/add', methods=['POST'])
