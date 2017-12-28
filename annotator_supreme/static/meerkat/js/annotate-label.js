@@ -10,6 +10,17 @@
         // this.bind();
     };
 
+    AnnotateLabel.getCardElement = function(annotation) {
+        var elem = $("#anno-card").clone();
+        elem.attr('id', 'card-'+annotation.image_url.split("/")[1]);
+        elem.data('card-id', annotation.image_url.split("/")[1]);
+        elem.removeClass('hidden')
+
+        elem.find('.anno-img').attr('src', '/annotator-supreme/image/cropanno/' + annotation.image_url + '/' + annotation.anno_ith)
+        elem.find('.anno-label-input').val(annotation.labels[0])
+        return elem;
+    }
+
     AnnotateLabel.populateImages = function () {
         function getParameterByName(name, url) {
             if (!url) url = window.location.href;
@@ -23,11 +34,11 @@
 
         this.dataset = getParameterByName("dataset");
         this.pageNumber = getParameterByName("pageNumber") || 1;
-        this.itemsPerPage = 10; //TODO: in mobile could be one
+        this.itemsPerPage = 16; //TODO: in mobile could be one
 
         var self = this;
         $.ajax({
-            url: '/annotator-supreme/image/' + self.dataset + '/all?pageNumber=' + self.pageNumber + '&itemsPerPage=' + self.itemsPerPage,
+            url: '/annotator-supreme/image/anno/' + self.dataset + '/all?pageNumber=' + self.pageNumber + '&itemsPerPage=' + self.itemsPerPage,
             type: 'GET',
             success: function (data) {
                 console.log("Done!", data);
@@ -35,10 +46,24 @@
                 self.pageCount = data.totalPages;
                 self.pageNumber = data.pageNumber;
                 self.addPaginationControllers();
+
+
+                for (var i = 0; i < data.annotations.length; ++i) {
+                    elem = self.getCardElement(data.annotations[i]);    
+                    $("#cards-container").append(elem);
+                }
+
+                console.log("#card-"+data.annotations[0].image_url.split("/")[1])
+
+                $(document).ready(function() {
+                    $("#card-"+data.annotations[0].image_url.split("/")[1]+" .anno-label-input").focus(); 
+                    $("#card-"+data.annotations[0].image_url.split("/")[1]+" .anno-label-input").select();
+                })
+                
+
+
             }
         });
-
-
     };
 
     AnnotateLabel.addPaginationControllers = function () {

@@ -1,28 +1,18 @@
 {% extends "main_template.html" %} {% block content_header %}
-<h1>
-  Annotate labels
-  <!-- <small>Optional description</small> -->
-</h1>
-<ol class="breadcrumb">
-    <li><a href="/frapi/">Home</a></li>
-    <li class="active">Too lazy</li>
-</ol>
 {% endblock %} {% block content %}
 <link rel="stylesheet" href="/annotator-supreme/static/meerkat/css/annotate-label.css">
+
 <div class="row">
   <div class="col-md-12 button-bar">
-    <ul class="people-database pagination">
-      <li id="people-database-prev" class="paginate_button previous disabled" style="display:none;">
-          <a href="#" >Previous</a>
-      </li>
-      <li id="people-database-next" class="paginate_button next" style="display:none;">
-          <a href="#" >Next</a>
-      </li>
-    </ul>
+    <button type="button" class="btn btn-primary" id="save-reload-btn">
+      <i class="fa fa-fw fa-save"></i>
+      Save annotations
+    </button>
   </div>
 </div>
+
 <div class="row" id="cards-container">
-    <div class="col-md-3 anno-card" id="anno-card">
+    <div class="col-md-3 anno-card hidden" id="anno-card">
         <div class="box box-solid">
             {#
             <div class="box-header with-border">
@@ -33,12 +23,12 @@
             <div class="box-body">
                 <div class="anno-img-container col-md-12">
                     <div class="img-container">
-                      <img src="http://placehold.it/200x100" alt="..." class="anno-img img-1">
+                      <img src="http://placehold.it/200x100" alt="..." class="anno-img">
                     </div>
                 </div>
 
                 <div class="anno-label-container col-md-12">
-                  <input class="form-control input-sm" type="text" placeholder="no label">
+                  <input class="form-control input-sm anno-label-input" type="text" placeholder="no label">
                 </div>
             </div>
             <!-- /.box-body -->
@@ -52,6 +42,18 @@
         <!-- /.box -->
 
     </div>
+</div>
+<div class="row">
+  <div class="col-md-12 button-bar">
+    <ul class="people-database pagination">
+      <li id="people-database-prev" class="paginate_button previous disabled" style="display:none;">
+          <a href="#" >Previous</a>
+      </li>
+      <li id="people-database-next" class="paginate_button next" style="display:none;">
+          <a href="#" >Next</a>
+      </li>
+    </ul>
+  </div>
 </div>
 
 {# <div class="box-footer text-center"> #}
