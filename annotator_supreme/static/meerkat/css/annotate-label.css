@@ -54,3 +54,9 @@
 #cards-container {
     padding-top: 10px;
 }
+
+@media only screen and (max-width: 500px) {
+    .anno-card {
+        height: 200px;
+    }
+}
