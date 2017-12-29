@@ -8,6 +8,14 @@
     AnnotateLabel.init = function () {
         this.populateImages();
         this.bindSaveButton();
+
+        
+        $('#people-database-next').keyup(function(e){
+            console.log("keyyyy")
+            if (e.keyCode == 13){  
+                $("#people-database-next a").click();
+            }
+         });
     };
 
 
@@ -18,15 +26,15 @@
         });
     }
 
-    AnnotateLabel.saveAll = function() {
+    AnnotateLabel.saveAll = function(finish_callback) {
         $("#save-btn").attr("disabled", "disabled");
         $("#save-btn").html('<i class="fa fa-refresh fa-spin"></i>\nSaving...')
 
         var cards = $("#cards-container .anno-card-clone");
-        this.saveLoop(cards, 0);
+        this.saveLoop(cards, 0, finish_callback);
     }
 
-    AnnotateLabel.saveLoop = function(cards, i) {
+    AnnotateLabel.saveLoop = function(cards, i, finish_callback) {
         var self = this;
         if (i < cards.length) {
             var base_url = "/annotator-supreme/image/anno/modify/label/" + self.dataset + "/" + $(cards[i]).data('image_id') + "/" + $(cards[i]).data('anno_ith') 
@@ -41,13 +49,16 @@
                 data: JSON.stringify(data),
                 contentType: 'application/json',
                 success: function (data) {
-                    self.saveLoop(cards, i+1);        
+                    self.saveLoop(cards, i+1, finish_callback);        
                 }
             });
         }
         else {
             $("#save-btn").attr("disabled", false);
             $("#save-btn").html('<i class="fa fa-fw fa-save"></i>\nSave annotations');
+            if (finish_callback) {
+                finish_callback()
+            }
         }
         
 
@@ -91,10 +102,13 @@
                 self.pageCount = data.totalPages;
                 self.pageNumber = data.pageNumber;
                 self.addPaginationControllers();
+                self.updatePreviousNextPaginationControllers();
+                self.bindPagination();
 
 
                 for (var i = 0; i < data.annotations.length; ++i) {
                     elem = self.getCardElement(data.annotations[i]);    
+                    elem.find(".anno-label-input").attr('tabindex', i+1);
                     $("#cards-container").append(elem);
                 }
 
@@ -103,6 +117,7 @@
                 $(document).ready(function() {
                     $("#card-"+data.annotations[0].image_url.split("/")[1]+" .anno-label-input").focus(); 
                     $("#card-"+data.annotations[0].image_url.split("/")[1]+" .anno-label-input").select();
+                    $("#people-database-next").attr('tabindex', self.itemsPerPage+1);
                 })
                 
 
@@ -155,11 +170,12 @@
             );
 
             page.click(function (event) {
-                event.preventDefault();
                 self.pageNumber = parseInt(event.target.text);
-                self.saveAll();
+                self.saveAll(function() {
+                    window.location = "/annotator-supreme/label-annotation?dataset="+self.dataset+"&pageNumber="+self.pageNumber+"&itemsPerPage="+self.pageCount    
+                });
 
-                window.location = "/annotator-supreme/label-annotation?dataset="+self.dataset+"&pageNumber="+self.pageNumber+"&itemsPerPage="+self.pageCount
+                
 
             });
 
@@ -180,6 +196,43 @@
             page.before('<li class="paginate_button people-separator disabled"><a href="#">...</a></li>');
         }
     }
+
+
+    AnnotateLabel.updatePreviousNextPaginationControllers = function() {
+        $('#people-database-next').removeClass("disabled");
+        $('#people-database-prev').removeClass("disabled");
+
+        if (this.pageNumber == 1) {
+          $('#people-database-prev').addClass("disabled");
+        }
+        if (this.pageNumber == this.pageCount) {
+          $('#people-database-next').addClass("disabled");
+        }
+      }
+
+      AnnotateLabel.bindPagination = function() {
+        var self = this;
+        
+        $('#people-database-prev').click(function(event) {
+            // event.preventDefault();
+            if (self.pageNumber > 1) {
+                self.pageNumber -= 1;
+                self.saveAll(function() {
+                    window.location = "/annotator-supreme/label-annotation?dataset="+self.dataset+"&pageNumber="+self.pageNumber+"&itemsPerPage="+self.pageCount    
+                });
+            }
+        });
+
+        $('#people-database-next').click(function(event) {
+            // event.preventDefault();
+            if (self.pageNumber < self.pageCount) {
+                self.pageNumber += 1;
+                self.saveAll(function() {
+                    window.location = "/annotator-supreme/label-annotation?dataset="+self.dataset+"&pageNumber="+self.pageNumber+"&itemsPerPage="+self.pageCount    
+                });
+            }
+        });
+      }
 
     global.AnnotateLabel = AnnotateLabel;
     global.AnnotateLabel.init();
