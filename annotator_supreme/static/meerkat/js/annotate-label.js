@@ -7,14 +7,59 @@
 
     AnnotateLabel.init = function () {
         this.populateImages();
-        // this.bind();
+        this.bindSaveButton();
     };
+
+
+    AnnotateLabel.bindSaveButton = function() {
+        var self = this;
+        $("#save-btn").click(function() {
+            self.saveAll();
+        });
+    }
+
+    AnnotateLabel.saveAll = function() {
+        $("#save-btn").attr("disabled", "disabled");
+        $("#save-btn").html('<i class="fa fa-refresh fa-spin"></i>\nSaving...')
+
+        var cards = $("#cards-container .anno-card-clone");
+        this.saveLoop(cards, 0);
+    }
+
+    AnnotateLabel.saveLoop = function(cards, i) {
+        var self = this;
+        if (i < cards.length) {
+            var base_url = "/annotator-supreme/image/anno/modify/label/" + self.dataset + "/" + $(cards[i]).data('image_id') + "/" + $(cards[i]).data('anno_ith') 
+            console.log("base_url: ", base_url);    
+
+            var data = {
+                "newLabels": [$(cards[i]).find('.anno-label-input').val()]
+            }
+            $.ajax({
+                url: base_url,
+                type: 'POST',
+                data: JSON.stringify(data),
+                contentType: 'application/json',
+                success: function (data) {
+                    self.saveLoop(cards, i+1);        
+                }
+            });
+        }
+        else {
+            $("#save-btn").attr("disabled", false);
+            $("#save-btn").html('<i class="fa fa-fw fa-save"></i>\nSave annotations');
+        }
+        
+
+    }
 
     AnnotateLabel.getCardElement = function(annotation) {
         var elem = $("#anno-card").clone();
         elem.attr('id', 'card-'+annotation.image_url.split("/")[1]);
-        elem.data('card-id', annotation.image_url.split("/")[1]);
-        elem.removeClass('hidden')
+        elem.data('image_id', annotation.image_url.split("/")[1]);
+        elem.data('anno_ith', annotation.anno_ith);
+        elem.removeClass('hidden');
+        elem.addClass('anno-card-clone');
 
         elem.find('.anno-img').attr('src', '/annotator-supreme/image/cropanno/' + annotation.image_url + '/' + annotation.anno_ith)
         elem.find('.anno-label-input').val(annotation.labels[0])
@@ -112,6 +157,7 @@
             page.click(function (event) {
                 event.preventDefault();
                 self.pageNumber = parseInt(event.target.text);
+                self.saveAll();
 
                 window.location = "/annotator-supreme/label-annotation?dataset="+self.dataset+"&pageNumber="+self.pageNumber+"&itemsPerPage="+self.pageCount
 

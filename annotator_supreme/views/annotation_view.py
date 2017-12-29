@@ -6,6 +6,7 @@ from annotator_supreme.views import view_tools
 from annotator_supreme.views import error_views
 from annotator_supreme import app
 import cv2
+import copy
 
 class AnnoView(FlaskView):
     route_base = '/'
@@ -19,6 +20,25 @@ class AnnoView(FlaskView):
         image_dict = view_tools.image_to_dict(image)
 
         return flask.jsonify(image_dict)
+
+    @route('/image/anno/modify/label/<dataset>/<imageid>/<annotation_ith>', methods=['POST'])
+    def modify_image_anno_label(self, dataset, imageid, annotation_ith):
+        image_o = self.controller.get_image_object(dataset, imageid)
+
+        ok, error, new_labels  = view_tools.get_param_from_request(request, 'newLabels')
+        # app.logger.info("labels")
+        # app.logger.info(image_o.bboxes[int(annotation_ith)].labels)
+        # app.logger.info(new_labels)
+        b = BBox(image_o.bboxes[int(annotation_ith)].top, \
+                        image_o.bboxes[int(annotation_ith)].left, \
+                        image_o.bboxes[int(annotation_ith)].bottom, \
+                        image_o.bboxes[int(annotation_ith)].right, \
+                        new_labels, \
+                        image_o.bboxes[int(annotation_ith)].ignore)
+        image_o.bboxes[int(annotation_ith)] = b
+        image_o.upsert()
+
+        return '', 200
 
     def paginate(self, list, page_number, page_size):
         start_elem = page_size * (page_number - 1)
