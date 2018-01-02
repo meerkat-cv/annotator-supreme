@@ -1,7 +1,10 @@
 version: '3'
 services:
   cassandra:
-    image: cassandra:latest
+    build:
+      context: cassandra
+    volumes:
+    - ./cassandra/datadir:/var/lib/cassandra
     healthcheck:
       test: ["CMD-SHELL", "[ $$(nodetool statusgossip) = running ]"]
       interval: 30s
@@ -27,11 +30,9 @@ services:
     ports:
     - "4242:4242"
     
-  web:
+  nginx:
     build:
-      context: .
-      dockerfile: Dockerfile.nginx
-    image: custom-nginx:latest
+      context: nginx
     #hostname: annotator.dev.intranet ## BUG : messes-up the hostnames in docker-compose
     depends_on:
     - annotator
