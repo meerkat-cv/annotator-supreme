@@ -1,0 +1,666 @@
+
+
+
+#+begin_src sh :results output :exports both
+docke-compose up
+#+end_src
+
+#+begin_src sh :results output :exports both
+docker ps --no-trunc
+#+end_src
+
+#+RESULTS:
+: CONTAINER ID                                                       IMAGE                 COMMAND                                                 CREATED             STATUS                   PORTS                                         NAMES
+: 053fdb7fd33209f24d6f51a16b0fd1b1b49ae9b64b216e9a09052a1b87cdb292   custom-nginx:latest   "/bin/sh -c /usr/local/nginx/sbin/nginx"                4 minutes ago       Up 4 minutes             0.0.0.0:4280->80/tcp                          annotatorsupreme_web_1
+: ca20cbbff7201427a98fdf3b7e74a0736e69856b689213c5c3fc9441db35df57   annotator_supreme     "/bin/sh -c 'supervisord -c server/supervisord.conf'"   9 hours ago         Up 4 minutes             0.0.0.0:4242->4242/tcp                        annotatorsupreme_annotator_1
+: 86786b977316639b0b54a095a9e084b5fb541fabe8bc29d9d5465fcc0639e0e0   cassandra:latest      "/docker-entrypoint.sh cassandra -f"                    9 hours ago         Up 4 minutes (healthy)   7000-7001/tcp, 7199/tcp, 9042/tcp, 9160/tcp   annotatorsupreme_cassandra_1
+
+
+- [X] Access ngnix [[http://localhost:4280]]
+- [X] Access annotator [[http://localhost:4280/annotator-supreme]]
+- [-] Annotator [[http://localhost/annotator-supreme]] (shouldn't work)
+
+* Curl on localhost
+
+** DONE localhost:4280/annotator-supreme/version
+Cannot find annotator-supreme URL :
+#+begin_src sh :results output :exports both
+curl http://localhost:4280/annotator-supreme/version
+#+end_src
+
+#+RESULTS:
+: {
+:   "source_commit": "2394f0cdb2f4654678cb2552eb2dc13600fe7671",
+:   "version": "0.1-alpha"
+: }
+
+** DONE localhost:4242  
+#+begin_src sh :results output :exports both
+curl http://localhost:4242/
+#+end_src
+
+#+RESULTS:
+#+begin_example
+<!DOCTYPE html>
+<!--
+This is a starter template page. Use this page to start your new project from
+scratch. This page gets rid of all links and provides the needed markup only.
+-->
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>annotator-supreme | Your interface to face recognition</title>
+  <!-- Tell the browser to be responsive to screen width -->
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+  <!-- Bootstrap 3.3.6 -->
+  <link rel="stylesheet" href="/annotator-supreme/static/bootstrap/css/bootstrap.min.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="/annotator-supreme/static/plugins/font-awesome-4.6.3/css/font-awesome.min.css">
+  <!-- Ionicons -->
+  <link rel="stylesheet" href="/annotator-supreme/static/plugins/ionicons-2.0.1/css/ionicons.min.css">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="/annotator-supreme/static/dist/css/AdminLTE.min.css">
+  <!-- AdminLTE Skins. We have chosen the skin-blue for this starter
+        page. However, you can choose any other skin. Make sure you
+        apply the skin class to the body tag so the changes take effect.
+  -->
+  <link rel="stylesheet" href="/annotator-supreme/static/dist/css/skins/skin-yellow.min.css">
+
+  <link rel="stylesheet" href="/annotator-supreme/static/plugins/iCheck/all.css">
+
+  <link rel="stylesheet" href="/annotator-supreme/static/meerkat/css/main.css">
+
+  <link rel="stylesheet" href="/annotator-supreme/static/plugins/datatables/dataTables.bootstrap.css">
+
+  <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+  <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+<body class="hold-transition skin-yellow sidebar-mini">
+<div class="wrapper">
+
+  <!-- Main Header -->
+  <header class="main-header">
+
+    <!-- Logo -->
+    <a href="/annotator-supreme/" class="logo">
+      <!-- mini logo for sidebar mini 50x50 pixels -->
+      <span class="logo-mini"><b>A</b>Spr</span>
+      <!-- logo for regular state and mobile devices -->
+      <span class="logo-lg"><b>Annotator</b>Supreme</span>
+    </a>
+
+    <!-- Header Navbar -->
+    <nav class="navbar navbar-static-top" role="navigation">
+      <!-- Sidebar toggle button-->
+      <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+        <span class="sr-only">Toggle navigation</span>
+      </a>
+      <!-- Navbar Right Menu -->
+      <div class="navbar-custom-menu">
+        <ul class="nav navbar-nav">
+          <!-- Messages: style can be found in dropdown.less-->
+
+          <!-- /.messages-menu -->
+
+          <li class="annotator-version-global">
+            
+          </li>
+
+          <!-- User Account Menu -->
+          <li class="dropdown user user-menu meerkat-menu-button">
+            <!-- Menu Toggle Button -->
+
+            <a href="#" class="dropdown-toggle meerkat-menu-button" data-toggle="dropdown">
+              <!-- The user image in the navbar-->
+              <img src="/annotator-supreme/static/dist/img/meerkat_logo_160.png" class="user-image meerkat-menu-image" alt="User Image">
+
+            </a>
+            <ul class="dropdown-menu">
+              <!-- The user image in the menu -->
+              <li class="user-header">
+                <img src="/annotator-supreme/static/dist/img/meerkat_logo_160.png" class="img-circle" alt="User Image">
+
+                <p>
+                  Meerkat Computer Vision
+                  <small>support@meerkat.com.br</small>
+                </p>
+              </li>
+              <!-- Menu Footer-->
+              <li class="user-footer">
+                <div class="pull-left">
+                  <a href="http://www.meerkat.com.br/en/" class="btn btn-default btn-flat" target="_blank">Website</a>
+                </div>
+              </li>
+            </ul>
+          </li>
+          <!-- Control Sidebar Toggle Button -->
+          <li>
+            <a href="#" data-toggle="control-sidebar"><i class="fa fa-gears"></i></a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+  <!-- Left side column. contains the logo and sidebar -->
+  <aside class="main-sidebar">
+
+    <!-- sidebar: style can be found in sidebar.less -->
+    <section class="sidebar">
+
+      <!-- search form (Optional) -->
+      <!-- <form action="#" method="get" class="sidebar-form">
+        <div class="input-group">
+          <input type="text" name="q" class="form-control" placeholder="Search...">
+              <span class="input-group-btn">
+                <button type="submit" name="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i>
+                </button>
+              </span>
+        </div>
+      </form> -->
+      <!-- /.search form -->
+
+      <!-- Sidebar Menu -->
+      <ul class="sidebar-menu" id="div-menu">
+        <li class="header">MENU</li>
+        <!-- Optionally, you can add icons to the links -->
+        <li><a href="/annotator-supreme/"><i class="fa fa-home"></i> <span>Datasets</span></a></li>
+        <!-- <li><a href="#"><i class="fa fa-link"></i> <span>Another Link</span></a></li> -->
+        <li class="treeview">
+          <a href="#"><i class="fa fa-arrow-up"></i> <span>Upload data</span> <i class="fa fa-angle-left pull-right"></i></a>
+          <ul class="treeview-menu">
+            <li><a href="/annotator-supreme/add/video"><i class="fa fa-film"></i> <span>Videos</span></a></li>
+            <li><a href="/annotator-supreme/add/images"><i class="fa fa-photo"></i> <span>Images</span></a></li>
+          </ul>
+        </li>
+
+        <li><a href="/annotator-supreme/annotation"><i class="fa fa-object-ungroup"></i> <span>Annotation</span></a></li>
+
+        <li><a href="/annotator-supreme/plugins"><i class="fa fa-plug"></i> <span>Plugins</span></a></li>
+
+      </ul>
+      <!-- /.sidebar-menu -->
+    </section>
+    <!-- /.sidebar -->
+  </aside>
+
+  <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+
+      
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+
+      <!-- Your Page Content Here -->
+      
+<link rel="stylesheet" href="/annotator-supreme/static/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.css" />
+<link rel="stylesheet" href="/annotator-supreme/static/plugins/bootstrap-slider/slider.css" />
+<link rel="stylesheet" href="/annotator-supreme/static/meerkat/css/dataset.css" />
+<div class="row">
+    <div class="col-xs-10">
+        <div class="box box-success">
+            <div class="box-header">
+                <h3 class="box-title">Datasets</h3>
+            </div>
+            <div class="box-body">
+                <table id="dataset-table" class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Tags</th>
+                            <th>All categories</th>
+                            <th>All labels</th>
+                            <th>Last modified</th>
+                            <th>Images</th>
+                            <th>Purge</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                    </tbody>
+                    <tfoot>
+                    </tfoot>
+                </table>
+                
+            </div>
+            <div class="box-footer">
+                <button id="add-dataset-btn" type="button" class="btn btn-success"><i class="fa fa-plus"></i>
+                Add another dataset</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+    <div class="col-xs-10">
+        <div class="box box-danger">
+            <div class="box-header">
+                <h3 class="box-title">Partition dataset</h3>
+            </div>
+            <div class="box-body">
+                <!-- <div class="row clearfix"> -->
+                    <div class="form-group">
+                        <label>Select the dataset:</label>
+                        <select mutiple class="form-control" id="dataset-sel">
+                            
+                        </select>
+                    </div>
+                <!-- </div> -->
+                
+                <div class="row clearfix">
+                    
+                    <div class="col-md-8 slider-part-container">
+                        <input id="percentageSlider" data-slider-id='red' type="text" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="80" />
+                    </div>
+                    <div class="col-md-2">
+                        <div class="row part-percentage training">
+                            80%
+                        </div>
+                        <div class="row part-label">
+                            training
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="row part-percentage testing">
+                            20%
+                        </div>
+                        <div class="row part-label">
+                            testing
+                        </div>
+                    </div>
+                </div>
+
+                
+            </div>
+            <div class="box-footer partition">
+                <button id="part-dataset-btn" type="button" class="btn btn-primary"><i class="fa fa-hand-scissors-o">
+                </i> 
+                Partition</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+<div class="row">
+    <div class="col-xs-10">
+        <div class="box box-warning">
+            <div class="box-header">
+                <h3 class="box-title">Export dataset to another Supreme</h3>
+            </div>
+            <div class="box-body">
+                
+                    <div class="form-group">
+                        <label>Url:</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="supreme-url" placeholder="Annotator Supreme server to export to.">
+                            <span class="input-group-btn">
+                                <button type="button" id="check-supreme-server-btn" class="btn btn-info btn-flat">Check</button>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Select the dataset:</label>
+                        <select mutiple class="form-control" id="dataset-sel-export">
+                            
+                        </select>
+                    </div>
+                <!-- </div> -->
+            </div>
+            <div class="box-footer partition">
+                <button id="export-dataset-btn" type="button" class="btn btn-primary"><i class="fa fa-space-shuttle">
+                </i> 
+                Export everything</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+<div class="row">
+    <div class="col-xs-10">
+        <div class="box box-warning">
+            <div class="box-header">
+                <h3 class="box-title">Merge datasets</h3>
+            </div>
+
+            <div class="box-body">
+                <div class="col-md-5">
+                    <div class="form-group">
+                      <label>Select the datasets you want to merge:</label>
+                      <select multiple class="form-control" id="merge-dataset-input">
+                        
+                      </select>
+                    </div>
+                </div>
+                <div class="col-md-2 merge-arrow-container">
+                    <i class="fa fa-long-arrow-right merge-arrow"></i> 
+                 </div>
+
+                 <div class="col-md-5">
+                    <div class="form-group">
+                        <label>Output dataset:</label>
+                        <select mutiple class="form-control" id="merge-dataset-output">
+                            
+                        </select>
+                    </div>
+                 </div>
+            </div>
+            <div class="box-footer partition">
+                
+                  <div class="checkbox-merge">
+                    <label>
+                      <input type="checkbox" id="only-with-anno-chk">
+                      Only merge images with some annotation!
+                    </label>
+                    </div>
+                
+                <button id="merge-dataset-btn" type="button" class="btn btn-success"><i class="fa fa-space-shuttle">
+                </i> 
+                Merge baby</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<div class="row">
+    <div class="col-xs-10">
+        <div class="box box-primary">
+            <div class="box-header">
+                <h3 class="box-title">Aplly image transformation for whole dataset</h3>
+            </div>
+
+            <div class="box-body">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Dataset:</label>
+                        <select mutiple class="form-control" id="transform-dataset">
+                            
+                        </select>
+                    </div>
+                 </div>
+                 <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Transformation</label>
+                        <select mutiple class="form-control" id="transform-dataset-transformation">
+                            <option value="aspect_ratio_43"> Aspect ratio 4:3 </option>
+                            <option value="rotate_cw"> Rotate CW </option>
+                            <option value="rotate_ccw"> Rotate CCW </option>
+                            <option value="flip_h"> Flip Horizontally </option>
+                            <option value="flip_v"> Flip Vertically </option>
+                        </select>
+                    </div>
+                 </div>
+            </div>
+            <div class="box-footer partition">
+                  <button id="transform-dataset-btn" type="button" class="btn btn-warning"><i class="fa fa-magic">
+                </i> 
+                Apply to all</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal modal-danger" id="modal-confirm-delete">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Are you sure?</h4>
+            </div>
+            <div class="modal-body">
+                <p>Danger! Purging will remove all images and annotations. Are you sure you want to proceed for dataset: <b id="confirm-delete-dataset-label">EMPTY</b>?</p>
+                <p>All your stored data will be erased beyond recover. Proceed at your own risk!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirm-delete-button">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<div class="modal" id="modal-dataset">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Add dataset</h4>
+            </div>
+            <div class="modal-body">
+                <form role="form" data-toggle="validator">
+                    <div class="form-group">
+                        <label>Name:</label>
+                        <input type="text" id="datasetName" data-error="You should provide a label" class="form-control" placeholder="Ex.: LFW, myDataset" required>
+                        <div class="help-block with-errors"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Tags (optional):</label>
+                        <input type="text" id="tagsInput" data-role="tagsinput" class="form-control" placeholder="Ex.: face, cars, beers.">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="save-changes-btn">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>  
+    
+
+
+    </section>
+    <!-- /.content -->
+  </div>
+
+
+
+  <!-- Main Footer -->
+  <footer class="main-footer">
+    <!-- To the right -->
+    <div class="pull-right hidden-xs">
+      contact@meerkat.com.br
+    </div>
+    <!-- Default to the left -->
+    <strong>Copyright &copy; 2017 <a href="http://www.meerkat.com.br/en/">Meerkat CV</a>.</strong> All rights reserved.
+  </footer>
+
+  <!-- Control Sidebar -->
+  <aside class="control-sidebar control-sidebar-dark">
+    <!-- Create the tabs -->
+    <ul class="nav nav-tabs nav-justified control-sidebar-tabs">
+      <li class="active"><a href="#control-sidebar-settings-tab" data-toggle="tab"><i class="fa fa-gears"></i></a></li>
+    </ul>
+    <!-- Tab panes -->
+    <div class="tab-content">
+      <!-- Home tab content -->
+
+      <!-- /.tab-pane -->
+      <!-- Stats tab content -->
+      <!-- <div class="tab-pane" id="control-sidebar-stats-tab">Stats Tab Content</div> -->
+      <!-- /.tab-pane -->
+      <!-- Settings tab content -->
+      <div class="tab-pane active" id="control-sidebar-settings-tab">
+        <h2>Nothing yet...</h2>
+      </div>
+      <!-- /.tab-pane -->
+    </div>
+  </aside>
+  <!-- /.control-sidebar -->
+  <!-- Add the sidebar's background. This div must be placed
+       immediately after the control sidebar -->
+  <div class="control-sidebar-bg"></div>
+
+
+  <!-- loading overlay that can be used in any template extending this -->
+  <div class="modal" id="modal-loading">
+      <div class="modal-dialog modal-sm loading-full">
+          <i class="fa fa-fw fa-cog fa-spin"></i>
+          <span id="loading-msg">Loading...</span>
+        <!-- /.modal-content -->
+      </div>
+  </div>
+
+</div>
+<!-- ./wrapper -->
+
+<!-- REQUIRED JS SCRIPTS -->
+
+<!-- jQuery 2.2.0 -->
+<script src="/annotator-supreme/static/plugins/jQuery/jQuery-2.2.0.min.js"></script>
+<!-- Bootstrap 3.3.6 -->
+<script src="/annotator-supreme/static/bootstrap/js/bootstrap.min.js"></script>
+<!-- AdminLTE App -->
+<script src="/annotator-supreme/static/dist/js/app.min.js"></script>
+
+<script src="/annotator-supreme/static/plugins/iCheck/icheck.min.js"></script>
+
+<script src="/annotator-supreme/static/meerkat/js/main.js"></script>
+
+<script>
+    $('input[type="checkbox"].minimal, input[type="radio"].minimal').iCheck({
+      checkboxClass: 'icheckbox_minimal-blue',
+      radioClass: 'iradio_minimal-blue'
+    });
+
+    
+
+</script>
+<!-- Optionally, you can add Slimscroll and FastClick plugins.
+     Both of these plugins are recommended to enhance the
+     user experience. Slimscroll is required when using the
+     fixed layout. -->
+
+
+<script src="/annotator-supreme/static/plugins/bootstrap-slider/bootstrap-slider.js"></script>
+<script src="/annotator-supreme/static/plugins/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js"></script>
+<script src="/annotator-supreme/static/meerkat/js/dataset.js"></script>
+
+</body>
+</html>
+#+end_example
+** DONE localhost:4242/version  
+#+begin_src sh :results output :exports both
+curl http://localhost:4242/version
+#+end_src
+
+#+RESULTS:
+: {
+:   "source_commit": "7ad0d4166aa1bcd6dcea5331e6ad48450f952449",
+:   "version": "0.1-alpha"
+: }
+
+
+
+* Access direct ip inside docker
+
+#+begin_src sh :results output :exports both
+docker network inspect annotatorsupreme_default | grep "Name\|IPv4"
+#+end_src
+
+#+RESULTS:
+:         "Name": "annotatorsupreme_default",
+:                 "Name": "annotatorsupreme_annotator_1",
+:                 "IPv4Address": "172.18.0.3/16",
+:                 "Name": "annotatorsupreme_web_1",
+:                 "IPv4Address": "172.18.0.4/16",
+:                 "Name": "annotatorsupreme_cassandra_1",
+:                 "IPv4Address": "172.18.0.2/16",
+
+** DONE NGNIX_IP:80
+[[http://172.18.0.4:80/annotator-supreme]]
+#+begin_src sh :results output :exports both
+curl  172.18.0.4:80/annotator-supreme/version
+#+end_src
+
+#+RESULTS:
+: {
+:   "source_commit": "2394f0cdb2f4654678cb2552eb2dc13600fe7671",
+:   "version": "0.1-alpha"
+: }
+
+** DONE annotator_IP:4242
+#+begin_src sh :results output :exports both
+curl  172.18.0.3:4242/version
+#+end_src
+
+#+RESULTS:
+: {
+:   "source_commit": "2394f0cdb2f4654678cb2552eb2dc13600fe7671",
+:   "version": "0.1-alpha"
+: }
+
+
+** TODO using DNS 
+
+#+begin_src sh :results output :exports both
+nslookup annotator.dev.intranet
+#+end_src
+
+#+RESULTS:
+: Server:		172.17.0.2
+: Address:	172.17.0.2#53
+: 
+: Non-authoritative answer:
+: Name:	annotator.dev.intranet
+: Address: 172.18.0.4
+: Name:	annotator.dev.intranet
+: Address: 172.18.0.4
+: 
+
+Erro in this link
+http://annotator.dev.intranet/annotator-supreme/
+
+#+begin_src sh :results output :exports both
+curl http://annotator.dev.intranet/annotator-supreme/version
+#+end_src
+
+#+RESULTS:
+#+begin_example
+<!DOCTYPE html>
+<html>
+<head>
+<title>Error</title>
+<style>
+    body {
+        width: 35em;
+        margin: 0 auto;
+        font-family: Tahoma, Verdana, Arial, sans-serif;
+    }
+</style>
+</head>
+<body>
+<h1>An error occurred.</h1>
+<p>Sorry, the page you are looking for is currently unavailable.<br/>
+Please try again later.</p>
+<p>If you are the system administrator of this resource then you should check
+the <a href="http://nginx.org/r/error_log">error log</a> for details.</p>
+<p><em>Faithfully yours, nginx.</em></p>
+</body>
+</html>
+#+end_example
