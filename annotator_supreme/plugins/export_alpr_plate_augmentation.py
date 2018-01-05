@@ -4,9 +4,10 @@ import os
 import cv2
 import numpy as np
 import logging
+import time
 
 
-OUTPUT_DIR = '/media/meerkat/Data/datasets/alpr_dec17'
+OUTPUT_DIR = '/media/meerkat/Datasets/datasets/default'
 NUM_AUG_IMAGES = 10
 NUM_SCALES = 3
 MAX_SCALE = 1.6
@@ -151,9 +152,14 @@ class AnnotatorPlugin:
 
             curr_label = ''
             if len(bb['labels']) > 0:
-                curr_label = bb['labels'][0].lower()
+                curr_label = bb['labels'][0].lower().strip()
             curr_label = curr_label.replace(' ','').replace('-','')
             bad_letter = False
+
+            #skip annotations with blank labels
+            if curr_label == '' :
+                continue
+
             for a in curr_label:
                 if a not in alphabet:
                     print('invalid char', a, anno['phash'])
@@ -179,6 +185,10 @@ class AnnotatorPlugin:
             cv2.imwrite(org_name+'.png', org_im)
             self.image_path_list[part].append(org_name+'.png')
             self.label_list[part].append(curr_label)
+
+            #Do not augment images from the validation partition
+            if part == 1:
+                continue; 
 
             for i in range(0,NUM_SCALES):
                 curr_scale = 1+(MAX_SCALE-1)/NUM_SCALES*(i+1)
@@ -210,25 +220,28 @@ class AnnotatorPlugin:
                         self.label_list[part].append(curr_label)
                         curr_im += 1
 
+        print('Done image', im_name)
 
 
         return (im, anno)
 
 
     def end(self):
-        with open(OUTPUT_DIR+'/train/image_path_list.txt', 'w') as f:
+
+        EXEC_ID=str(int(time.time()))  # id used for saving files
+        with open(OUTPUT_DIR+'/train/image_path_list_'+EXEC_ID+'.txt', 'w') as f:
             for p in self.image_path_list[0]:
                 f.write(p+'\n')
 
-        with open(OUTPUT_DIR+'/train/label_list.txt', 'w') as f:
+        with open(OUTPUT_DIR+'/train/label_list_'+EXEC_ID+'.txt', 'w') as f:
             for l in self.label_list[0]:
                 f.write(l+'\n')
 
-        with open(OUTPUT_DIR+'/val/image_path_list.txt', 'w') as f:
+        with open(OUTPUT_DIR+'/val/image_path_list_'+EXEC_ID+'.txt', 'w') as f:
             for p in self.image_path_list[1]:
                 f.write(p+'\n')
 
-        with open(OUTPUT_DIR+'/val/label_list.txt', 'w') as f:
+        with open(OUTPUT_DIR+'/val/label_list_'+EXEC_ID+'.txt', 'w') as f:
             for l in self.label_list[1]:
                 f.write(l+'\n')
 
