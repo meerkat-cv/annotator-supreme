@@ -25,8 +25,8 @@ im_filters = iaa.SomeOf((0, 5),
     [
         iaa.OneOf([
             iaa.GaussianBlur((0, 1.5)), # blur images with a sigma between 0 and 3.0
-            iaa.AverageBlur(k=(2, 5)), # blur image using local means with kernel sizes between 2 and 7
-            iaa.MedianBlur(k=(3, 7)), # blur image using local medians with kernel sizes between 2 and 7
+            iaa.AverageBlur(k=(2, 3)), # blur image using local means with kernel sizes between 2 and 7
+            iaa.MedianBlur(k=(3, 3)), # blur image using local medians with kernel sizes between 2 and 7
         ]),
         iaa.Sharpen(alpha=(0, 0.1), lightness=(0.75, 1.5)), # sharpen images
         iaa.AdditiveGaussianNoise(loc=0, scale=(0.0, 0.05*255), per_channel=0.5), # add gaussian noise to images
