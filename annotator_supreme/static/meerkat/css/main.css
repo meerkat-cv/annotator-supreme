@@ -2,7 +2,12 @@
 
 .annotator-version-global {
     color: #fff;
+}
+
+.annotator-login {
+    color: #fff;
     line-height: 50px;
+    font-weight: bold;
     margin-right: 10px;
 }
 
