@@ -138,3 +138,18 @@ class DatabaseController:
                 """)
         except cassandra.AlreadyExists:
             app.logger.info("Table 'category_ref_count' already exists.")
+
+        try:
+            app.logger.info("\t- creating table users")
+            session.execute("""
+                CREATE TABLE users (
+                    username text,
+                    password_hash text,
+                    email text,
+                    registration_date timestamp,
+                    PRIMARY KEY (username)
+                )
+                """)
+        except cassandra.AlreadyExists:
+            app.logger.info("Table 'users' already exists.")
+

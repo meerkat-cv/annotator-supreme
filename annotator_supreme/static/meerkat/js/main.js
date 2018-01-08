@@ -6,6 +6,7 @@
         var self = this;
         $(document).ready( function () {
             self.getVersion();
+            self.bindLoginButtons();
         }); 
     }
 
@@ -33,6 +34,27 @@
 
     Main.disableLoading = function (msg) {
         $('#modal-loading').modal('hide');
+    }
+
+    Main.bindLoginButtons = function () {
+        $("#logout-btn").click(function () {
+            $.ajax({
+                type: 'get',
+                url: "/annotator-supreme/logout",
+                success: function () {
+                    location.reload();
+                }
+            });
+        });
+
+        $("#login-btn").click(function () {
+            location.href = "/annotator-supreme/login";    
+        });
+
+        $("#register-btn").click(function () {
+            location.href = "/annotator-supreme/register";    
+        })
+        
     }
 
     global.Main = Main;
