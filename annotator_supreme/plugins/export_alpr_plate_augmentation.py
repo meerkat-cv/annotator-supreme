@@ -9,8 +9,7 @@ import time
 
 OUTPUT_DIR = '/media/meerkat/Datasets/datasets/default'
 NUM_AUG_IMAGES = 10
-NUM_SCALES = 3
-MAX_SCALE = 1.6
+BBOX_SCALES = [ 0.75, 1, 1.25]
 IM_HEIGHT = 64
 alphabet = '0123456789abcdefghijklmnopqrstuvwxyz'
 
@@ -58,6 +57,7 @@ seq_3 = iaa.Sequential(
             cval=(0, 255), # if mode is constant, use a cval between 0 and 255
             mode='edge' # use any of scikit-image's warping modes (see 2nd image from the top for examples)
         )),
+        sometimes(iaa.PerspectiveTransform(scale=(0.01, 0.1))),
         im_filters
     ],
     random_order=True
@@ -76,6 +76,7 @@ seq_2 = iaa.Sequential(
             cval=(0, 255), # if mode is constant, use a cval between 0 and 255
             mode='edge' # use any of scikit-image's warping modes (see 2nd image from the top for examples)
         )),
+        sometimes(iaa.PerspectiveTransform(scale=(0.01, 0.1))),
         im_filters
     ],
     random_order=True
@@ -92,6 +93,7 @@ seq_1 = iaa.Sequential(
             cval=(0, 255), # if mode is constant, use a cval between 0 and 255
             mode='edge' # use any of scikit-image's warping modes (see 2nd image from the top for examples)
         )),
+        sometimes(iaa.PerspectiveTransform(scale=(0.01, 0.1))),
         im_filters
     ],
     random_order=True
@@ -190,8 +192,7 @@ class AnnotatorPlugin:
             if part == 1:
                 continue; 
 
-            for i in range(0,NUM_SCALES):
-                curr_scale = 1+(MAX_SCALE-1)/NUM_SCALES*(i+1)
+            for curr_scale in BBOX_SCALES  : 
                 (nl, nt, nr, nb) = self.safe_scale_bbox(l, t, r, b, curr_scale, im.shape)
                 # imgs_vec = np.asarray([np.copy(im[nt:nb,nl:nr,:])])
                 aux_im = np.copy(im[nt:nb,nl:nr,:])
@@ -204,9 +205,10 @@ class AnnotatorPlugin:
                 txt_vec.append(curr_label)
 
                 for aug in range(0,NUM_AUG_IMAGES):
-                    if curr_scale <= 1.2:
+                    # Apply different augmentations depending on the scale of the bounding box
+                    if curr_scale == BBOX_SCALES[0] :
                         images_aug = seq_1.augment_images(imgs_vec)
-                    elif curr_scale < 1.6:
+                    elif curr_scale == BBOX_SCALES[1]:
                         images_aug = seq_2.augment_images(imgs_vec)
                     else:
                         images_aug = seq_3.augment_images(imgs_vec)
