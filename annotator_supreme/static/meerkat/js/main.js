@@ -7,7 +7,20 @@
         $(document).ready( function () {
             self.getVersion();
             self.bindLoginButtons();
+            self.getBeerCount();
         }); 
+    }
+
+    Main.getBeerCount = function() {
+        $.ajax({
+            type: 'get',
+            url: "/annotator-supreme/beer_count",
+            success: function (data) {
+                console.log("beer, data", data)
+
+                // location.reload();
+            }
+        });
     }
 
     Main.getVersion = function () {

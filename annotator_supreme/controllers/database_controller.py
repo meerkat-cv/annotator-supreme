@@ -146,6 +146,7 @@ class DatabaseController:
                     username text,
                     password_hash text,
                     email text,
+                    points int,
                     registration_date timestamp,
                     PRIMARY KEY (username)
                 )
