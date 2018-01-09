@@ -31,7 +31,7 @@ class BeerViewWebApp(FlaskView):
     @route("/beer_count", methods=["GET"])
     def get_beer(self):
         d = {
-            "total_beer": self.compute_beer_count(),
+            "total_beers": self.compute_beer_count(),
             "next_beer_percentage": self.compute_next_beer_percentage()
         }
 
