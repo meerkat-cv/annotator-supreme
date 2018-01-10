@@ -1,0 +1,22 @@
+# Compose file used in PRODUCTION
+
+version: '3'
+services:
+  cassandra:
+    volumes:
+    - ./cassandra/datadir:/var/lib/cassandra
+
+  annotator:
+    # Note: use ./buid_annotator.sh to build this images
+    build:
+      context: . 
+      dockerfile: Dockerfile
+      args:
+        SOURCE_COMMIT: ${SOURCE_COMMIT}
+    #image: annotator_supreme
+    ports:
+    - "4242:4242"
+
+  nginx:
+    ports:
+    - "4280:80"

@@ -1,0 +1,25 @@
+# Compose file used in DEVELOPMENT
+
+version: '3'
+services:
+  cassandra:
+    volumes:
+    - ./cassandra/datadir:/var/lib/cassandra
+
+  annotator:
+    # Note: use ./buid_annotator.sh to build this images
+    #image: annotator_supreme
+    volumes:
+    # Bind-mounts for development
+    - ./annotator_supreme/static/:/code/annotator_supreme/static
+    - ./:/code
+    ports:
+    - "4242:4242"
+
+  nginx:
+    #hostname: annotator.dev.intranet ## BUG : messes-up the hostnames in docker-compose
+    volumes:
+    # Bind-mounts for development
+    - ./annotator_supreme/static/:/code/annotator_supreme/static
+    ports:
+    - "4280:80"
