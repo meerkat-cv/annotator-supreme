@@ -1,10 +1,12 @@
 import flask
+import itertools
 from flask.ext.classy import FlaskView, route, request
 from annotator_supreme.models.bbox_model import BBox
 from annotator_supreme.controllers.image_controller import ImageController
 from annotator_supreme.views import view_tools
 from annotator_supreme.views import error_views
 from annotator_supreme import app
+from flask.ext.login import current_user
 import cv2
 import copy
 
@@ -26,9 +28,18 @@ class AnnoView(FlaskView):
         image_o = self.controller.get_image_object(dataset, imageid)
 
         ok, error, new_labels  = view_tools.get_param_from_request(request, 'newLabels')
-        # app.logger.info("labels")
-        # app.logger.info(image_o.bboxes[int(annotation_ith)].labels)
-        # app.logger.info(new_labels)
+        
+        # count points if the labels changed
+        if current_user.is_authenticated: 
+            if image_o.bboxes[int(annotation_ith)].labels.sort() != new_labels.sort():
+                points = 1
+            else:
+                points = 0.1
+            current_user.points = current_user.points + points
+            current_user.upsert()
+
+
+
         b = BBox(image_o.bboxes[int(annotation_ith)].top, \
                         image_o.bboxes[int(annotation_ith)].left, \
                         image_o.bboxes[int(annotation_ith)].bottom, \
@@ -104,8 +115,24 @@ class AnnoView(FlaskView):
                     bbox_o.scale_itself(scale)
                 bbs_vec.append(bbox_o)
         except BaseException as e:
-            print('Problem with provided annotation', anno, str(e))
             return 'Problem with provided annotation',500
+
+        if current_user.is_authenticated:
+            img_ob = self.controller.get_image_object(dataset, imageid)
+            points = 0.1
+            if len(img_ob.bboxes) != len(bbs_vec):
+                points = 1
+            else:
+                old_labels = [bb.labels for bb in img_ob.bboxes]
+                old_labels = list(itertools.chain.from_iterable(old_labels))
+                new_labels = [bb.labels for bb in bbs_vec]
+                new_labels = list(itertools.chain.from_iterable(new_labels))
+
+                if old_labels.sort() != new_labels.sort():
+                    points = 1
+            current_user.points = current_user.points + points
+            current_user.upsert()
+
 
         self.controller.change_annotations(dataset, imageid, bbs_vec)
 
