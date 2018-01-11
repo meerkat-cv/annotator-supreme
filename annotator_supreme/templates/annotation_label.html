@@ -1,0 +1,100 @@
+{% extends "main_template.html" %} {% block content_header %}
+{% endblock %} {% block content %}
+<link rel="stylesheet" href="/annotator-supreme/static/meerkat/css/annotate-label.css">
+
+<div class="row">
+  <div class="col-md-12 button-bar">
+    <button type="button" class="btn btn-primary" id="save-btn">
+      <i class="fa fa-fw fa-save"></i>
+      Save annotations
+    </button>
+  </div>
+</div>
+
+<div class="row" id="cards-container">
+    <div class="col-md-3 anno-card hidden" id="anno-card">
+        <div class="box box-solid">
+            {#
+            <div class="box-header with-border">
+                <i class="fa fa-text-width"></i>
+                <h3 class="box-title">Headlines</h3>
+            </div> #}
+            <!-- /.box-header -->
+            <div class="box-body">
+                <div class="anno-img-container col-md-12">
+                    <div class="img-container">
+                      <img src="http://placehold.it/200x100" alt="..." class="anno-img">
+                    </div>
+                </div>
+
+                <div class="anno-label-container col-md-12">
+                  <input class="form-control input-sm anno-label-input" type="text" placeholder="no label">
+                </div>
+            </div>
+            <!-- /.box-body -->
+
+            
+
+           <div class="done-overlay fade-in hidden">
+            Check as different people
+          </div>
+        </div>
+        <!-- /.box -->
+
+    </div>
+</div>
+<div class="row">
+  <div class="col-md-12 button-bar">
+    <ul class="people-database pagination">
+      <li id="people-database-prev" class="paginate_button previous disabled" style="display:none;">
+          <a href="#" >Previous</a>
+      </li>
+      <li id="people-database-next" class="paginate_button next tabable" style="display:none;">
+          <a href="#" >Next</a>
+      </li>
+    </ul>
+  </div>
+</div>
+
+{# <div class="box-footer text-center"> #}
+    
+  {# </div> #}
+
+
+<div class="modal" id="modal-stream">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Add/edit stream</h4>
+            </div>
+            <div class="modal-body">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveChangesButton">Save changes</button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+</div>
+
+
+</section>
+{% endblock %} {% block load_script %}
+<script src="/annotator-supreme/static/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/annotator-supreme/static/plugins/datatables/dataTables.bootstrap.min.js"></script>
+<script src="/annotator-supreme/static/meerkat/js/annotate-label.js"></script>
+<script>
+$(document).ready(function () {
+    var main_item = $('#div-menu').children('li').eq(6);
+    main_item.addClass('active');
+});
+
+// window.PeopleCountingMatches.setApiKey("{{session['user_api_key'] }}");
+// window.PeopleCountingMatches.setPeopleCountingId("{{people_counting_id}}");
+// window.PeopleCountingMatches.setMatches({{ matches | safe }});
+</script>
+{% endblock %}

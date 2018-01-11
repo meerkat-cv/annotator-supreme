@@ -27,6 +27,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <link rel="stylesheet" href="/annotator-supreme/static/plugins/iCheck/all.css">
 
   <link rel="stylesheet" href="/annotator-supreme/static/meerkat/css/main.css">
+    <link rel="stylesheet" href="/annotator-supreme/static/meerkat/css/beer.css">
 
   <link rel="stylesheet" href="/annotator-supreme/static/plugins/datatables/dataTables.bootstrap.css">
 
@@ -64,9 +65,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
           <!-- /.messages-menu -->
 
-          <li class="annotator-version-global">
-            
+          <li class="annotator-login">
+            {% if current_user.is_authenticated %}
+              {{ current_user.username }}
+            {% endif %}
           </li>
+          
 
           <!-- User Account Menu -->
           <li class="dropdown user user-menu meerkat-menu-button">
@@ -135,10 +139,17 @@ scratch. This page gets rid of all links and provides the needed markup only.
           </ul>
         </li>
 
-        <li><a href="/annotator-supreme/annotation"><i class="fa fa-object-ungroup"></i> <span>Annotation</span></a></li>
+        <li class="treeview">
+          <a href="#"><i class="fa fa-pencil-square-o"></i> <span>Annotation</span> <i class="fa fa-angle-left pull-right"></i></a>
+          <ul class="treeview-menu">
+            <li><a href="/annotator-supreme/annotation"><i class="fa fa-object-ungroup"></i> <span>Annotate all</span></a></li>
+            <li><a href="/annotator-supreme/label-annotation?dataset=kopp"><i class="fa fa-tags"></i> <span>Labels</span></a></li>
+          </ul>
+        </li>
 
         <li><a href="/annotator-supreme/plugins"><i class="fa fa-plug"></i> <span>Plugins</span></a></li>
 
+        <li class="header annotator-version-global">Something</li>
       </ul>
       <!-- /.sidebar-menu -->
     </section>
@@ -189,7 +200,50 @@ scratch. This page gets rid of all links and provides the needed markup only.
       <!-- /.tab-pane -->
       <!-- Settings tab content -->
       <div class="tab-pane active" id="control-sidebar-settings-tab">
-        <h2>Nothing yet...</h2>
+        {% if not current_user.is_authenticated %}
+          <button type="button" id="login-btn" class="btn btn-block btn-primary">Login</button>
+          <button type="button" id="register-btn" class="btn btn-block btn-primary">Register</button>      
+        {% else %}
+          <button type="button" id="logout-btn" class="btn btn-block btn-primary">Logout</button>
+        {% endif %}
+        
+        {% if current_user.is_authenticated %}
+        <div class="beer-current-status">You cup is filled up to <span>80</span>%</div>
+        <div id="beer-container">
+          <div id="beaker">
+            <div class="beer-foam">
+              <div class="foam-1"></div>
+              <div class="foam-2"></div>
+              <div class="foam-3"></div>
+              <div class="foam-4"></div>
+              <div class="foam-5"></div>
+              <div class="foam-6"></div>
+              <div class="foam-7"></div>
+            </div>
+            
+            <div id="liquid">
+              
+              <div class="bubble bubble1"></div>
+              <div class="bubble bubble2"></div>
+              <div class="bubble bubble3"></div>
+              <div class="bubble bubble4"></div>
+              <div class="bubble bubble5"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="beer-count">
+          <div class="beer-count-desc">You have <span>32</span> beers to collect.</div>
+
+          <i class="fa fa-beer" aria-hidden="true"></i>
+          <i class="fa fa-beer" aria-hidden="true"></i>
+          <i class="fa fa-beer" aria-hidden="true"></i>
+        </div>
+        {% else %}
+          <div class="beer-count-desc">Login to win beers!</div>
+        {% endif %}
+
+    
       </div>
       <!-- /.tab-pane -->
     </div>
@@ -231,7 +285,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
       radioClass: 'iradio_minimal-blue'
     });
 
-    {% block script %}{% endblock %}
+    {% block script %}
+
+    {% endblock %}
+
+    {% if current_user.is_authenticated %}
+      window.Main.setCurrentUsername("{{current_user.username}}");
+    {% endif %}
 
 </script>
 <!-- Optionally, you can add Slimscroll and FastClick plugins.

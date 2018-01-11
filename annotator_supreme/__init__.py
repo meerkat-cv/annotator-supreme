@@ -29,6 +29,8 @@ def setup_views():
     from annotator_supreme.views.webapp.upload_video_view import UploadVideoViewWebApp
     from annotator_supreme.views.webapp.upload_view import UploadViewWebApp
     from annotator_supreme.views.webapp.visualize_images_view import VisualizeImagesViewWebApp
+    from annotator_supreme.views.webapp.login_view import LoginViewWebApp
+    from annotator_supreme.views.webapp.beer_view import BeerViewWebApp
 
     VersionView.register(app)
     AnnoView.register(app)
@@ -43,6 +45,8 @@ def setup_views():
     UploadViewWebApp.register(app)
     UploadVideoViewWebApp.register(app)
     VisualizeImagesViewWebApp.register(app)
+    LoginViewWebApp.register(app)
+    BeerViewWebApp.register(app)
 
     # app.wsgi_app = ProxyFix(app.wsgi_app)
     app.debug = app.config["APP_DEBUG"]
@@ -86,6 +90,8 @@ def build_app():
     db_controller.setup_database()
     app.logger.info('done.')
 
+
+    
     # from annotator_supreme.controllers.base_controller import ReverseProxied
     # app.wsgi_app = ReverseProxied(app.wsgi_app)
 

@@ -22,6 +22,12 @@ class ImageUtils:
             return image[(h-200)//2:(h+200)//2, :, :]
 
     @staticmethod
+    def crop_image(image, anno):
+        # print("annotation", annotation)
+        t, l, b, r = int(anno.top), int(anno.left), int(anno.bottom), int(anno.right)
+        return image[t:b, l:r, :]
+
+    @staticmethod
     def plot_annotations(image, annotations):
         for a in annotations.bboxes:
             cv2.rectangle(image, (int(a.left), int(a.top)), (int(a.right), int(a.bottom)), (20, 20, 200), 5)
