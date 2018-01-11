@@ -30,6 +30,7 @@ def setup_views():
     from annotator_supreme.views.webapp.upload_view import UploadViewWebApp
     from annotator_supreme.views.webapp.visualize_images_view import VisualizeImagesViewWebApp
     from annotator_supreme.views.webapp.login_view import LoginViewWebApp
+    from annotator_supreme.views.webapp.beer_view import BeerViewWebApp
 
     VersionView.register(app)
     AnnoView.register(app)
@@ -45,6 +46,7 @@ def setup_views():
     UploadVideoViewWebApp.register(app)
     VisualizeImagesViewWebApp.register(app)
     LoginViewWebApp.register(app)
+    BeerViewWebApp.register(app)
 
     # app.wsgi_app = ProxyFix(app.wsgi_app)
     app.debug = app.config["APP_DEBUG"]

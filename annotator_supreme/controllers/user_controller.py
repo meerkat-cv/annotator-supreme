@@ -33,8 +33,33 @@ class UserController():
             # username does not exists, but dont tell anyone
             return None
 
+    def get_user_points(self, username):
+        if self.user_exists(username):
+            user = User.from_username(username)
+            return True, user.points
+        else:
+            return False, 0
+
     def user_exists(self, username):
         return User.from_username(username) != None
+
+    def add_points(self, username, points_to_add):
+        if self.user_exists(username):
+            user = User.from_username(username)
+            user.points = user.points + points_to_add
+            user.upsert()
+            return True
+        else:
+            return False
+        
+    def clear_points(self, username):
+        if self.user_exists(username):
+            user = User.from_username(username)
+            user.points = 0
+            user.upsert()
+            return True
+        else:
+            return False
 
 # should configure flask-login upon start
 from flask.ext.login import LoginManager

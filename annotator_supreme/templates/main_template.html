@@ -207,7 +207,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <button type="button" id="logout-btn" class="btn btn-block btn-primary">Logout</button>
         {% endif %}
         
-        <div class="beer-current-status">You cup is filled up to 80%</div>
+        {% if current_user.is_authenticated %}
+        <div class="beer-current-status">You cup is filled up to <span>80</span>%</div>
         <div id="beer-container">
           <div id="beaker">
             <div class="beer-foam">
@@ -238,6 +239,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <i class="fa fa-beer" aria-hidden="true"></i>
           <i class="fa fa-beer" aria-hidden="true"></i>
         </div>
+        {% else %}
+          <div class="beer-count-desc">Login to win beers!</div>
+        {% endif %}
+
     
       </div>
       <!-- /.tab-pane -->
@@ -283,6 +288,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
     {% block script %}
 
     {% endblock %}
+
+    {% if current_user.is_authenticated %}
+      window.Main.setCurrentUsername("{{current_user.username}}");
+    {% endif %}
 
 </script>
 <!-- Optionally, you can add Slimscroll and FastClick plugins.
