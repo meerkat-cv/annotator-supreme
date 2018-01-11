@@ -6,5 +6,5 @@ then
 fi
 
 #sudo SOURCE_COMMIT=$(git rev-parse HEAD)
-sudo docker-compose build --build-arg SOURCE_COMMIT=$(git rev-parse HEAD) annotator
+sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml build --build-arg SOURCE_COMMIT=$(git rev-parse HEAD) annotator
 
