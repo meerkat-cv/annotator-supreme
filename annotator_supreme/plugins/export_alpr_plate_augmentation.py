@@ -4,12 +4,12 @@ import os
 import cv2
 import numpy as np
 import logging
+import time
 
 
-OUTPUT_DIR = '/media/meerkat/Data/datasets/alpr_dec17'
+OUTPUT_DIR = '/media/meerkat/Datasets/datasets/default'
 NUM_AUG_IMAGES = 10
-NUM_SCALES = 3
-MAX_SCALE = 1.6
+BBOX_SCALES = [ 0.75, 1, 1.25]
 IM_HEIGHT = 64
 alphabet = '0123456789abcdefghijklmnopqrstuvwxyz'
 
@@ -24,8 +24,8 @@ im_filters = iaa.SomeOf((0, 5),
     [
         iaa.OneOf([
             iaa.GaussianBlur((0, 1.5)), # blur images with a sigma between 0 and 3.0
-            iaa.AverageBlur(k=(2, 5)), # blur image using local means with kernel sizes between 2 and 7
-            iaa.MedianBlur(k=(3, 7)), # blur image using local medians with kernel sizes between 2 and 7
+            iaa.AverageBlur(k=(2, 3)), # blur image using local means with kernel sizes between 2 and 7
+            iaa.MedianBlur(k=(3, 3)), # blur image using local medians with kernel sizes between 2 and 7
         ]),
         iaa.Sharpen(alpha=(0, 0.1), lightness=(0.75, 1.5)), # sharpen images
         iaa.AdditiveGaussianNoise(loc=0, scale=(0.0, 0.05*255), per_channel=0.5), # add gaussian noise to images
@@ -57,6 +57,7 @@ seq_3 = iaa.Sequential(
             cval=(0, 255), # if mode is constant, use a cval between 0 and 255
             mode='edge' # use any of scikit-image's warping modes (see 2nd image from the top for examples)
         )),
+        sometimes(iaa.PerspectiveTransform(scale=(0.01, 0.1))),
         im_filters
     ],
     random_order=True
@@ -75,6 +76,7 @@ seq_2 = iaa.Sequential(
             cval=(0, 255), # if mode is constant, use a cval between 0 and 255
             mode='edge' # use any of scikit-image's warping modes (see 2nd image from the top for examples)
         )),
+        sometimes(iaa.PerspectiveTransform(scale=(0.01, 0.1))),
         im_filters
     ],
     random_order=True
@@ -91,6 +93,7 @@ seq_1 = iaa.Sequential(
             cval=(0, 255), # if mode is constant, use a cval between 0 and 255
             mode='edge' # use any of scikit-image's warping modes (see 2nd image from the top for examples)
         )),
+        sometimes(iaa.PerspectiveTransform(scale=(0.01, 0.1))),
         im_filters
     ],
     random_order=True
@@ -151,9 +154,14 @@ class AnnotatorPlugin:
 
             curr_label = ''
             if len(bb['labels']) > 0:
-                curr_label = bb['labels'][0].lower()
+                curr_label = bb['labels'][0].lower().strip()
             curr_label = curr_label.replace(' ','').replace('-','')
             bad_letter = False
+
+            #skip annotations with blank labels
+            if curr_label == '' :
+                continue
+
             for a in curr_label:
                 if a not in alphabet:
                     print('invalid char', a, anno['phash'])
@@ -180,8 +188,11 @@ class AnnotatorPlugin:
             self.image_path_list[part].append(org_name+'.png')
             self.label_list[part].append(curr_label)
 
-            for i in range(0,NUM_SCALES):
-                curr_scale = 1+(MAX_SCALE-1)/NUM_SCALES*(i+1)
+            #Do not augment images from the validation partition
+            if part == 1:
+                continue; 
+
+            for curr_scale in BBOX_SCALES  : 
                 (nl, nt, nr, nb) = self.safe_scale_bbox(l, t, r, b, curr_scale, im.shape)
                 # imgs_vec = np.asarray([np.copy(im[nt:nb,nl:nr,:])])
                 aux_im = np.copy(im[nt:nb,nl:nr,:])
@@ -194,9 +205,10 @@ class AnnotatorPlugin:
                 txt_vec.append(curr_label)
 
                 for aug in range(0,NUM_AUG_IMAGES):
-                    if curr_scale <= 1.2:
+                    # Apply different augmentations depending on the scale of the bounding box
+                    if curr_scale == BBOX_SCALES[0] :
                         images_aug = seq_1.augment_images(imgs_vec)
-                    elif curr_scale < 1.6:
+                    elif curr_scale == BBOX_SCALES[1]:
                         images_aug = seq_2.augment_images(imgs_vec)
                     else:
                         images_aug = seq_3.augment_images(imgs_vec)
@@ -210,25 +222,28 @@ class AnnotatorPlugin:
                         self.label_list[part].append(curr_label)
                         curr_im += 1
 
+        print('Done image', im_name)
 
 
         return (im, anno)
 
 
     def end(self):
-        with open(OUTPUT_DIR+'/train/image_path_list.txt', 'w') as f:
+
+        EXEC_ID=str(int(time.time()))  # id used for saving files
+        with open(OUTPUT_DIR+'/train/image_path_list_'+EXEC_ID+'.txt', 'w') as f:
             for p in self.image_path_list[0]:
                 f.write(p+'\n')
 
-        with open(OUTPUT_DIR+'/train/label_list.txt', 'w') as f:
+        with open(OUTPUT_DIR+'/train/label_list_'+EXEC_ID+'.txt', 'w') as f:
             for l in self.label_list[0]:
                 f.write(l+'\n')
 
-        with open(OUTPUT_DIR+'/val/image_path_list.txt', 'w') as f:
+        with open(OUTPUT_DIR+'/val/image_path_list_'+EXEC_ID+'.txt', 'w') as f:
             for p in self.image_path_list[1]:
                 f.write(p+'\n')
 
-        with open(OUTPUT_DIR+'/val/label_list.txt', 'w') as f:
+        with open(OUTPUT_DIR+'/val/label_list_'+EXEC_ID+'.txt', 'w') as f:
             for l in self.label_list[1]:
                 f.write(l+'\n')
 
