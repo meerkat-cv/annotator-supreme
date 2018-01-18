@@ -47,10 +47,7 @@ def setup_views():
     VisualizeImagesViewWebApp.register(app)
     LoginViewWebApp.register(app)
     BeerViewWebApp.register(app)
-
     # app.wsgi_app = ProxyFix(app.wsgi_app)
-    app.debug = app.config["APP_DEBUG"]
-
 
 def build_app():
     server_env = os.getenv('SERVER_ENV')
@@ -80,26 +77,43 @@ def build_app():
     app.secret_key = '6869fab6ae6e276e7f6e1c3fcf5253ca'
 
     # seting the logger using the flask
-    logging.basicConfig(format='annotator-supreme: %(asctime)s - %(levelname)s - %(message)s')
+
+    # logging.basicConfig(format='annotator-supreme: %(asctime)s - %(levelname)s - %(message)s')
+    app.debug = app.config["APP_DEBUG"]
+
+    fmt = '%(levelname)s - [%(asctime)s] - %(name)s : %(message)s'
+    formatter = logging.Formatter(fmt)
+
     app.logger.setLevel(app.config["LOG_LEVEL"])
-    app.logger.info('annotator-supreme - The most awesome annotator and provider of CV datasets.')
+
+    # Bug?? the lines bellow actually duplicate the logging
+    #for handler in app.logger.handlers:
+    #    app.logger.warning("Changing handler: %s",handler)
+    #    handler.setFormatter(formatter)
+
+    root_logger = logging.getLogger()
+    for handler in root_logger.handlers:
+        app.logger.warning("ROOT HANDLER: %s",handler)
+        handler.setFormatter(formatter)
 
     app.logger.info("Setting up database (Cassandra)...")
+    
     from annotator_supreme.controllers import database_controller
     db_controller = database_controller.DatabaseController()
     db_controller.setup_database()
-    app.logger.info('done.')
+    app.logger.info('DB Controller done.')
 
-
-    
     # from annotator_supreme.controllers.base_controller import ReverseProxied
     # app.wsgi_app = ReverseProxied(app.wsgi_app)
 
     app.logger.info('Registering views')
     setup_views()
+    
     app.logger.info('done.')
+    app.logger.info('App %s built successfully!', __name__)
 
-    app.logger.info('done.')
-    app.logger.info('App built successfully!')
+    app.logger.info('annotator-supreme - The most awesome annotator and provider of CV datasets.')
+    app.logger.info('app.debug = %s', app.debug)
+    
 
     return app

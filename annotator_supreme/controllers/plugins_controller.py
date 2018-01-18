@@ -1,4 +1,5 @@
 import os
+import logging
 import importlib
 
 
@@ -15,6 +16,7 @@ class PluginsController():
 
     """
     def __init__(self):
+        self.logger = logging.getLogger('annotator_supreme.controlers.plugins')
         self.plugin = None
         self.plugin_obj = None
 
@@ -36,7 +38,7 @@ class PluginsController():
             self.plugin = __import__(plugin_name, globals(), locals(), ['object'])
             importlib.reload(self.plugin) # make sure it is the latest version
         except BaseException as e:
-            print(str(e))
+            self.logger.error(str(e))
             return False
 
         return True

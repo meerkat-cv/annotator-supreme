@@ -26,8 +26,8 @@ WORKDIR /code
 # copy the nginx configuration to the correct location
 #RUN cp server/nginx.conf /usr/local/nginx/conf/nginx.conf
 
-RUN ln -sf /dev/stdout /usr/local/nginx/logs/access.log
-RUN ln -sf /dev/stderr /usr/local/nginx/logs/error.log
+#RUN ln -sf /dev/stdout /usr/local/nginx/logs/access.log
+#RUN ln -sf /dev/stderr /usr/local/nginx/logs/error.log
 	
 # run the Ngnix server
 CMD supervisord -c server/supervisord.conf

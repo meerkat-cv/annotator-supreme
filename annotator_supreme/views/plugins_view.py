@@ -9,11 +9,14 @@ from annotator_supreme.views import view_tools
 from annotator_supreme.views import error_views
 from annotator_supreme.models.bbox_model import BBox
 import cv2
+import logging
 
 class PluginsView(FlaskView):
     route_base = '/'
 
     def __init__(self):
+        self.logger = logging.getLogger('annotator_supreme.views.plugins')
+        
         self.controller = PluginsController()
         self.image_controller = ImageController()
         self.dataset_controller = DatasetController()
@@ -96,7 +99,7 @@ class PluginsView(FlaskView):
 
         ok = self.controller.load_plugin(plugin_name)
         if not ok:
-            print('An error occurred while loading plugin: '+ plugin_name)
+            self.logger.error('An error occurred while loading plugin: %s', plugin_name)
             raise error_views.InternalError('An error occurred while loading plugin: '+ plugin_name)
 
 
