@@ -148,7 +148,9 @@ class AnnotatorPlugin:
         imgs_vec    = []
         txt_vec     = []
         curr_im = 0
-        for bb in anno['anno']:
+        for anno_id, bb in enumerate(anno['anno']):
+            anno_name = im_name+'_'+str(anno_id)
+            
             if bb['ignore']:
                 continue
 
@@ -183,7 +185,7 @@ class AnnotatorPlugin:
 
             # Save the original cropped plate
             org_im = np.copy(im[t:b,l:r,:])
-            org_name = im_name+'_org'
+            org_name = anno_name+'_org'
 
             #save label file
             with open(org_name+'.txt', 'w') as f:
@@ -220,7 +222,7 @@ class AnnotatorPlugin:
                         images_aug = seq_3.augment_images(imgs_vec)
 
                     for j in range(0,len(images_aug)):
-                        curr_name = im_name+'_'+str(curr_im).zfill(4)
+                        curr_name = anno_name+'_'+str(curr_im).zfill(4)
                         with open(curr_name+'.txt', 'w') as f:
                             f.write(curr_label+'\n')
                         cv2.imwrite(curr_name+'.png', images_aug[j,:])
@@ -228,7 +230,7 @@ class AnnotatorPlugin:
                         self.label_list[part].append(curr_label)
                         curr_im += 1
 
-        self.logger.info('Done image %s', im_name)
+            self.logger.info('Done image annotation %s', anno_name)
 
         return (im, anno)
 
