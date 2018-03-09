@@ -74,13 +74,17 @@
     }
 
     AnnotateLabel.getCardElement = function(annotation) {
+        // debugger;
+        var dataset = annotation.image_url.split("/")[0],
+            image_id = annotation.image_url.split("/")[1];
         var elem = $("#anno-card").clone();
-        elem.attr('id', 'card-'+annotation.image_url.split("/")[1]);
-        elem.data('image_id', annotation.image_url.split("/")[1]);
+        elem.attr('id', 'card-'+image_id);
+        elem.data('image_id', image_id);
         elem.data('anno_ith', annotation.anno_ith);
         elem.removeClass('hidden');
         elem.addClass('anno-card-clone');
 
+        elem.find('a').attr('href', '/annotator-supreme/annotation?dataset='+dataset+'&image='+image_id);
         elem.find('.anno-img').attr('src', '/annotator-supreme/image/cropanno/' + annotation.image_url + '/' + annotation.anno_ith)
         elem.find('.anno-label-input').val(annotation.labels[0])
         return elem;
