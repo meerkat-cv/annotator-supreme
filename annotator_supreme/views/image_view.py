@@ -100,6 +100,25 @@ class ImageView(FlaskView):
         else:
             return flask.jsonify({"images": annotated})
 
+
+    @route('/image/<dataset>/unannotated', methods=['GET'])
+    def get_annotated_images(self, dataset):
+
+        all_images = ImageController.all_images(dataset)
+        app.logger.info('all_images'+str(all_images))
+        unannotated = [im for im in all_images if len(im["annotation"]) == 0]
+        ok_pagesize, _, page_size = view_tools.get_param_from_request(request, 'itemsPerPage')
+        ok_page, _, page_number = view_tools.get_param_from_request(request, 'pageNumber')
+
+        if ok_pagesize and ok_page:
+            return flask.jsonify({
+                "images": self.paginate(unannotated, int(page_number), int(page_size)),
+                "pageNumber": int(page_number),
+                "itemsPerPage": int(page_size),
+                "totalPages": len(unannotated)//int(page_size)})
+        else:
+            return flask.jsonify({"images": unannotated})
+
     
     @route('/image/<dataset>/add', methods=['POST'])
     def create_image(self, dataset):

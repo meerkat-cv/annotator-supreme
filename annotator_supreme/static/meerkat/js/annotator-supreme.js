@@ -358,12 +358,35 @@
         return d;
     }
 
+
+    Annotator.onlyUnannotated = function() {
+        var field = 'onlyUnannotated';
+        var url = window.location.href;
+        if(url.indexOf('?' + field + '=') != -1)
+            return true;
+        else if(url.indexOf('&' + field + '=') != -1)
+            return true;
+        return false
+    }
+
+
     Annotator.getDatasetImages = function(callback) {
         var self = this;
         // populate the list of images
         this.image_list = [];
         image_sel.empty();
-        $.get( "/annotator-supreme/image/" + dataset_sel.val() + "/all", function( data ) {
+
+        console.log("is getting the imageeeeessssss....")
+
+        var get_images_url = '';
+        if (this.onlyUnannotated()) {
+            get_images_url = "/annotator-supreme/image/" + dataset_sel.val() + "/unannotated"
+        }
+        else {
+            get_images_url = "/annotator-supreme/image/" + dataset_sel.val() + "/all"
+        }
+
+        $.get( get_images_url, function( data ) {
             self.image_list = self.imagesToDict(data.images);
             for (var i = 0; i < data.images.length; ++i) {
                 var option = new Option(data.images[i].phash, data.images[i].phash);
