@@ -10,11 +10,14 @@ services:
     # Note: use ./buid_annotator.sh to build this images
     #image: annotator_supreme
     volumes:
+    # Output path for the export plugin
+    - ./annotator_volumes/export_alpr_plate_plugin/:/tmp/export_alpr_plate_plugin/
     # Bind-mounts for development
     - ./annotator_supreme/static/:/code/annotator_supreme/static
     - ./:/code
     ports:
     - "4242:4242"
+    - "9001:9001"  # Supervisord interface
 
   nginx:
     #hostname: annotator.dev.intranet ## BUG : messes-up the hostnames in docker-compose

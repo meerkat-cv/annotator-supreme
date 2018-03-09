@@ -99,3 +99,7 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# annotator data path
+annotator_volumes
+cassandra/datadir

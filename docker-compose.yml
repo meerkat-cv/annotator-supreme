@@ -17,6 +17,7 @@ services:
     - cassandra
     environment:
     - CLUSTER_IP=cassandra
+    - PYTHONUNBUFFERED=1
     
   nginx:
     build:

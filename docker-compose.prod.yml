@@ -14,6 +14,9 @@ services:
       args:
         SOURCE_COMMIT: ${SOURCE_COMMIT}
     #image: annotator_supreme
+    volumes:
+    # Output path for the export plugin
+    - ./annotator_volumes/export_alpr_plate_plugin/:/tmp/export_alpr_plate_plugin/
     ports:
     - "4242:4242"
 

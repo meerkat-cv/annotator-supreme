@@ -7,7 +7,7 @@ import logging
 import time
 
 
-OUTPUT_DIR = '/media/meerkat/Datasets/datasets/default'
+OUTPUT_DIR = '/tmp/export_alpr_plate_plugin/'
 NUM_AUG_IMAGES = 10
 BBOX_SCALES = [ 0.75, 1, 1.25]
 IM_HEIGHT = 64
@@ -105,15 +105,21 @@ class AnnotatorPlugin:
     _VERSION = '0.0.1'
 
     def __init__(self, dataset, partition):
+
+        global OUTPUT_DIR
+        OUTPUT_DIR += "/"+dataset['name']+"/"
+
+        self.logger = logging.getLogger('annotator_supreme.plugin.alpr_export')
+        self.logger.info("Exporting dataset %s", dataset['name'])
         self.image_path_list = [[],[]]
         self.label_list = [[],[]]
 
         if os.system('mkdir -p '+OUTPUT_DIR+'/train/') :
-            logging.error("Cannot create %s/train/", OUTPUT_DIR)
+            self.logger.error("Cannot create %s/train/", OUTPUT_DIR)
             return
 
         if os.system('mkdir -p '+OUTPUT_DIR+'/val/') :
-            logging.error("Cannot create %s/val/", OUTPUT_DIR)
+            self.logger.error("Cannot create %s/val/", OUTPUT_DIR)
             return
 
     def is_date(self, text):
@@ -128,7 +134,7 @@ class AnnotatorPlugin:
             - anno: a json representing the annotation for this image
         '''
         part = anno['partition']
-        print('partition', part)
+        self.logger.info("partition %s", part)
         if part == 0:
             im_name = OUTPUT_DIR+'/train/'+anno['phash']
         else:
@@ -142,7 +148,9 @@ class AnnotatorPlugin:
         imgs_vec    = []
         txt_vec     = []
         curr_im = 0
-        for bb in anno['anno']:
+        for anno_id, bb in enumerate(anno['anno']):
+            anno_name = im_name+'_'+str(anno_id)
+            
             if bb['ignore']:
                 continue
 
@@ -164,7 +172,7 @@ class AnnotatorPlugin:
 
             for a in curr_label:
                 if a not in alphabet:
-                    print('invalid char', a, anno['phash'])
+                    self.logger.debug('invalid char %s %s', a, anno['phash'])
                     bad_letter = True
                     
             if bad_letter:
@@ -177,7 +185,7 @@ class AnnotatorPlugin:
 
             # Save the original cropped plate
             org_im = np.copy(im[t:b,l:r,:])
-            org_name = im_name+'_org'
+            org_name = anno_name+'_org'
 
             #save label file
             with open(org_name+'.txt', 'w') as f:
@@ -214,7 +222,7 @@ class AnnotatorPlugin:
                         images_aug = seq_3.augment_images(imgs_vec)
 
                     for j in range(0,len(images_aug)):
-                        curr_name = im_name+'_'+str(curr_im).zfill(4)
+                        curr_name = anno_name+'_'+str(curr_im).zfill(4)
                         with open(curr_name+'.txt', 'w') as f:
                             f.write(curr_label+'\n')
                         cv2.imwrite(curr_name+'.png', images_aug[j,:])
@@ -222,8 +230,7 @@ class AnnotatorPlugin:
                         self.label_list[part].append(curr_label)
                         curr_im += 1
 
-        print('Done image', im_name)
-
+            self.logger.info('Done image annotation %s', anno_name)
 
         return (im, anno)
 
@@ -246,6 +253,8 @@ class AnnotatorPlugin:
         with open(OUTPUT_DIR+'/val/label_list_'+EXEC_ID+'.txt', 'w') as f:
             for l in self.label_list[1]:
                 f.write(l+'\n')
+
+        self.logger.info('Execution id: %s', EXEC_ID)
 
     def get_parameters(self):
         return {'parameters': []}
