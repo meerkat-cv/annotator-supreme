@@ -8,7 +8,9 @@ FROM meerkatcvonpremise/meerkat_base:latest
 ADD requirements.txt /code/
 
 # upgrade pip to avoid endless compilations 
-RUN pip3 install pip --upgrade
+#RUN pip3 install pip --upgrade
+RUN pip3 install pip==9.0.1
+# --upgrade
 RUN pip3 install -r /code/requirements.txt
 
 #WORKDIR /code
