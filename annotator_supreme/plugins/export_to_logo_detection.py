@@ -5,7 +5,7 @@ import numpy as np
 class AnnotatorPlugin:
     _VERSION = '0.0.1'
 
-    def __init__(self, dataset, partition = None):
+    def __init__(self, dataset, partition = None, additional_params = {}):
         self.dataset_name = dataset["name"]
         self.dataset_dir = '/tmp/logo_detection_' + dataset["name"]
         self.tags = dataset["annotation_labels"]

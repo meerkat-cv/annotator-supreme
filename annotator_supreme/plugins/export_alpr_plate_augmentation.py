@@ -104,7 +104,7 @@ seq_1 = iaa.Sequential(
 class AnnotatorPlugin:
     _VERSION = '0.0.1'
 
-    def __init__(self, dataset, partition):
+    def __init__(self, dataset, partition, additional_params = {}):
 
         global OUTPUT_DIR
         OUTPUT_DIR += "/"+dataset['name']+"/"
