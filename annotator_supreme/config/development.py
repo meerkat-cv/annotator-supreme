@@ -1,7 +1,7 @@
 import logging
 
 ENV = 'development'
-APP_DEBUG = False # Avoid using this in debug mode 
+APP_DEBUG = True # Avoid using this in debug mode 
 
 # CORS configuration
 CORS_HEADERS = 'Content-Type'
