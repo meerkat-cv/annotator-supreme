@@ -47,8 +47,8 @@ class PluginsController():
     def process(self, image_matrix, image_objec):
         return self.plugin_obj.process(image_matrix, image_objec)
 
-    def init_plugin(self, dataset, partition = None):
-        self.plugin_obj = self.plugin.AnnotatorPlugin(dataset, partition)
+    def init_plugin(self, dataset, partition = None, additional_params = {}):
+        self.plugin_obj = self.plugin.AnnotatorPlugin(dataset, partition, additional_params)
         
     def end_plugin(self):
         return self.plugin_obj.end()

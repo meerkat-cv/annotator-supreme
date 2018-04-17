@@ -21,11 +21,14 @@ class PluginsView(FlaskView):
         self.image_controller = ImageController()
         self.dataset_controller = DatasetController()
 
-    @route('/plugins/process/<dataset>/<imageid>', methods=['GET'])
+    @route('/plugins/process/<dataset>/<imageid>', methods=['GET', 'POST'])
     def get_plugin_process_image(self, dataset, imageid):
         self.get_plugin_from_request(request)
 
-        self.controller.init_plugin(self.dataset_controller.get_dataset(dataset))
+        if request.method == 'POST':
+            self.controller.init_plugin(self.dataset_controller.get_dataset(dataset), additional_params=request.get_json().get("additional_params", {}))
+        elif request.method == 'GET':
+            self.controller.init_plugin(self.dataset_controller.get_dataset(dataset))
 
         (img_m, img_o) = self.get_image_matrix_and_dict(dataset, imageid)
         (img_m, img_o) = self.controller.process(img_m, img_o)
@@ -43,11 +46,14 @@ class PluginsView(FlaskView):
         return flask.jsonify({'image': img_encoded, 'plugin_response': plugin_res})
 
 
-    @route('/plugins/process/<dataset>', methods=['GET'])
+    @route('/plugins/process/<dataset>', methods=['GET', 'POST'])
     def get_plugin_process(self, dataset):
         self.get_plugin_from_request(request)
         
-        self.controller.init_plugin(self.dataset_controller.get_dataset(dataset))
+        if request.method == 'POST':
+            self.controller.init_plugin(self.dataset_controller.get_dataset(dataset), additional_params=request.get_json().get("additional_params", {}))
+        elif request.method == 'GET':
+            self.controller.init_plugin(self.dataset_controller.get_dataset(dataset))
 
         all_imgs = ImageController.all_images(dataset)
         for im_obj in all_imgs:
@@ -70,7 +76,11 @@ class PluginsView(FlaskView):
         if partition == "" or (partition != "training" and partition != "testing"):
             raise error_views.InvalidParametersError("Partition not informed or invalid.")
         
-        self.controller.init_plugin(self.dataset_controller.get_dataset(dataset), partition)
+
+        if request.method == 'POST':
+            self.controller.init_plugin(self.dataset_controller.get_dataset(dataset), partition, additional_params=request.get_json().get("additional_params", {}))
+        elif request.method == 'GET':
+            self.controller.init_plugin(self.dataset_controller.get_dataset(dataset), partition)
 
         all_imgs = ImageController.all_images(dataset)
         for im_obj in all_imgs:
